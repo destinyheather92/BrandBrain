@@ -1,0 +1,40 @@
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it } from "vitest";
+
+import { DashboardShell } from "../components/dashboard-shell";
+
+describe("DashboardShell", () => {
+  it("renders the protected dashboard workspace for a signed-in user", () => {
+    render(
+      <DashboardShell
+        accountControl={<button aria-label="Account menu">JS</button>}
+        displayName="John"
+        email="john@example.com"
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Welcome back, John" })).toBeInTheDocument();
+    expect(screen.getByText("Here's what's happening with your brands and content.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Account menu" })).toBeInTheDocument();
+    expect(screen.getByText("john@example.com")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("button", { name: "Import Brand" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Create Carousel" })).toBeInTheDocument();
+    expect(screen.queryByText(/chatbot/i)).not.toBeInTheDocument();
+  });
+
+  it("keeps future feature areas visibly locked to dashboard placeholders", () => {
+    render(
+      <DashboardShell
+        accountControl={<button aria-label="Account menu">JS</button>}
+        displayName="Avery"
+        email="avery@example.com"
+      />
+    );
+
+    expect(screen.getAllByText("Brands").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Projects").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Content Ideas").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Exports").length).toBeGreaterThan(0);
+  });
+});
