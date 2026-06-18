@@ -38,6 +38,100 @@ type GetProjectThemeForUserParams = {
   themeRepository: ProjectThemeRepository;
 };
 
+type ThemePalette = ProjectThemeUpsertInput["palette"];
+
+type ColorMention = {
+  hex: string;
+  index: number;
+};
+
+const namedBrandColors: Array<{ hex: string; name: string }> = [
+  {
+    hex: "#14532D",
+    name: "forest green"
+  },
+  {
+    hex: "#D97706",
+    name: "harvest gold"
+  },
+  {
+    hex: "#0F172A",
+    name: "navy"
+  },
+  {
+    hex: "#0B0F19",
+    name: "black"
+  },
+  {
+    hex: "#FFFFFF",
+    name: "white"
+  },
+  {
+    hex: "#334155",
+    name: "slate"
+  },
+  {
+    hex: "#64748B",
+    name: "gray"
+  },
+  {
+    hex: "#64748B",
+    name: "grey"
+  },
+  {
+    hex: "#2563EB",
+    name: "blue"
+  },
+  {
+    hex: "#00E5FF",
+    name: "cyan"
+  },
+  {
+    hex: "#0F766E",
+    name: "teal"
+  },
+  {
+    hex: "#166534",
+    name: "green"
+  },
+  {
+    hex: "#047857",
+    name: "emerald"
+  },
+  {
+    hex: "#65A30D",
+    name: "lime"
+  },
+  {
+    hex: "#D97706",
+    name: "gold"
+  },
+  {
+    hex: "#F59E0B",
+    name: "yellow"
+  },
+  {
+    hex: "#EA580C",
+    name: "orange"
+  },
+  {
+    hex: "#DC2626",
+    name: "red"
+  },
+  {
+    hex: "#7F1D1D",
+    name: "burgundy"
+  },
+  {
+    hex: "#7C3AED",
+    name: "purple"
+  },
+  {
+    hex: "#DB2777",
+    name: "pink"
+  }
+];
+
 function isMissingPrismaDelegateError(error: unknown): boolean {
   return error instanceof TypeError && error.message.includes("Cannot read properties of undefined");
 }
@@ -202,12 +296,12 @@ function buildProjectTheme({
     memory?.notes
   ]
     .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-  const isRoofing = /roof|storm|inspection|exterior|claim/.test(context);
-  const isSolar = /solar|energy|panel|renewable/.test(context);
-  const isTechnical = /technical|professional|premium|precise|practical/.test(context);
-  const palette = isSolar
+    .join(" ");
+  const normalizedContext = context.toLowerCase();
+  const isRoofing = /roof|storm|inspection|exterior|claim/.test(normalizedContext);
+  const isSolar = /solar|energy|panel|renewable/.test(normalizedContext);
+  const isTechnical = /technical|professional|premium|precise|practical/.test(normalizedContext);
+  const fallbackPalette: ThemePalette = isSolar
     ? {
         accent: "#F59E0B",
         background: "#FFFFFF",
@@ -236,6 +330,7 @@ function buildProjectTheme({
           surface: "#F8FAFC",
           text: "#0B0F19"
         };
+  const palette = applyExplicitBrandColors(fallbackPalette, extractBrandColors(context));
 
   return projectThemeUpsertInputSchema.parse({
     brandId: brand.id,
@@ -261,6 +356,119 @@ function buildProjectTheme({
       headingWeight: "bold"
     }
   });
+}
+
+function extractBrandColors(context: string): string[] {
+  const mentions: ColorMention[] = [];
+  const namedMentions: Array<ColorMention & { end: number }> = [];
+  const namedRanges: Array<{ end: number; start: number }> = [];
+  const hexPattern = /#[0-9A-Fa-f]{6}\b/g;
+  let hexMatch: RegExpExecArray | null;
+
+  while ((hexMatch = hexPattern.exec(context)) !== null) {
+    mentions.push({
+      hex: normalizeHexColor(hexMatch[0]),
+      index: hexMatch.index
+    });
+  }
+
+  for (const color of [...namedBrandColors].sort((first, second) => second.name.length - first.name.length)) {
+    const namePattern = new RegExp(`\\b${escapeRegExp(color.name)}\\b`, "gi");
+    let nameMatch: RegExpExecArray | null;
+
+    while ((nameMatch = namePattern.exec(context)) !== null) {
+      const start = nameMatch.index;
+      const end = start + nameMatch[0].length;
+
+      if (namedRanges.some((range) => start < range.end && end > range.start)) {
+        continue;
+      }
+
+      namedRanges.push({
+        end,
+        start
+      });
+      namedMentions.push({
+        end,
+        hex: color.hex,
+        index: start
+      });
+    }
+  }
+
+  return [...mentions, ...namedMentions]
+    .sort((first, second) => first.index - second.index)
+    .reduce<string[]>((colors, mention) => {
+      if (!colors.includes(mention.hex)) {
+        colors.push(mention.hex);
+      }
+
+      return colors;
+    }, []);
+}
+
+function applyExplicitBrandColors(fallbackPalette: ThemePalette, explicitColors: string[]): ThemePalette {
+  if (explicitColors.length === 0) {
+    return fallbackPalette;
+  }
+
+  const primary = explicitColors[0] ?? fallbackPalette.primary;
+  const accent = explicitColors[1] ?? fallbackPalette.accent;
+
+  return {
+    ...fallbackPalette,
+    accent,
+    ctaText: readableTextColor(accent),
+    primary,
+    secondary: explicitColors[2] ?? supportingColor(primary) ?? fallbackPalette.secondary
+  };
+}
+
+function normalizeHexColor(color: string): string {
+  return color.toUpperCase();
+}
+
+function supportingColor(primary: string): string | null {
+  const normalized = normalizeHexColor(primary);
+
+  if (["#14532D", "#166534", "#047857"].includes(normalized)) {
+    return "#DCFCE7";
+  }
+
+  if (["#D97706", "#F59E0B", "#EA580C"].includes(normalized)) {
+    return "#FEF3C7";
+  }
+
+  if (["#0F172A", "#0B0F19", "#334155"].includes(normalized)) {
+    return "#E2E8F0";
+  }
+
+  if (["#2563EB", "#00E5FF", "#0F766E"].includes(normalized)) {
+    return "#DBEAFE";
+  }
+
+  if (["#DC2626", "#7F1D1D"].includes(normalized)) {
+    return "#FEE2E2";
+  }
+
+  if (["#7C3AED", "#DB2777"].includes(normalized)) {
+    return "#F3E8FF";
+  }
+
+  return null;
+}
+
+function readableTextColor(background: string): "#0B0F19" | "#FFFFFF" {
+  const red = parseInt(background.slice(1, 3), 16);
+  const green = parseInt(background.slice(3, 5), 16);
+  const blue = parseInt(background.slice(5, 7), 16);
+  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+
+  return luminance > 150 ? "#0B0F19" : "#FFFFFF";
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function applyThemeToElement(element: CanvasElement, theme: ProjectTheme): CanvasElement {

@@ -264,6 +264,49 @@ describe("ThemeEngineService", () => {
     expect(repositories.themeRepository.upsertForProject).not.toHaveBeenCalled();
   });
 
+  it("prioritizes explicit brand colors from memory over industry fallback colors", async () => {
+    const repositories = createRepositories();
+
+    repositories.brandRepository.findByIdForOwner.mockResolvedValue({
+      ...brand,
+      description: "Land Strong provides premium outdoor land management services.",
+      industry: "Land management",
+      name: "Land Strong"
+    });
+    repositories.brandMemoryRepository.getByBrandId.mockResolvedValue({
+      ...memory,
+      brandRules: "Use the brand colors forest green #14532D and harvest gold #D97706.",
+      notes: "The design should feel grounded, strong, and premium."
+    });
+
+    const result = await generateProjectThemeForUser({
+      ...repositories,
+      idFactory: () => "theme_land_strong",
+      ownerUserId: "user_1",
+      projectId: "project_1"
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      theme: {
+        palette: {
+          accent: "#D97706",
+          primary: "#14532D",
+          secondary: "#DCFCE7"
+        }
+      }
+    });
+    expect(repositories.themeRepository.upsertForProject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        palette: expect.objectContaining({
+          accent: "#D97706",
+          primary: "#14532D",
+          secondary: "#DCFCE7"
+        })
+      })
+    );
+  });
+
   it("applies a theme to canvas styling while preserving user edits", () => {
     const themedDocument = applyProjectThemeToCanvas(canvasJson, theme);
 
