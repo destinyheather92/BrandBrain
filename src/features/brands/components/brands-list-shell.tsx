@@ -1,4 +1,4 @@
-import { Plus, Upload } from "lucide-react";
+import { BrainCircuit, Plus, Upload } from "lucide-react";
 import Link from "next/link";
 
 import type { Brand } from "../types/brand";
@@ -58,6 +58,14 @@ export function BrandsListShell({ brands, message }: BrandsListShellProps) {
                 {brand.description ? (
                   <p className="mt-4 line-clamp-3 text-sm leading-6 text-[#CBD5E1]">{brand.description}</p>
                 ) : null}
+                <Link
+                  aria-label={`Memory for ${brand.name}`}
+                  className="mt-5 inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#263244] px-3 py-2 text-sm font-semibold text-[#F8FAFC] hover:border-[#00E5FF]"
+                  href={`/brands/${brand.id}/memory`}
+                >
+                  <BrainCircuit aria-hidden="true" className="h-4 w-4" />
+                  Memory
+                </Link>
               </article>
             ))}
           </section>

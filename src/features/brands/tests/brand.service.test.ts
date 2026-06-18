@@ -17,6 +17,7 @@ const createdBrand: Brand = {
 function createRepository(): BrandRepository {
   return {
     create: vi.fn().mockResolvedValue(createdBrand),
+    findByIdForOwner: vi.fn(),
     listByOwnerUserId: vi.fn()
   };
 }
@@ -96,6 +97,7 @@ describe("createBrandForUser", () => {
   it("returns a typed repository failure without leaking raw database errors", async () => {
     const repository: BrandRepository = {
       create: vi.fn().mockRejectedValue(new Error("duplicate key value")),
+      findByIdForOwner: vi.fn(),
       listByOwnerUserId: vi.fn()
     };
 
@@ -123,6 +125,7 @@ describe("createBrandForUser", () => {
   it("returns a field-level error when the brand name already exists for the user", async () => {
     const repository: BrandRepository = {
       create: vi.fn().mockRejectedValue({ code: "P2002" }),
+      findByIdForOwner: vi.fn(),
       listByOwnerUserId: vi.fn()
     };
 
@@ -155,6 +158,7 @@ describe("createBrandForUser", () => {
       create: vi
         .fn()
         .mockRejectedValue(new TypeError("Cannot read properties of undefined (reading 'create')")),
+      findByIdForOwner: vi.fn(),
       listByOwnerUserId: vi.fn()
     };
 

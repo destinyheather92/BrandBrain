@@ -51,3 +51,8 @@ export type User = Prisma.UserModel
  * 
  */
 export type Brand = Prisma.BrandModel
+/**
+ * Model BrandMemory
+ * 
+ */
+export type BrandMemory = Prisma.BrandMemoryModel

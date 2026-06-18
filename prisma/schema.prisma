@@ -31,8 +31,26 @@ model Brand {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   owner User @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  memory BrandMemory?
 
   @@unique([ownerUserId, name])
   @@index([ownerUserId])
   @@map("brands")
+}
+
+model BrandMemory {
+  id               String   @id @default(cuid())
+  brandId          String   @unique @map("brand_id")
+  voice            String?
+  audience         String?
+  productsServices String?  @map("products_services")
+  brandRules       String?  @map("brand_rules")
+  preferredCtas    String?  @map("preferred_ctas")
+  notes            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@map("brand_memories")
 }

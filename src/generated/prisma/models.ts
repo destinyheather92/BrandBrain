@@ -10,4 +10,5 @@
  */
 export type * from './models/User'
 export type * from './models/Brand'
+export type * from './models/BrandMemory'
 export type * from './commonInputTypes'

@@ -32,5 +32,6 @@ export type BrandCreateResult =
 
 export type BrandRepository = {
   create(input: BrandCreateForUserInput): Promise<Brand>;
+  findByIdForOwner(brandId: string, ownerUserId: string): Promise<Brand | null>;
   listByOwnerUserId(ownerUserId: string): Promise<Brand[]>;
 };

@@ -385,7 +385,8 @@ type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRe
 
 export const ModelName = {
   User: 'User',
-  Brand: 'Brand'
+  Brand: 'Brand',
+  BrandMemory: 'BrandMemory'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -401,7 +402,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "brand"
+    modelProps: "user" | "brand" | "brandMemory"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -553,6 +554,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    BrandMemory: {
+      payload: Prisma.$BrandMemoryPayload<ExtArgs>
+      fields: Prisma.BrandMemoryFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.BrandMemoryFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.BrandMemoryFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload>
+        }
+        findFirst: {
+          args: Prisma.BrandMemoryFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.BrandMemoryFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload>
+        }
+        findMany: {
+          args: Prisma.BrandMemoryFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload>[]
+        }
+        create: {
+          args: Prisma.BrandMemoryCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload>
+        }
+        createMany: {
+          args: Prisma.BrandMemoryCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.BrandMemoryCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload>[]
+        }
+        delete: {
+          args: Prisma.BrandMemoryDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload>
+        }
+        update: {
+          args: Prisma.BrandMemoryUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload>
+        }
+        deleteMany: {
+          args: Prisma.BrandMemoryDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.BrandMemoryUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.BrandMemoryUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload>[]
+        }
+        upsert: {
+          args: Prisma.BrandMemoryUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$BrandMemoryPayload>
+        }
+        aggregate: {
+          args: Prisma.BrandMemoryAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateBrandMemory>
+        }
+        groupBy: {
+          args: Prisma.BrandMemoryGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BrandMemoryGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.BrandMemoryCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.BrandMemoryCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -617,6 +692,22 @@ export const BrandScalarFieldEnum = {
 } as const
 
 export type BrandScalarFieldEnum = (typeof BrandScalarFieldEnum)[keyof typeof BrandScalarFieldEnum]
+
+
+export const BrandMemoryScalarFieldEnum = {
+  id: 'id',
+  brandId: 'brandId',
+  voice: 'voice',
+  audience: 'audience',
+  productsServices: 'productsServices',
+  brandRules: 'brandRules',
+  preferredCtas: 'preferredCtas',
+  notes: 'notes',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type BrandMemoryScalarFieldEnum = (typeof BrandMemoryScalarFieldEnum)[keyof typeof BrandMemoryScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -802,6 +893,7 @@ export type PrismaClientOptions = ({
 export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   brand?: Prisma.BrandOmit
+  brandMemory?: Prisma.BrandMemoryOmit
 }
 
 /* Types for Logging */

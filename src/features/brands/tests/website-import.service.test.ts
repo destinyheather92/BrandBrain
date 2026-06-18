@@ -21,6 +21,7 @@ const importedBrand: Brand = {
 function createRepository(): BrandRepository {
   return {
     create: vi.fn().mockResolvedValue(importedBrand),
+    findByIdForOwner: vi.fn(),
     listByOwnerUserId: vi.fn()
   };
 }

@@ -15,6 +15,17 @@ export class PrismaBrandRepository implements BrandRepository {
     return brandSchema.parse(brand);
   }
 
+  async findByIdForOwner(brandId: string, ownerUserId: string): Promise<Brand | null> {
+    const brand = await this.client.brand.findFirst({
+      where: {
+        id: brandId,
+        ownerUserId
+      }
+    });
+
+    return brand ? brandSchema.parse(brand) : null;
+  }
+
   async listByOwnerUserId(ownerUserId: string): Promise<Brand[]> {
     const brands = await this.client.brand.findMany({
       orderBy: {
