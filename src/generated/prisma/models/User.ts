@@ -200,6 +200,7 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   brands?: Prisma.BrandListRelationFilter
   projects?: Prisma.ContentProjectListRelationFilter
+  themes?: Prisma.ThemeListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -212,6 +213,7 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   brands?: Prisma.BrandOrderByRelationAggregateInput
   projects?: Prisma.ContentProjectOrderByRelationAggregateInput
+  themes?: Prisma.ThemeOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -227,6 +229,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   brands?: Prisma.BrandListRelationFilter
   projects?: Prisma.ContentProjectListRelationFilter
+  themes?: Prisma.ThemeListRelationFilter
 }, "id" | "clerkUserId" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -265,6 +268,7 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   brands?: Prisma.BrandCreateNestedManyWithoutOwnerInput
   projects?: Prisma.ContentProjectCreateNestedManyWithoutOwnerInput
+  themes?: Prisma.ThemeCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -277,6 +281,7 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutOwnerInput
   projects?: Prisma.ContentProjectUncheckedCreateNestedManyWithoutOwnerInput
+  themes?: Prisma.ThemeUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUpdateInput = {
@@ -289,6 +294,7 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   brands?: Prisma.BrandUpdateManyWithoutOwnerNestedInput
   projects?: Prisma.ContentProjectUpdateManyWithoutOwnerNestedInput
+  themes?: Prisma.ThemeUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -301,6 +307,7 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   brands?: Prisma.BrandUncheckedUpdateManyWithoutOwnerNestedInput
   projects?: Prisma.ContentProjectUncheckedUpdateManyWithoutOwnerNestedInput
+  themes?: Prisma.ThemeUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -408,6 +415,20 @@ export type UserUpdateOneRequiredWithoutProjectsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutProjectsInput, Prisma.UserUpdateWithoutProjectsInput>, Prisma.UserUncheckedUpdateWithoutProjectsInput>
 }
 
+export type UserCreateNestedOneWithoutThemesInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutThemesInput, Prisma.UserUncheckedCreateWithoutThemesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutThemesInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutThemesNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutThemesInput, Prisma.UserUncheckedCreateWithoutThemesInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutThemesInput
+  upsert?: Prisma.UserUpsertWithoutThemesInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutThemesInput, Prisma.UserUpdateWithoutThemesInput>, Prisma.UserUncheckedUpdateWithoutThemesInput>
+}
+
 export type UserCreateWithoutBrandsInput = {
   id?: string
   clerkUserId: string
@@ -417,6 +438,7 @@ export type UserCreateWithoutBrandsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   projects?: Prisma.ContentProjectCreateNestedManyWithoutOwnerInput
+  themes?: Prisma.ThemeCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateWithoutBrandsInput = {
@@ -428,6 +450,7 @@ export type UserUncheckedCreateWithoutBrandsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   projects?: Prisma.ContentProjectUncheckedCreateNestedManyWithoutOwnerInput
+  themes?: Prisma.ThemeUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserCreateOrConnectWithoutBrandsInput = {
@@ -455,6 +478,7 @@ export type UserUpdateWithoutBrandsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   projects?: Prisma.ContentProjectUpdateManyWithoutOwnerNestedInput
+  themes?: Prisma.ThemeUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutBrandsInput = {
@@ -466,6 +490,7 @@ export type UserUncheckedUpdateWithoutBrandsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   projects?: Prisma.ContentProjectUncheckedUpdateManyWithoutOwnerNestedInput
+  themes?: Prisma.ThemeUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserCreateWithoutProjectsInput = {
@@ -477,6 +502,7 @@ export type UserCreateWithoutProjectsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   brands?: Prisma.BrandCreateNestedManyWithoutOwnerInput
+  themes?: Prisma.ThemeCreateNestedManyWithoutOwnerInput
 }
 
 export type UserUncheckedCreateWithoutProjectsInput = {
@@ -488,6 +514,7 @@ export type UserUncheckedCreateWithoutProjectsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   brands?: Prisma.BrandUncheckedCreateNestedManyWithoutOwnerInput
+  themes?: Prisma.ThemeUncheckedCreateNestedManyWithoutOwnerInput
 }
 
 export type UserCreateOrConnectWithoutProjectsInput = {
@@ -515,6 +542,7 @@ export type UserUpdateWithoutProjectsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   brands?: Prisma.BrandUpdateManyWithoutOwnerNestedInput
+  themes?: Prisma.ThemeUpdateManyWithoutOwnerNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProjectsInput = {
@@ -526,6 +554,71 @@ export type UserUncheckedUpdateWithoutProjectsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   brands?: Prisma.BrandUncheckedUpdateManyWithoutOwnerNestedInput
+  themes?: Prisma.ThemeUncheckedUpdateManyWithoutOwnerNestedInput
+}
+
+export type UserCreateWithoutThemesInput = {
+  id?: string
+  clerkUserId: string
+  email?: string | null
+  name?: string | null
+  imageUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  brands?: Prisma.BrandCreateNestedManyWithoutOwnerInput
+  projects?: Prisma.ContentProjectCreateNestedManyWithoutOwnerInput
+}
+
+export type UserUncheckedCreateWithoutThemesInput = {
+  id?: string
+  clerkUserId: string
+  email?: string | null
+  name?: string | null
+  imageUrl?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  brands?: Prisma.BrandUncheckedCreateNestedManyWithoutOwnerInput
+  projects?: Prisma.ContentProjectUncheckedCreateNestedManyWithoutOwnerInput
+}
+
+export type UserCreateOrConnectWithoutThemesInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutThemesInput, Prisma.UserUncheckedCreateWithoutThemesInput>
+}
+
+export type UserUpsertWithoutThemesInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutThemesInput, Prisma.UserUncheckedUpdateWithoutThemesInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutThemesInput, Prisma.UserUncheckedCreateWithoutThemesInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutThemesInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutThemesInput, Prisma.UserUncheckedUpdateWithoutThemesInput>
+}
+
+export type UserUpdateWithoutThemesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clerkUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  brands?: Prisma.BrandUpdateManyWithoutOwnerNestedInput
+  projects?: Prisma.ContentProjectUpdateManyWithoutOwnerNestedInput
+}
+
+export type UserUncheckedUpdateWithoutThemesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  clerkUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  imageUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  brands?: Prisma.BrandUncheckedUpdateManyWithoutOwnerNestedInput
+  projects?: Prisma.ContentProjectUncheckedUpdateManyWithoutOwnerNestedInput
 }
 
 
@@ -536,11 +629,13 @@ export type UserUncheckedUpdateWithoutProjectsInput = {
 export type UserCountOutputType = {
   brands: number
   projects: number
+  themes: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   brands?: boolean | UserCountOutputTypeCountBrandsArgs
   projects?: boolean | UserCountOutputTypeCountProjectsArgs
+  themes?: boolean | UserCountOutputTypeCountThemesArgs
 }
 
 /**
@@ -567,6 +662,13 @@ export type UserCountOutputTypeCountProjectsArgs<ExtArgs extends runtime.Types.E
   where?: Prisma.ContentProjectWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountThemesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ThemeWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -578,6 +680,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   brands?: boolean | Prisma.User$brandsArgs<ExtArgs>
   projects?: boolean | Prisma.User$projectsArgs<ExtArgs>
+  themes?: boolean | Prisma.User$themesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -615,6 +718,7 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   brands?: boolean | Prisma.User$brandsArgs<ExtArgs>
   projects?: boolean | Prisma.User$projectsArgs<ExtArgs>
+  themes?: boolean | Prisma.User$themesArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -625,6 +729,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     brands: Prisma.$BrandPayload<ExtArgs>[]
     projects: Prisma.$ContentProjectPayload<ExtArgs>[]
+    themes: Prisma.$ThemePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1030,6 +1135,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   brands<T extends Prisma.User$brandsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$brandsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   projects<T extends Prisma.User$projectsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  themes<T extends Prisma.User$themesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$themesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ThemePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1504,6 +1610,30 @@ export type User$projectsArgs<ExtArgs extends runtime.Types.Extensions.InternalA
   take?: number
   skip?: number
   distinct?: Prisma.ContentProjectScalarFieldEnum | Prisma.ContentProjectScalarFieldEnum[]
+}
+
+/**
+ * User.themes
+ */
+export type User$themesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Theme
+   */
+  select?: Prisma.ThemeSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Theme
+   */
+  omit?: Prisma.ThemeOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ThemeInclude<ExtArgs> | null
+  where?: Prisma.ThemeWhereInput
+  orderBy?: Prisma.ThemeOrderByWithRelationInput | Prisma.ThemeOrderByWithRelationInput[]
+  cursor?: Prisma.ThemeWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ThemeScalarFieldEnum | Prisma.ThemeScalarFieldEnum[]
 }
 
 /**

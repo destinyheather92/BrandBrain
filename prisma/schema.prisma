@@ -17,6 +17,7 @@ model User {
   updatedAt   DateTime         @updatedAt @map("updated_at")
   brands      Brand[]
   projects    ContentProject[]
+  themes      Theme[]
 
   @@map("users")
 }
@@ -34,6 +35,7 @@ model Brand {
   owner    User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
   memory   BrandMemory?
   projects ContentProject[]
+  themes   Theme[]
 
   @@unique([ownerUserId, name])
   @@index([ownerUserId])
@@ -68,10 +70,33 @@ model ContentProject {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  owner User  @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
-  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  owner User   @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  brand Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  theme Theme?
 
   @@index([brandId])
   @@index([ownerUserId, updatedAt])
   @@map("content_projects")
+}
+
+model Theme {
+  id          String   @id @default(cuid())
+  ownerUserId String   @map("owner_user_id")
+  brandId     String   @map("brand_id")
+  projectId   String   @unique @map("project_id")
+  name        String
+  palette     Json
+  typography  Json
+  layout      Json
+  imageStyle  String   @map("image_style")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner   User           @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  brand   Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  project ContentProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([brandId])
+  @@index([ownerUserId, updatedAt])
+  @@map("themes")
 }

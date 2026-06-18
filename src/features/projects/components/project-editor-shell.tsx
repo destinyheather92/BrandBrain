@@ -15,6 +15,14 @@ import { type ReactNode, useMemo, useState, useActionState } from "react";
 
 import { getCanvasElementsInPaintOrder } from "@/features/canvas/services/canvas-object-model.service";
 import type { CanvasDocument, CanvasElement, CanvasSlide } from "@/features/canvas/types/canvas";
+import { ThemeEnginePanel } from "@/features/themes/components/theme-engine-panel";
+import { applyProjectThemeToCanvas } from "@/features/themes/services/theme-engine.service";
+import { initialProjectThemeActionState } from "@/features/themes/types/project-theme-action-state";
+import type { ProjectTheme } from "@/features/themes/types/project-theme";
+import type {
+  ProjectThemeAction,
+  ProjectThemeActionState
+} from "@/features/themes/types/project-theme-action-state";
 
 import {
   addCanvasElementToSlide,
@@ -31,22 +39,31 @@ import type { ProjectEditorSaveState } from "../types/project-editor-form-state"
 type ProjectEditorShellProps = {
   accountControl?: ReactNode;
   initialState: ProjectEditorSaveState;
+  initialTheme?: ProjectTheme | null;
+  initialThemeState?: ProjectThemeActionState;
   project: ContentProject;
   saveAction: (state: ProjectEditorSaveState, formData: FormData) => Promise<ProjectEditorSaveState>;
+  themeAction?: ProjectThemeAction;
 };
 
 type EditableField = keyof Extract<CanvasElement, { type: "text" }> | keyof Extract<CanvasElement, { type: "cta" }>;
 
 const canvasPreviewSize = 560;
 
+const fallbackThemeAction: ProjectThemeAction = async () => initialProjectThemeActionState;
+
 export function ProjectEditorShell({
   accountControl,
   initialState,
+  initialTheme = null,
+  initialThemeState = initialProjectThemeActionState,
   project,
-  saveAction
+  saveAction,
+  themeAction = fallbackThemeAction
 }: ProjectEditorShellProps) {
   const [state, formAction, pending] = useActionState(saveAction, initialState);
   const [document, setDocument] = useState<CanvasDocument>(() => normalizeEditorCanvas(project.canvasJson));
+  const [activeTheme, setActiveTheme] = useState<ProjectTheme | null>(initialTheme);
   const sortedSlides = useMemo(
     () => [...document.slides].sort((first, second) => first.order - second.order),
     [document.slides]
@@ -115,6 +132,12 @@ export function ProjectEditorShell({
           : slide
       )
     });
+  }
+
+  function applyThemeToDocument(theme: ProjectTheme) {
+    setActiveTheme(theme);
+    setDocument(applyProjectThemeToCanvas(document, theme));
+    setSelectedElementId(null);
   }
 
   return (
@@ -242,32 +265,43 @@ export function ProjectEditorShell({
           </div>
         </section>
 
-        <aside className="border-t border-[#263244] bg-[#141A26] p-4 lg:border-l lg:border-t-0">
-          <div className="flex items-center gap-2 text-sm font-semibold text-[#CBD5E1]">
-            <MousePointer2 aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
-            Properties
-          </div>
+        <aside className="grid content-start gap-4 border-t border-[#263244] bg-[#141A26] p-4 lg:border-l lg:border-t-0">
+          <ThemeEnginePanel
+            initialState={initialThemeState}
+            initialTheme={activeTheme}
+            onApplyTheme={applyThemeToDocument}
+            onThemeGenerated={setActiveTheme}
+            projectId={project.id}
+            themeAction={themeAction}
+          />
 
-          {selectedElement ? (
-            <div className="mt-4 grid gap-4">
-              <ElementProperties
-                element={selectedElement}
-                onDelete={deleteSelectedElement}
-                onUpdate={updateSelectedElement}
-              />
+          <div>
+            <div className="flex items-center gap-2 text-sm font-semibold text-[#CBD5E1]">
+              <MousePointer2 aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
+              Properties
             </div>
-          ) : activeSlide ? (
-            <div className="mt-4 grid gap-4">
-              <SlideProperties
-                backgroundColor={activeSlide.background.color}
-                onChangeBackground={updateActiveSlideBackground}
-              />
-            </div>
-          ) : (
-            <div className="mt-4 rounded-lg border border-[#263244] bg-[#0B0F19] p-4 text-sm text-[#94A3B8]">
-              No object selected
-            </div>
-          )}
+
+            {selectedElement ? (
+              <div className="mt-4 grid gap-4">
+                <ElementProperties
+                  element={selectedElement}
+                  onDelete={deleteSelectedElement}
+                  onUpdate={updateSelectedElement}
+                />
+              </div>
+            ) : activeSlide ? (
+              <div className="mt-4 grid gap-4">
+                <SlideProperties
+                  backgroundColor={activeSlide.background.color}
+                  onChangeBackground={updateActiveSlideBackground}
+                />
+              </div>
+            ) : (
+              <div className="mt-4 rounded-lg border border-[#263244] bg-[#0B0F19] p-4 text-sm text-[#94A3B8]">
+                No object selected
+              </div>
+            )}
+          </div>
         </aside>
       </section>
     </main>

@@ -54,7 +54,8 @@ export const ModelName = {
   User: 'User',
   Brand: 'Brand',
   BrandMemory: 'BrandMemory',
-  ContentProject: 'ContentProject'
+  ContentProject: 'ContentProject',
+  Theme: 'Theme'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -129,6 +130,23 @@ export const ContentProjectScalarFieldEnum = {
 } as const
 
 export type ContentProjectScalarFieldEnum = (typeof ContentProjectScalarFieldEnum)[keyof typeof ContentProjectScalarFieldEnum]
+
+
+export const ThemeScalarFieldEnum = {
+  id: 'id',
+  ownerUserId: 'ownerUserId',
+  brandId: 'brandId',
+  projectId: 'projectId',
+  name: 'name',
+  palette: 'palette',
+  typography: 'typography',
+  layout: 'layout',
+  imageStyle: 'imageStyle',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ThemeScalarFieldEnum = (typeof ThemeScalarFieldEnum)[keyof typeof ThemeScalarFieldEnum]
 
 
 export const SortOrder = {
