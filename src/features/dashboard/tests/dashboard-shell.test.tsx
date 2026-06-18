@@ -10,6 +10,8 @@ describe("DashboardShell", () => {
         accountControl={<button aria-label="Account menu">JS</button>}
         displayName="John"
         email="john@example.com"
+        syncDetail="Synced from Clerk"
+        syncStatus="active"
       />
     );
 
@@ -17,6 +19,8 @@ describe("DashboardShell", () => {
     expect(screen.getByText("Here's what's happening with your brands and content.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Account menu" })).toBeInTheDocument();
     expect(screen.getByText("john@example.com")).toBeInTheDocument();
+    expect(screen.getByText("Local sync active")).toBeInTheDocument();
+    expect(screen.getByText("Synced from Clerk")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("button", { name: "Import Brand" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create Carousel" })).toBeInTheDocument();
@@ -29,6 +33,7 @@ describe("DashboardShell", () => {
         accountControl={<button aria-label="Account menu">JS</button>}
         displayName="Avery"
         email="avery@example.com"
+        syncStatus="needs-database"
       />
     );
 

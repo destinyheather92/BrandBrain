@@ -22,6 +22,8 @@ type DashboardShellProps = {
   accountControl: ReactNode;
   displayName: string;
   email?: string;
+  syncDetail?: string;
+  syncStatus?: "active" | "needs-database" | "failed";
 };
 
 const navItems = [
@@ -59,7 +61,30 @@ const emptyPanels = [
   }
 ] as const;
 
-export function DashboardShell({ accountControl, displayName, email }: DashboardShellProps) {
+const syncStatusCopy = {
+  active: {
+    className: "border-[#22C55E] text-[#22C55E]",
+    label: "Local sync active"
+  },
+  failed: {
+    className: "border-[#EF4444] text-[#EF4444]",
+    label: "Local sync failed"
+  },
+  "needs-database": {
+    className: "border-[#F59E0B] text-[#F59E0B]",
+    label: "Local sync needs database"
+  }
+} as const;
+
+export function DashboardShell({
+  accountControl,
+  displayName,
+  email,
+  syncDetail,
+  syncStatus = "needs-database"
+}: DashboardShellProps) {
+  const syncCopy = syncStatusCopy[syncStatus];
+
   return (
     <main className="min-h-screen bg-[#0B0F19] text-[#F8FAFC]">
       <div className="grid min-h-screen grid-cols-1 lg:grid-cols-[17rem_1fr]">
@@ -117,6 +142,12 @@ export function DashboardShell({ accountControl, displayName, email }: Dashboard
                 Here&apos;s what&apos;s happening with your brands and content.
               </p>
               {email ? <p className="mt-1 text-sm text-[#94A3B8]">{email}</p> : null}
+              <div className="mt-4 flex flex-wrap items-center gap-3">
+                <span className={`rounded-full border px-3 py-1 text-sm ${syncCopy.className}`}>
+                  {syncCopy.label}
+                </span>
+                {syncDetail ? <span className="text-sm text-[#94A3B8]">{syncDetail}</span> : null}
+              </div>
             </div>
 
             <div className="flex items-center gap-3">
