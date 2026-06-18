@@ -119,4 +119,63 @@ describe("createBrandForUser", () => {
       status: "failed"
     });
   });
+
+  it("returns a field-level error when the brand name already exists for the user", async () => {
+    const repository: BrandRepository = {
+      create: vi.fn().mockRejectedValue({ code: "P2002" }),
+      listByOwnerUserId: vi.fn()
+    };
+
+    const result = await createBrandForUser({
+      input: {
+        description: null,
+        industry: null,
+        name: "ABC Roofing",
+        websiteUrl: null
+      },
+      ownerUserId: "user_local_123",
+      repository
+    });
+
+    expect(result).toEqual({
+      error: {
+        code: "duplicate_brand_name",
+        fieldErrors: {
+          name: ["You already have a brand with this name."]
+        },
+        message: "A brand with this name already exists."
+      },
+      ok: false,
+      status: "failed"
+    });
+  });
+
+  it("returns a restart hint when the generated Prisma brand delegate is unavailable", async () => {
+    const repository: BrandRepository = {
+      create: vi
+        .fn()
+        .mockRejectedValue(new TypeError("Cannot read properties of undefined (reading 'create')")),
+      listByOwnerUserId: vi.fn()
+    };
+
+    const result = await createBrandForUser({
+      input: {
+        description: null,
+        industry: null,
+        name: "ABC Roofing",
+        websiteUrl: null
+      },
+      ownerUserId: "user_local_123",
+      repository
+    });
+
+    expect(result).toEqual({
+      error: {
+        code: "repository_unavailable",
+        message: "Brand storage is not loaded. Restart the local server and try again."
+      },
+      ok: false,
+      status: "failed"
+    });
+  });
 });

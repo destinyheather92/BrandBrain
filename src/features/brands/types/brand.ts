@@ -18,7 +18,11 @@ export type BrandCreateResult =
     }
   | {
       error: {
-        code: "invalid_brand_input" | "repository_error";
+        code:
+          | "duplicate_brand_name"
+          | "invalid_brand_input"
+          | "repository_error"
+          | "repository_unavailable";
         fieldErrors?: Partial<Record<keyof BrandCreateInput, string[]>>;
         message: string;
       };

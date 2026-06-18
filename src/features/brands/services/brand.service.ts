@@ -7,6 +7,58 @@ type CreateBrandForUserParams = {
   repository: BrandRepository;
 };
 
+function isPrismaErrorCode(error: unknown, code: string): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === code
+  );
+}
+
+function isMissingPrismaDelegateError(error: unknown): boolean {
+  return (
+    error instanceof TypeError &&
+    error.message.includes("Cannot read properties of undefined")
+  );
+}
+
+function mapRepositoryError(error: unknown): BrandCreateResult {
+  if (isPrismaErrorCode(error, "P2002")) {
+    return {
+      error: {
+        code: "duplicate_brand_name",
+        fieldErrors: {
+          name: ["You already have a brand with this name."]
+        },
+        message: "A brand with this name already exists."
+      },
+      ok: false,
+      status: "failed"
+    };
+  }
+
+  if (isMissingPrismaDelegateError(error)) {
+    return {
+      error: {
+        code: "repository_unavailable",
+        message: "Brand storage is not loaded. Restart the local server and try again."
+      },
+      ok: false,
+      status: "failed"
+    };
+  }
+
+  return {
+    error: {
+      code: "repository_error",
+      message: "Brand creation failed."
+    },
+    ok: false,
+    status: "failed"
+  };
+}
+
 export async function createBrandForUser({
   input,
   ownerUserId,
@@ -39,14 +91,7 @@ export async function createBrandForUser({
       ok: true,
       status: "created"
     };
-  } catch {
-    return {
-      error: {
-        code: "repository_error",
-        message: "Brand creation failed."
-      },
-      ok: false,
-      status: "failed"
-    };
+  } catch (error) {
+    return mapRepositoryError(error);
   }
 }
