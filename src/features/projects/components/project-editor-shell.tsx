@@ -327,7 +327,7 @@ function CanvasElementButton({
     width: `${(element.width / slide.width) * 100}%`,
     zIndex: element.zIndex
   };
-  const activeClass = active ? "outline outline-2 outline-offset-2 outline-[#00E5FF]" : "outline-none";
+  const activeClass = active ? "outline outline-1 outline-offset-2 outline-dashed outline-[#CBD5E1]" : "outline-none";
 
   if (element.type === "shape") {
     return (

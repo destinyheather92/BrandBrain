@@ -68,6 +68,10 @@ describe("project editor canvas operations", () => {
     const withCta = addCanvasElementToSlide(withShape, "slide_1", createCanvasCtaElement("cta_1"));
 
     expect(withCta.slides[0]?.elements.map((element) => element.type)).toEqual(["text", "shape", "cta"]);
+    expect(withCta.slides[0]?.elements[1]).toMatchObject({
+      stroke: null,
+      strokeWidth: 0
+    });
     expect(canvasJson.slides[0]?.elements).toEqual([]);
   });
 
