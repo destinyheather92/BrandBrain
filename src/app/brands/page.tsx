@@ -8,6 +8,7 @@ import { syncCurrentClerkUserToLocalUser } from "@/features/users/services/curre
 type BrandsPageProps = {
   searchParams: Promise<{
     created?: string;
+    imported?: string;
   }>;
 };
 
@@ -35,7 +36,13 @@ export default async function BrandsPage({ searchParams }: BrandsPageProps) {
   return (
     <BrandsListShell
       brands={brands}
-      message={params.created ? "Brand created successfully." : undefined}
+      message={
+        params.imported
+          ? "Brand imported successfully."
+          : params.created
+            ? "Brand created successfully."
+            : undefined
+      }
     />
   );
 }

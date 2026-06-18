@@ -22,7 +22,7 @@ describe("DashboardShell", () => {
     expect(screen.getByText("Local sync active")).toBeInTheDocument();
     expect(screen.getByText("Synced from Clerk")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/dashboard");
-    expect(screen.getByRole("button", { name: "Import Brand" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Import Brand" })).toHaveAttribute("href", "/brands/import");
     expect(screen.getByRole("button", { name: "Create Carousel" })).toBeInTheDocument();
     expect(screen.queryByText(/chatbot/i)).not.toBeInTheDocument();
   });

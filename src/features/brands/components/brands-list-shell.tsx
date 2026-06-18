@@ -1,4 +1,4 @@
-import { Plus } from "lucide-react";
+import { Plus, Upload } from "lucide-react";
 import Link from "next/link";
 
 import type { Brand } from "../types/brand";
@@ -22,13 +22,22 @@ export function BrandsListShell({ brands, message }: BrandsListShellProps) {
               Every content workflow starts with a brand.
             </p>
           </div>
-          <Link
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#00E5FF] px-4 py-2 text-sm font-semibold text-[#0B0F19] hover:bg-[#4CF2FF]"
-            href="/brands/new"
-          >
-            <Plus aria-hidden="true" className="h-4 w-4" />
-            Create Brand
-          </Link>
+          <div className="flex flex-wrap gap-3">
+            <Link
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#263244] px-4 py-2 text-sm font-semibold text-[#F8FAFC] hover:border-[#00E5FF]"
+              href="/brands/import"
+            >
+              <Upload aria-hidden="true" className="h-4 w-4" />
+              Import Website
+            </Link>
+            <Link
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#00E5FF] px-4 py-2 text-sm font-semibold text-[#0B0F19] hover:bg-[#4CF2FF]"
+              href="/brands/new"
+            >
+              <Plus aria-hidden="true" className="h-4 w-4" />
+              Create Brand
+            </Link>
+          </div>
         </div>
 
         {message ? (
@@ -56,7 +65,7 @@ export function BrandsListShell({ brands, message }: BrandsListShellProps) {
           <section className="mt-6 rounded-lg border border-[#263244] bg-[#141A26] p-8">
             <h2 className="text-2xl font-semibold text-[#F8FAFC]">No brands yet</h2>
             <p className="mt-3 max-w-xl text-base leading-7 text-[#CBD5E1]">
-              Create your first brand so BrandBrain has a persistent identity to remember.
+              Create your first brand or import one from a public website so BrandBrain has a persistent identity to remember.
             </p>
           </section>
         )}
