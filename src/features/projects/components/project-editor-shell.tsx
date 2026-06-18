@@ -95,6 +95,27 @@ export function ProjectEditorShell({
     setSelectedElementId(null);
   }
 
+  function updateActiveSlideBackground(color: string) {
+    if (!activeSlide) {
+      return;
+    }
+
+    setDocument({
+      ...document,
+      slides: document.slides.map((slide) =>
+        slide.id === activeSlide.id
+          ? {
+              ...slide,
+              background: {
+                ...slide.background,
+                color
+              }
+            }
+          : slide
+      )
+    });
+  }
+
   return (
     <main className="min-h-screen bg-[#0B0F19] text-[#F8FAFC]">
       <header className="flex min-h-16 items-center justify-between border-b border-[#263244] bg-[#0B0F19] px-4">
@@ -167,7 +188,12 @@ export function ProjectEditorShell({
                 type="button"
               >
                 <div className="aspect-square rounded-md border border-[#263244] bg-[#141A26] p-2">
-                  <div className="h-full rounded bg-[#0B0F19]" />
+                  <div
+                    className="h-full rounded border border-[#263244]"
+                    style={{
+                      backgroundColor: slide.background.color
+                    }}
+                  />
                 </div>
                 <p className="mt-2 text-sm font-medium text-[#F8FAFC]">{slide.name}</p>
                 <p className="text-xs text-[#94A3B8]">{slide.elements.length} objects</p>
@@ -227,6 +253,13 @@ export function ProjectEditorShell({
                 element={selectedElement}
                 onDelete={deleteSelectedElement}
                 onUpdate={updateSelectedElement}
+              />
+            </div>
+          ) : activeSlide ? (
+            <div className="mt-4 grid gap-4">
+              <SlideProperties
+                backgroundColor={activeSlide.background.color}
+                onChangeBackground={updateActiveSlideBackground}
               />
             </div>
           ) : (
@@ -366,6 +399,24 @@ function CanvasElementButton({
   );
 }
 
+function SlideProperties({
+  backgroundColor,
+  onChangeBackground
+}: {
+  backgroundColor: string;
+  onChangeBackground: (color: string) => void;
+}) {
+  return (
+    <>
+      <div className="rounded-lg border border-[#263244] bg-[#0B0F19] p-4">
+        <p className="text-sm font-semibold text-[#F8FAFC]">Slide</p>
+        <p className="mt-1 text-xs text-[#94A3B8]">Canvas background</p>
+      </div>
+      <ColorField label="Canvas Background" value={backgroundColor} onChange={onChangeBackground} />
+    </>
+  );
+}
+
 function ElementProperties({
   element,
   onDelete,
@@ -490,12 +541,21 @@ function ColorField({
   return (
     <label className="block">
       <span className="text-sm font-medium text-[#F8FAFC]">{label}</span>
-      <input
-        className="mt-2 min-h-10 w-full rounded-lg border border-[#263244] bg-[#0B0F19] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
-        onChange={(event) => onChange(event.target.value)}
-        type="text"
-        value={value}
-      />
+      <div className="mt-2 flex min-h-10 items-center gap-2 rounded-lg border border-[#263244] bg-[#0B0F19] p-2 focus-within:border-[#00E5FF]">
+        <input
+          aria-label={`${label} swatch`}
+          className="h-7 w-9 shrink-0 cursor-pointer rounded border border-[#263244] bg-transparent"
+          onChange={(event) => onChange(event.target.value)}
+          type="color"
+          value={value}
+        />
+        <input
+          className="min-w-0 flex-1 bg-transparent text-sm text-[#F8FAFC] outline-none"
+          onChange={(event) => onChange(event.target.value)}
+          type="text"
+          value={value}
+        />
+      </div>
     </label>
   );
 }

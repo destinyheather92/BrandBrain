@@ -30,6 +30,10 @@ describe("canvas object model", () => {
     expect(document.slides).toHaveLength(3);
     expect(document.slides.map((slide) => slide.order)).toEqual([1, 2, 3]);
     expect(document.slides[0]).toMatchObject({
+      background: {
+        color: "#FFFFFF",
+        type: "solid"
+      },
       elements: [],
       height: 1080,
       id: "slide_1",

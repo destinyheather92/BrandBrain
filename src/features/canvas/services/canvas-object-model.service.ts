@@ -113,7 +113,7 @@ function createBlankSlide({
 }): CanvasSlide {
   return canvasSlideSchema.parse({
     background: {
-      color: "#0B0F19",
+      color: "#FFFFFF",
       type: "solid"
     },
     elements: [],
