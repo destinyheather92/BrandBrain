@@ -155,6 +155,13 @@ export function DashboardShell({
                 <Upload aria-hidden="true" className="h-4 w-4" />
                 Import Brand
               </button>
+              <Link
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#263244] px-4 py-2 text-sm font-semibold text-[#F8FAFC] hover:border-[#00E5FF]"
+                href="/brands/new"
+              >
+                <Palette aria-hidden="true" className="h-4 w-4" />
+                Create Brand
+              </Link>
               <button className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#00E5FF] px-4 py-2 text-sm font-semibold text-[#0B0F19] hover:bg-[#4CF2FF]">
                 <Plus aria-hidden="true" className="h-4 w-4" />
                 Create Carousel
