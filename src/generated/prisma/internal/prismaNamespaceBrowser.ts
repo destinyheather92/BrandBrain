@@ -55,6 +55,7 @@ export const ModelName = {
   Brand: 'Brand',
   BrandMemory: 'BrandMemory',
   ContentProject: 'ContentProject',
+  GenerationCost: 'GenerationCost',
   Theme: 'Theme'
 } as const
 
@@ -130,6 +131,21 @@ export const ContentProjectScalarFieldEnum = {
 } as const
 
 export type ContentProjectScalarFieldEnum = (typeof ContentProjectScalarFieldEnum)[keyof typeof ContentProjectScalarFieldEnum]
+
+
+export const GenerationCostScalarFieldEnum = {
+  id: 'id',
+  ownerUserId: 'ownerUserId',
+  brandId: 'brandId',
+  projectId: 'projectId',
+  provider: 'provider',
+  workflow: 'workflow',
+  tokens: 'tokens',
+  cost: 'cost',
+  createdAt: 'createdAt'
+} as const
+
+export type GenerationCostScalarFieldEnum = (typeof GenerationCostScalarFieldEnum)[keyof typeof GenerationCostScalarFieldEnum]
 
 
 export const ThemeScalarFieldEnum = {

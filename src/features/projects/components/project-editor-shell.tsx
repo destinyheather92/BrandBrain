@@ -13,6 +13,12 @@ import {
 import Link from "next/link";
 import { type ReactNode, useMemo, useState, useActionState } from "react";
 
+import { AiGenerationPanel } from "@/features/ai/components/ai-generation-panel";
+import { initialAiGenerationActionState } from "@/features/ai/types/ai-generation-action-state";
+import type {
+  AiGenerationAction,
+  AiGenerationActionState
+} from "@/features/ai/types/ai-generation-action-state";
 import { getCanvasElementsInPaintOrder } from "@/features/canvas/services/canvas-object-model.service";
 import type { CanvasDocument, CanvasElement, CanvasSlide } from "@/features/canvas/types/canvas";
 import { ThemeEnginePanel } from "@/features/themes/components/theme-engine-panel";
@@ -38,6 +44,8 @@ import type { ProjectEditorSaveState } from "../types/project-editor-form-state"
 
 type ProjectEditorShellProps = {
   accountControl?: ReactNode;
+  aiGenerationAction?: AiGenerationAction;
+  initialAiGenerationState?: AiGenerationActionState;
   initialState: ProjectEditorSaveState;
   initialTheme?: ProjectTheme | null;
   initialThemeState?: ProjectThemeActionState;
@@ -50,10 +58,13 @@ type EditableField = keyof Extract<CanvasElement, { type: "text" }> | keyof Extr
 
 const canvasPreviewSize = 560;
 
+const fallbackAiGenerationAction: AiGenerationAction = async () => initialAiGenerationActionState;
 const fallbackThemeAction: ProjectThemeAction = async () => initialProjectThemeActionState;
 
 export function ProjectEditorShell({
   accountControl,
+  aiGenerationAction = fallbackAiGenerationAction,
+  initialAiGenerationState = initialAiGenerationActionState,
   initialState,
   initialTheme = null,
   initialThemeState = initialProjectThemeActionState,
@@ -137,6 +148,11 @@ export function ProjectEditorShell({
   function applyThemeToDocument(theme: ProjectTheme) {
     setActiveTheme(theme);
     setDocument(applyProjectThemeToCanvas(document, theme));
+    setSelectedElementId(null);
+  }
+
+  function applyGeneratedDocument(generatedDocument: CanvasDocument) {
+    setDocument(normalizeEditorCanvas(generatedDocument));
     setSelectedElementId(null);
   }
 
@@ -273,6 +289,13 @@ export function ProjectEditorShell({
             onThemeGenerated={setActiveTheme}
             projectId={project.id}
             themeAction={themeAction}
+          />
+          <AiGenerationPanel
+            generationAction={aiGenerationAction}
+            hasTheme={Boolean(activeTheme)}
+            initialState={initialAiGenerationState}
+            onGenerated={applyGeneratedDocument}
+            projectId={project.id}
           />
 
           <div>

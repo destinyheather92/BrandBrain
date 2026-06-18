@@ -2,6 +2,8 @@ import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+import { generateProjectDraftAction } from "@/features/ai/actions/generate-project-draft.action";
+import { initialAiGenerationActionState } from "@/features/ai/types/ai-generation-action-state";
 import { saveProjectCanvasAction } from "@/features/projects/actions/save-project-canvas.action";
 import { ProjectEditorShell } from "@/features/projects/components/project-editor-shell";
 import { createPrismaContentProjectRepository } from "@/features/projects/repositories/prisma-content-project.repository";
@@ -58,6 +60,8 @@ export default async function ProjectEditorPage({ params }: ProjectEditorPagePro
   return (
     <ProjectEditorShell
       accountControl={<UserButton />}
+      aiGenerationAction={generateProjectDraftAction}
+      initialAiGenerationState={initialAiGenerationActionState}
       initialState={initialProjectEditorSaveState}
       initialTheme={themeResult.ok ? themeResult.theme : null}
       initialThemeState={initialProjectThemeActionState}

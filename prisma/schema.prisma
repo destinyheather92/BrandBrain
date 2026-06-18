@@ -8,16 +8,17 @@ datasource db {
 }
 
 model User {
-  id          String           @id @default(cuid())
-  clerkUserId String           @unique @map("clerk_user_id")
-  email       String?          @unique
-  name        String?
-  imageUrl    String?          @map("image_url")
-  createdAt   DateTime         @default(now()) @map("created_at")
-  updatedAt   DateTime         @updatedAt @map("updated_at")
-  brands      Brand[]
-  projects    ContentProject[]
-  themes      Theme[]
+  id              String           @id @default(cuid())
+  clerkUserId     String           @unique @map("clerk_user_id")
+  email           String?          @unique
+  name            String?
+  imageUrl        String?          @map("image_url")
+  createdAt       DateTime         @default(now()) @map("created_at")
+  updatedAt       DateTime         @updatedAt @map("updated_at")
+  brands          Brand[]
+  generationCosts GenerationCost[]
+  projects        ContentProject[]
+  themes          Theme[]
 
   @@map("users")
 }
@@ -32,10 +33,11 @@ model Brand {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  owner    User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
-  memory   BrandMemory?
-  projects ContentProject[]
-  themes   Theme[]
+  owner           User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  generationCosts GenerationCost[]
+  memory          BrandMemory?
+  projects        ContentProject[]
+  themes          Theme[]
 
   @@unique([ownerUserId, name])
   @@index([ownerUserId])
@@ -70,13 +72,34 @@ model ContentProject {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  owner User   @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
-  brand Brand  @relation(fields: [brandId], references: [id], onDelete: Cascade)
-  theme Theme?
+  owner           User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  brand           Brand            @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  generationCosts GenerationCost[]
+  theme           Theme?
 
   @@index([brandId])
   @@index([ownerUserId, updatedAt])
   @@map("content_projects")
+}
+
+model GenerationCost {
+  id          String   @id @default(cuid())
+  ownerUserId String   @map("owner_user_id")
+  brandId     String   @map("brand_id")
+  projectId   String   @map("project_id")
+  provider    String
+  workflow    String
+  tokens      Int      @default(0)
+  cost        Float    @default(0)
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  owner   User           @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  brand   Brand          @relation(fields: [brandId], references: [id], onDelete: Cascade)
+  project ContentProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@index([ownerUserId, createdAt])
+  @@index([projectId])
+  @@map("generation_costs")
 }
 
 model Theme {
