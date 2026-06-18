@@ -320,6 +320,32 @@ describe("generateProjectDraftForUser", () => {
     expect(repositories.provider.generateJson).toHaveBeenCalledTimes(2);
   });
 
+  it("does not fail draft generation when cost recording is unavailable", async () => {
+    const repositories = createRepositories();
+    const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    repositories.generationCostRepository.create.mockRejectedValue(new Error("cost table unavailable"));
+
+    const result = await generateProjectDraftForUser({
+      ...repositories,
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      userRequest: "Generate a carousel."
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: "generated"
+    });
+    expect(repositories.projectRepository.updateCanvasForOwner).toHaveBeenCalled();
+    expect(repositories.generationCostRepository.create).toHaveBeenCalled();
+    expect(warnSpy).toHaveBeenCalledWith(
+      "AI generation cost could not be recorded.",
+      expect.any(Error)
+    );
+    warnSpy.mockRestore();
+  });
+
   it("preserves slides that already contain user edits", async () => {
     const repositories = createRepositories();
     const editedCanvas = blankCanvas();

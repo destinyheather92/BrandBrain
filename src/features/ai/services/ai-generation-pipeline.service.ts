@@ -12,6 +12,7 @@ import type {
   AiGenerationThemeContext,
   AiProviderRegistry,
   CanvasMergeResult,
+  GenerationCostCreateInput,
   GenerationCostRepository
 } from "../types/ai-generation";
 
@@ -100,7 +101,7 @@ export async function generateProjectDraftForUser({
       return failure("project_not_found", "Project could not be found.");
     }
 
-    await generationCostRepository.create({
+    await recordGenerationCost(generationCostRepository, {
       brandId: project.brandId,
       cost: generated.cost,
       ownerUserId,
@@ -119,6 +120,17 @@ export async function generateProjectDraftForUser({
     console.error("AI generation pipeline failed.", error);
 
     return failure("project_repository_error", "AI draft could not be generated.");
+  }
+}
+
+async function recordGenerationCost(
+  generationCostRepository: GenerationCostRepository,
+  input: GenerationCostCreateInput
+): Promise<void> {
+  try {
+    await generationCostRepository.create(input);
+  } catch (error) {
+    console.warn("AI generation cost could not be recorded.", error);
   }
 }
 
