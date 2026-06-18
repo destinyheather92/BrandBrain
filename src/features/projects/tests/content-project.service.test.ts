@@ -58,7 +58,9 @@ const project: ContentProject = {
 function createProjectRepository(overrides: Partial<ContentProjectRepository> = {}): ContentProjectRepository {
   return {
     create: vi.fn().mockResolvedValue(project),
+    findByIdForOwner: vi.fn().mockResolvedValue(project),
     listByOwnerUserId: vi.fn().mockResolvedValue([project]),
+    updateCanvasForOwner: vi.fn().mockResolvedValue(project),
     ...overrides
   };
 }

@@ -49,6 +49,24 @@ export class PrismaContentProjectRepository implements ContentProjectRepository 
     return parseProject(project);
   }
 
+  async findByIdForOwner(projectId: string, ownerUserId: string): Promise<ContentProject | null> {
+    const project = await this.client.contentProject.findFirst({
+      include: {
+        brand: {
+          select: {
+            name: true
+          }
+        }
+      },
+      where: {
+        id: projectId,
+        ownerUserId
+      }
+    });
+
+    return project ? parseProject(project) : null;
+  }
+
   async listByOwnerUserId(ownerUserId: string): Promise<ContentProject[]> {
     const projects = await this.client.contentProject.findMany({
       include: {
@@ -67,6 +85,28 @@ export class PrismaContentProjectRepository implements ContentProjectRepository 
     });
 
     return projects.map((project) => parseProject(project));
+  }
+
+  async updateCanvasForOwner(
+    projectId: string,
+    ownerUserId: string,
+    canvasJson: ContentProject["canvasJson"]
+  ): Promise<ContentProject | null> {
+    const result = await this.client.contentProject.updateMany({
+      data: {
+        canvasJson: canvasJson as Prisma.InputJsonValue
+      },
+      where: {
+        id: projectId,
+        ownerUserId
+      }
+    });
+
+    if (result.count === 0) {
+      return null;
+    }
+
+    return this.findByIdForOwner(projectId, ownerUserId);
   }
 }
 

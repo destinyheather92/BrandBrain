@@ -89,6 +89,10 @@ describe("ContentProjectsShell", () => {
     expect(screen.getAllByText("ABC Roofing")).toHaveLength(2);
     expect(screen.getByText("2 editable slides")).toBeInTheDocument();
     expect(screen.getByText("Canvas JSON source")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Editor" })).toHaveAttribute(
+      "href",
+      "/projects/project_123/editor"
+    );
   });
 
   it("guides users to create a brand before creating projects", () => {

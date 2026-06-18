@@ -165,6 +165,13 @@ export function ContentProjectsShell({
                       <FileJson aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
                       <span>{project.format}</span>
                     </div>
+
+                    <Link
+                      className="mt-5 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#00E5FF] px-4 py-2 text-sm font-semibold text-[#0B0F19] hover:bg-[#4CF2FF]"
+                      href={`/projects/${project.id}/editor`}
+                    >
+                      Open Editor
+                    </Link>
                   </article>
                 ))}
               </div>
