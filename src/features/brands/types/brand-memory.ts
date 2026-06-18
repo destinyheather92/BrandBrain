@@ -19,7 +19,10 @@ export type BrandMemoryResult =
     }
   | {
       error: {
-        code: "brand_memory_repository_error" | "invalid_brand_memory_input";
+        code:
+          | "brand_memory_repository_error"
+          | "brand_memory_repository_unavailable"
+          | "invalid_brand_memory_input";
         fieldErrors?: Partial<Record<keyof BrandMemoryUpdateFormInput, string[]>>;
         message: string;
       };

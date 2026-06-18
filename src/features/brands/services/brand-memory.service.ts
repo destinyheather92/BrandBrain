@@ -41,6 +41,49 @@ function repositoryError(): BrandMemoryResult {
   };
 }
 
+function repositoryUnavailableError(): BrandMemoryResult {
+  return {
+    error: {
+      code: "brand_memory_repository_unavailable",
+      message: "Brand memory storage is not loaded. Restart the local server and try again."
+    },
+    ok: false,
+    status: "failed"
+  };
+}
+
+function isUniqueConstraintError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    (error as { code?: unknown }).code === "P2002"
+  );
+}
+
+function isStalePrismaClientError(error: unknown): boolean {
+  if (!(error instanceof TypeError)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+
+  return (
+    message.includes("cannot read properties of undefined") &&
+    (message.includes("findunique") || message.includes("create") || message.includes("update"))
+  );
+}
+
+function repositoryFailure(error: unknown): BrandMemoryResult {
+  if (isStalePrismaClientError(error)) {
+    return repositoryUnavailableError();
+  }
+
+  console.error("Brand memory repository failed.", error);
+
+  return repositoryError();
+}
+
 export async function getOrCreateBrandMemoryForBrand({
   brand,
   repository
@@ -56,15 +99,27 @@ export async function getOrCreateBrandMemoryForBrand({
       };
     }
 
-    const memory = await repository.create(buildInitialMemoryInput(brand));
+    const memory = await repository.create(buildInitialMemoryInput(brand)).catch(async (error: unknown) => {
+      if (!isUniqueConstraintError(error)) {
+        throw error;
+      }
+
+      const memoryCreatedByConcurrentRequest = await repository.getByBrandId(brand.id);
+
+      if (!memoryCreatedByConcurrentRequest) {
+        throw error;
+      }
+
+      return memoryCreatedByConcurrentRequest;
+    });
 
     return {
       memory,
       ok: true,
       status: "ready"
     };
-  } catch {
-    return repositoryError();
+  } catch (error) {
+    return repositoryFailure(error);
   }
 }
 
@@ -95,7 +150,7 @@ export async function updateBrandMemoryForBrand({
       ok: true,
       status: "saved"
     };
-  } catch {
-    return repositoryError();
+  } catch (error) {
+    return repositoryFailure(error);
   }
 }

@@ -82,6 +82,47 @@ describe("getOrCreateBrandMemoryForBrand", () => {
     });
     expect(repository.create).not.toHaveBeenCalled();
   });
+
+  it("returns memory when a duplicate first-load create already inserted it", async () => {
+    const repository = createRepository({
+      create: vi.fn().mockRejectedValue({ code: "P2002" }),
+      getByBrandId: vi.fn().mockResolvedValueOnce(null).mockResolvedValueOnce(memory)
+    });
+
+    const result = await getOrCreateBrandMemoryForBrand({
+      brand,
+      repository
+    });
+
+    expect(result).toEqual({
+      memory,
+      ok: true,
+      status: "ready"
+    });
+    expect(repository.getByBrandId).toHaveBeenCalledTimes(2);
+  });
+
+  it("returns a restart hint when the generated Prisma client is stale", async () => {
+    const repository = createRepository({
+      getByBrandId: vi
+        .fn()
+        .mockRejectedValue(new TypeError("Cannot read properties of undefined (reading 'findUnique')"))
+    });
+
+    const result = await getOrCreateBrandMemoryForBrand({
+      brand,
+      repository
+    });
+
+    expect(result).toEqual({
+      error: {
+        code: "brand_memory_repository_unavailable",
+        message: "Brand memory storage is not loaded. Restart the local server and try again."
+      },
+      ok: false,
+      status: "failed"
+    });
+  });
 });
 
 describe("updateBrandMemoryForBrand", () => {
