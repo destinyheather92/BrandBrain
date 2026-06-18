@@ -6,8 +6,8 @@ import {
 } from "../services/protected-route.service";
 
 describe("protected app route service", () => {
-  it("protects dashboard and brand workspace routes", () => {
-    expect(getProtectedAppRoutes()).toEqual(["/dashboard(.*)", "/brands(.*)"]);
+  it("protects dashboard, brand workspace, and canvas routes", () => {
+    expect(getProtectedAppRoutes()).toEqual(["/dashboard(.*)", "/brands(.*)", "/canvas(.*)"]);
   });
 
   it("recognizes protected application paths", () => {
@@ -15,6 +15,8 @@ describe("protected app route service", () => {
     expect(isProtectedAppPath("/dashboard/settings")).toBe(true);
     expect(isProtectedAppPath("/brands")).toBe(true);
     expect(isProtectedAppPath("/brands/new")).toBe(true);
+    expect(isProtectedAppPath("/canvas")).toBe(true);
+    expect(isProtectedAppPath("/canvas/model")).toBe(true);
     expect(isProtectedAppPath("/sign-in")).toBe(false);
   });
 });

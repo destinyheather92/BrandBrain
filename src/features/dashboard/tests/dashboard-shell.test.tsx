@@ -23,7 +23,7 @@ describe("DashboardShell", () => {
     expect(screen.getByText("Synced from Clerk")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("href", "/dashboard");
     expect(screen.getByRole("link", { name: "Import Brand" })).toHaveAttribute("href", "/brands/import");
-    expect(screen.getByRole("button", { name: "Create Carousel" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Create Carousel" })).toHaveAttribute("href", "/canvas");
     expect(screen.queryByText(/chatbot/i)).not.toBeInTheDocument();
   });
 

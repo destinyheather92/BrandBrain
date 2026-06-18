@@ -165,10 +165,13 @@ export function DashboardShell({
                 <Palette aria-hidden="true" className="h-4 w-4" />
                 Create Brand
               </Link>
-              <button className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#00E5FF] px-4 py-2 text-sm font-semibold text-[#0B0F19] hover:bg-[#4CF2FF]">
+              <Link
+                className="inline-flex min-h-11 items-center gap-2 rounded-lg bg-[#00E5FF] px-4 py-2 text-sm font-semibold text-[#0B0F19] hover:bg-[#4CF2FF]"
+                href="/canvas"
+              >
                 <Plus aria-hidden="true" className="h-4 w-4" />
                 Create Carousel
-              </button>
+              </Link>
               <div className="hidden md:block">{accountControl}</div>
             </div>
           </header>
