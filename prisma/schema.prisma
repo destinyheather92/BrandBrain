@@ -8,14 +8,15 @@ datasource db {
 }
 
 model User {
-  id          String   @id @default(cuid())
-  clerkUserId String   @unique @map("clerk_user_id")
-  email       String?  @unique
+  id          String           @id @default(cuid())
+  clerkUserId String           @unique @map("clerk_user_id")
+  email       String?          @unique
   name        String?
-  imageUrl    String?  @map("image_url")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  imageUrl    String?          @map("image_url")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
   brands      Brand[]
+  projects    ContentProject[]
 
   @@map("users")
 }
@@ -30,8 +31,9 @@ model Brand {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  owner User @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
-  memory BrandMemory?
+  owner    User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  memory   BrandMemory?
+  projects ContentProject[]
 
   @@unique([ownerUserId, name])
   @@index([ownerUserId])
@@ -53,4 +55,23 @@ model BrandMemory {
   brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
 
   @@map("brand_memories")
+}
+
+model ContentProject {
+  id          String   @id @default(cuid())
+  ownerUserId String   @map("owner_user_id")
+  brandId     String   @map("brand_id")
+  title       String
+  format      String   @default("instagram-carousel")
+  status      String   @default("draft")
+  canvasJson  Json     @map("canvas_json")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner User  @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  brand Brand @relation(fields: [brandId], references: [id], onDelete: Cascade)
+
+  @@index([brandId])
+  @@index([ownerUserId, updatedAt])
+  @@map("content_projects")
 }

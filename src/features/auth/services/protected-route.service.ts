@@ -1,4 +1,4 @@
-const protectedAppRoutes = ["/dashboard(.*)", "/brands(.*)", "/canvas(.*)"] as const;
+const protectedAppRoutes = ["/dashboard(.*)", "/brands(.*)", "/canvas(.*)", "/projects(.*)"] as const;
 
 export function getProtectedAppRoutes(): string[] {
   return [...protectedAppRoutes];
@@ -11,6 +11,8 @@ export function isProtectedAppPath(pathname: string): boolean {
     pathname === "/brands" ||
     pathname.startsWith("/brands/") ||
     pathname === "/canvas" ||
-    pathname.startsWith("/canvas/")
+    pathname.startsWith("/canvas/") ||
+    pathname === "/projects" ||
+    pathname.startsWith("/projects/")
   );
 }

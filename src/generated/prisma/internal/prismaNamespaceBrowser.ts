@@ -53,7 +53,8 @@ export const AnyNull = runtime.AnyNull
 export const ModelName = {
   User: 'User',
   Brand: 'Brand',
-  BrandMemory: 'BrandMemory'
+  BrandMemory: 'BrandMemory',
+  ContentProject: 'ContentProject'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -115,12 +116,34 @@ export const BrandMemoryScalarFieldEnum = {
 export type BrandMemoryScalarFieldEnum = (typeof BrandMemoryScalarFieldEnum)[keyof typeof BrandMemoryScalarFieldEnum]
 
 
+export const ContentProjectScalarFieldEnum = {
+  id: 'id',
+  ownerUserId: 'ownerUserId',
+  brandId: 'brandId',
+  title: 'title',
+  format: 'format',
+  status: 'status',
+  canvasJson: 'canvasJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ContentProjectScalarFieldEnum = (typeof ContentProjectScalarFieldEnum)[keyof typeof ContentProjectScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
 
 
 export const QueryMode = {
@@ -137,4 +160,13 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 

@@ -56,3 +56,8 @@ export type Brand = Prisma.BrandModel
  * 
  */
 export type BrandMemory = Prisma.BrandMemoryModel
+/**
+ * Model ContentProject
+ * 
+ */
+export type ContentProject = Prisma.ContentProjectModel
