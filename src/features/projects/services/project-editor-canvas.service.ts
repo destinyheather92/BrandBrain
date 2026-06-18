@@ -120,6 +120,30 @@ export function removeCanvasElement(document: CanvasDocument, slideId: string, e
             elements: slide.elements.filter((element) => element.id !== elementId)
           }
         : slide
-    )
+      )
+  });
+}
+
+export function normalizeEditorCanvas(document: CanvasDocument): CanvasDocument {
+  return canvasDocumentSchema.parse({
+    ...document,
+    slides: document.slides.map((slide) => ({
+      ...slide,
+      elements: slide.elements.map((element) => {
+        if (element.type !== "shape") {
+          return element;
+        }
+
+        const hasLegacyDefaultStroke = element.stroke === "#00E5FF" && element.strokeWidth === 2;
+
+        return hasLegacyDefaultStroke
+          ? {
+              ...element,
+              stroke: null,
+              strokeWidth: 0
+            }
+          : element;
+      })
+    }))
   });
 }

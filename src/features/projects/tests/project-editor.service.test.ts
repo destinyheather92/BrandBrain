@@ -5,6 +5,7 @@ import {
   createCanvasCtaElement,
   createCanvasShapeElement,
   createCanvasTextElement,
+  normalizeEditorCanvas,
   updateCanvasElement
 } from "../services/project-editor-canvas.service";
 import {
@@ -73,6 +74,27 @@ describe("project editor canvas operations", () => {
       strokeWidth: 0
     });
     expect(canvasJson.slides[0]?.elements).toEqual([]);
+  });
+
+  it("removes the legacy default cyan stroke from existing saved shapes", () => {
+    const shape = createCanvasShapeElement("shape_legacy");
+
+    if (shape.type !== "shape") {
+      throw new Error("Expected shape element.");
+    }
+
+    const document = addCanvasElementToSlide(canvasJson, "slide_1", {
+      ...shape,
+      stroke: "#00E5FF",
+      strokeWidth: 2
+    });
+
+    const normalized = normalizeEditorCanvas(document);
+
+    expect(normalized.slides[0]?.elements[0]).toMatchObject({
+      stroke: null,
+      strokeWidth: 0
+    });
   });
 
   it("updates one element while preserving existing user edits", () => {

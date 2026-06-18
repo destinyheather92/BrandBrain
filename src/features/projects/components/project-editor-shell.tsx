@@ -21,6 +21,7 @@ import {
   createCanvasCtaElement,
   createCanvasShapeElement,
   createCanvasTextElement,
+  normalizeEditorCanvas,
   removeCanvasElement,
   updateCanvasElement
 } from "../services/project-editor-canvas.service";
@@ -45,7 +46,7 @@ export function ProjectEditorShell({
   saveAction
 }: ProjectEditorShellProps) {
   const [state, formAction, pending] = useActionState(saveAction, initialState);
-  const [document, setDocument] = useState<CanvasDocument>(project.canvasJson);
+  const [document, setDocument] = useState<CanvasDocument>(() => normalizeEditorCanvas(project.canvasJson));
   const sortedSlides = useMemo(
     () => [...document.slides].sort((first, second) => first.order - second.order),
     [document.slides]
