@@ -97,4 +97,26 @@ describe("ProjectEditorShell", () => {
 
     expect((canvasJsonInput as HTMLInputElement).value).toContain("\"type\":\"cta\"");
   });
+
+  it("renders CTA layers without a browser border or focus outline", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add CTA" }));
+
+    const ctaLayer = screen.getByRole("button", { name: "Book an inspection" });
+
+    expect(ctaLayer).toHaveClass("border-0");
+    expect(ctaLayer).toHaveClass("outline-none");
+    expect(ctaLayer).toHaveClass("focus-visible:outline-none");
+    expect(ctaLayer).toHaveStyle({
+      borderStyle: "none",
+      borderWidth: "0px"
+    });
+  });
 });

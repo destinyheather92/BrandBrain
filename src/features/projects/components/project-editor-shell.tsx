@@ -328,18 +328,26 @@ function CanvasElementButton({
     width: `${(element.width / slide.width) * 100}%`,
     zIndex: element.zIndex
   };
-  const activeClass = active ? "outline outline-1 outline-offset-2 outline-dashed outline-[#CBD5E1]" : "outline-none";
+  const canvasLayerClass = "border-0 appearance-none outline-none focus:outline-none focus-visible:outline-none";
+  const activeClass = active ? "shadow-[0_0_0_1px_rgba(203,213,225,0.18)]" : "shadow-none";
 
   if (element.type === "shape") {
     return (
       <button
         aria-label={`${element.shape} shape`}
-        className={`absolute ${activeClass}`}
+        className={`absolute ${canvasLayerClass} ${activeClass}`}
         onClick={onSelect}
         style={{
           ...baseStyle,
           backgroundColor: element.fill,
-          border: element.stroke ? `${element.strokeWidth}px solid ${element.stroke}` : undefined,
+          ...(element.stroke
+            ? {
+                border: `${element.strokeWidth}px solid ${element.stroke}`
+              }
+            : {
+                borderStyle: "none",
+                borderWidth: 0
+              }),
           borderRadius: element.borderRadius
         }}
         type="button"
@@ -350,11 +358,13 @@ function CanvasElementButton({
   if (element.type === "cta") {
     return (
       <button
-        className={`absolute flex items-center justify-center px-3 text-center font-semibold ${activeClass}`}
+        className={`absolute flex items-center justify-center px-3 text-center font-semibold ${canvasLayerClass} ${activeClass}`}
         onClick={onSelect}
         style={{
           ...baseStyle,
           backgroundColor: element.backgroundColor,
+          borderStyle: "none",
+          borderWidth: 0,
           borderRadius: element.borderRadius,
           color: element.textColor,
           fontFamily: element.fontFamily,
@@ -370,10 +380,12 @@ function CanvasElementButton({
   if (element.type === "text") {
     return (
       <button
-        className={`absolute overflow-hidden text-left ${activeClass}`}
+        className={`absolute overflow-hidden bg-transparent text-left ${canvasLayerClass} ${activeClass}`}
         onClick={onSelect}
         style={{
           ...baseStyle,
+          borderStyle: "none",
+          borderWidth: 0,
           color: element.color,
           fontFamily: element.fontFamily,
           fontSize: `${Math.max(10, element.fontSize * (canvasPreviewSize / slide.width))}px`,
