@@ -200,7 +200,11 @@ async function requestValidatedCanvas(
 }
 
 function hasUserEdits(slide: CanvasSlide): boolean {
-  return slide.elements.length > 0;
+  return slide.elements.some((element) => !isGeneratedElementId(element.id));
+}
+
+function isGeneratedElementId(elementId: string): boolean {
+  return /^(cta|icon|image|logo|shape|text)_\d+(?:_|$)/.test(elementId);
 }
 
 function toThemeContext(theme: ProjectTheme): AiGenerationThemeContext {

@@ -415,7 +415,7 @@ function CanvasElementButton({
   if (element.type === "cta") {
     return (
       <button
-        className={`absolute flex items-center justify-center px-3 text-center font-semibold ${canvasLayerClass} ${activeClass}`}
+        className={`absolute flex items-center justify-center overflow-hidden break-words px-3 text-center font-semibold leading-tight ${canvasLayerClass} ${activeClass}`}
         onClick={onSelect}
         style={{
           ...baseStyle,

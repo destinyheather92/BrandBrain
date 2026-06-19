@@ -112,6 +112,8 @@ describe("ProjectEditorShell", () => {
     const ctaLayer = screen.getByRole("button", { name: "Book an inspection" });
 
     expect(ctaLayer).toHaveClass("border-0");
+    expect(ctaLayer).toHaveClass("overflow-hidden");
+    expect(ctaLayer).toHaveClass("break-words");
     expect(ctaLayer).toHaveClass("outline-none");
     expect(ctaLayer).toHaveClass("focus-visible:outline-none");
     expect(ctaLayer).toHaveStyle({

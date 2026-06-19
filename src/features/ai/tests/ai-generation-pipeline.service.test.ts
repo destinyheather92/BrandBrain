@@ -346,6 +346,68 @@ describe("generateProjectDraftForUser", () => {
     warnSpy.mockRestore();
   });
 
+  it("replaces previous AI-generated slide objects when regenerating a draft", async () => {
+    const repositories = createRepositories();
+    const existingGeneratedCanvas = blankCanvas();
+
+    existingGeneratedCanvas.slides[0]?.elements.push({
+      color: "#14532D",
+      content: "Old generated junk",
+      fontFamily: "Geist",
+      fontSize: 64,
+      fontWeight: "bold",
+      height: 160,
+      id: "text_1_headline",
+      letterSpacing: 0,
+      lineHeight: 1.1,
+      locked: false,
+      opacity: 1,
+      rotation: 0,
+      textAlign: "left",
+      type: "text",
+      width: 720,
+      x: 96,
+      y: 180,
+      zIndex: 1
+    });
+    repositories.projectRepository.findByIdForOwner.mockResolvedValue({
+      brandId: "brand_1",
+      brandName: "Land Strong",
+      canvasJson: existingGeneratedCanvas,
+      createdAt,
+      format: "instagram-carousel",
+      id: "project_1",
+      ownerUserId: "user_1",
+      status: "draft",
+      title: "Spring Land Prep Carousel",
+      updatedAt: createdAt
+    });
+
+    await generateProjectDraftForUser({
+      ...repositories,
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      userRequest: "Generate a cleaner carousel."
+    });
+
+    expect(repositories.projectRepository.updateCanvasForOwner).toHaveBeenCalledWith(
+      "project_1",
+      "user_1",
+      expect.objectContaining({
+        slides: expect.arrayContaining([
+          expect.objectContaining({
+            elements: expect.arrayContaining([
+              expect.objectContaining({
+                content: "Prepare land before spring growth",
+                id: "text_1"
+              })
+            ])
+          })
+        ])
+      })
+    );
+  });
+
   it("preserves slides that already contain user edits", async () => {
     const repositories = createRepositories();
     const editedCanvas = blankCanvas();
