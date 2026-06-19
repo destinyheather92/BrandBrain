@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, WandSparkles } from "lucide-react";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useRef } from "react";
 
 import type { CanvasDocument } from "@/features/canvas/types/canvas";
 
@@ -23,12 +23,18 @@ export function AiGenerationPanel({
   projectId
 }: AiGenerationPanelProps) {
   const [state, formAction, pending] = useActionState(generationAction, initialState);
+  const lastAppliedCanvasRef = useRef<CanvasDocument | null>(null);
 
   useEffect(() => {
     if (!state.canvasJson) {
       return;
     }
 
+    if (lastAppliedCanvasRef.current === state.canvasJson) {
+      return;
+    }
+
+    lastAppliedCanvasRef.current = state.canvasJson;
     onGenerated(state.canvasJson);
   }, [onGenerated, state.canvasJson]);
 
