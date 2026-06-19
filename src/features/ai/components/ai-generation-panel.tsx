@@ -51,12 +51,13 @@ export function AiGenerationPanel({
           Generation request
         </label>
         <textarea
+          aria-disabled={!hasTheme || pending}
           className="min-h-24 resize-y rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
           defaultValue="Create a 3-slide brand-consistent carousel for this project."
-          disabled={!hasTheme || pending}
           id="ai-generation-request"
           maxLength={1000}
           name="userRequest"
+          readOnly={!hasTheme || pending}
         />
 
         {!hasTheme ? (

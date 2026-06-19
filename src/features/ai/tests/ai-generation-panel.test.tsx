@@ -36,4 +36,26 @@ describe("AiGenerationPanel", () => {
     expect(screen.getByRole("button", { name: "Generate Draft Slides" })).toBeDisabled();
     expect(screen.getByText("Generate and apply a theme before creating AI slides.")).toBeInTheDocument();
   });
+
+  it("keeps the generation request in form data while generation is blocked", () => {
+    render(
+      <AiGenerationPanel
+        generationAction={vi.fn()}
+        hasTheme={false}
+        initialState={initialAiGenerationActionState}
+        onGenerated={vi.fn()}
+        projectId="project_1"
+      />
+    );
+
+    const requestField = screen.getByLabelText("Generation request");
+    const form = requestField.closest("form");
+
+    expect(requestField).not.toBeDisabled();
+    expect(requestField).toHaveAttribute("readonly");
+    expect(form).not.toBeNull();
+    expect(new FormData(form as HTMLFormElement).get("userRequest")).toBe(
+      "Create a 3-slide brand-consistent carousel for this project."
+    );
+  });
 });
