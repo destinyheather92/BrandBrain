@@ -49,6 +49,7 @@ const formatDimensions: Record<CanvasDocumentFormat, { height: number; width: nu
     width: 1080
   }
 };
+const canvasCtaLabelMaxLength = 200;
 
 export class LocalCanvasGenerationProvider implements AiCanvasGenerationProvider {
   readonly id = "openai";
@@ -90,7 +91,11 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
   const slideCount = Math.min(10, Math.max(3, payload.outputRules?.slideCount ?? 3));
   const title = payload.projectTitle?.trim() || "Generated BrandBrain Carousel";
   const brandName = payload.brand?.name?.trim() || "Brand";
-  const cta = payload.brand?.memory?.preferredCtas?.split(/\r?\n|,/)[0]?.trim() || "Learn more";
+  const cta = fitCanvasText(
+    payload.brand?.memory?.preferredCtas?.split(/\r?\n|,/)[0],
+    canvasCtaLabelMaxLength,
+    "Learn more"
+  );
   const topic = payload.userRequest?.trim() || title;
   const palette = {
     accent: payload.theme?.palette?.accent ?? "#00E5FF",
@@ -269,6 +274,17 @@ function buildSlide({
 
 function estimateTokens(...values: string[]): number {
   return Math.ceil(values.join(" ").length / 4);
+}
+
+function fitCanvasText(value: string | null | undefined, maxLength: number, fallback: string): string {
+  const normalized = (value ?? "").replace(/\s+/g, " ").trim();
+  const text = normalized || fallback;
+
+  if (text.length <= maxLength) {
+    return text;
+  }
+
+  return `${text.slice(0, maxLength - 3).trimEnd()}...`;
 }
 
 function slugify(value: string): string {
