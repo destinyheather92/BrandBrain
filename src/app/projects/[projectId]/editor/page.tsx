@@ -4,10 +4,17 @@ import { redirect } from "next/navigation";
 
 import { generateProjectDraftAction } from "@/features/ai/actions/generate-project-draft.action";
 import { initialAiGenerationActionState } from "@/features/ai/types/ai-generation-action-state";
-import { saveProjectCanvasAction } from "@/features/projects/actions/save-project-canvas.action";
+import {
+  autosaveProjectCanvasAction,
+  saveProjectCanvasAction
+} from "@/features/projects/actions/save-project-canvas.action";
 import { ProjectEditorShell } from "@/features/projects/components/project-editor-shell";
 import { createPrismaContentProjectRepository } from "@/features/projects/repositories/prisma-content-project.repository";
-import { getContentProjectForEditor } from "@/features/projects/services/project-editor.service";
+import { createPrismaProjectVersionRepository } from "@/features/projects/repositories/prisma-project-version.repository";
+import {
+  getContentProjectForEditor,
+  listProjectVersionsForUser
+} from "@/features/projects/services/project-editor.service";
 import { initialProjectEditorSaveState } from "@/features/projects/types/project-editor-form-state";
 import { generateProjectThemeAction } from "@/features/themes/actions/generate-project-theme.action";
 import { createPrismaProjectThemeRepository } from "@/features/themes/repositories/prisma-project-theme.repository";
@@ -56,15 +63,22 @@ export default async function ProjectEditorPage({ params }: ProjectEditorPagePro
     projectId,
     themeRepository: createPrismaProjectThemeRepository()
   });
+  const versionResult = await listProjectVersionsForUser({
+    ownerUserId: syncResult.user.id,
+    projectId,
+    projectVersionRepository: createPrismaProjectVersionRepository()
+  });
 
   return (
     <ProjectEditorShell
       accountControl={<UserButton />}
       aiGenerationAction={generateProjectDraftAction}
+      autosaveAction={autosaveProjectCanvasAction}
       initialAiGenerationState={initialAiGenerationActionState}
       initialState={initialProjectEditorSaveState}
       initialTheme={themeResult.ok ? themeResult.theme : null}
       initialThemeState={initialProjectThemeActionState}
+      initialVersions={versionResult.ok ? versionResult.versions : []}
       project={editorResult.project}
       saveAction={saveProjectCanvasAction}
       themeAction={generateProjectThemeAction}

@@ -17,6 +17,7 @@ model User {
   updatedAt       DateTime         @updatedAt @map("updated_at")
   brands          Brand[]
   generationCosts GenerationCost[]
+  projectVersions ProjectVersion[]
   projects        ContentProject[]
   themes          Theme[]
 
@@ -75,6 +76,7 @@ model ContentProject {
   owner           User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
   brand           Brand            @relation(fields: [brandId], references: [id], onDelete: Cascade)
   generationCosts GenerationCost[]
+  versions        ProjectVersion[]
   theme           Theme?
 
   @@index([brandId])
@@ -100,6 +102,24 @@ model GenerationCost {
   @@index([ownerUserId, createdAt])
   @@index([projectId])
   @@map("generation_costs")
+}
+
+model ProjectVersion {
+  id            String   @id @default(cuid())
+  ownerUserId   String   @map("owner_user_id")
+  projectId     String   @map("project_id")
+  versionNumber Int      @map("version_number")
+  source        String
+  canvasJson    Json     @map("canvas_json")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  owner   User           @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  project ContentProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, versionNumber])
+  @@index([ownerUserId, createdAt])
+  @@index([projectId, createdAt])
+  @@map("project_versions")
 }
 
 model Theme {

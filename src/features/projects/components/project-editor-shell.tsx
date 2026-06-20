@@ -4,6 +4,8 @@ import {
   ArrowLeft,
   Badge,
   BoxSelect,
+  Clock3,
+  History,
   MousePointer2,
   Save,
   Square,
@@ -11,7 +13,16 @@ import {
   Type
 } from "lucide-react";
 import Link from "next/link";
-import { type ReactNode, useMemo, useState, useActionState } from "react";
+import {
+  type ReactNode,
+  useActionState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition
+} from "react";
 
 import { AiGenerationPanel } from "@/features/ai/components/ai-generation-panel";
 import { initialAiGenerationActionState } from "@/features/ai/types/ai-generation-action-state";
@@ -40,15 +51,23 @@ import {
   updateCanvasElement
 } from "../services/project-editor-canvas.service";
 import type { ContentProject } from "../types/content-project";
-import type { ProjectEditorSaveState } from "../types/project-editor-form-state";
+import type {
+  ProjectEditorAutosaveAction,
+  ProjectEditorSaveState
+} from "../types/project-editor-form-state";
+import { initialProjectEditorSaveState } from "../types/project-editor-form-state";
+import type { ProjectVersion, ProjectVersionSource } from "../types/project-version";
 
 type ProjectEditorShellProps = {
   accountControl?: ReactNode;
   aiGenerationAction?: AiGenerationAction;
+  autosaveAction?: ProjectEditorAutosaveAction;
+  autosaveDelayMs?: number;
   initialAiGenerationState?: AiGenerationActionState;
   initialState: ProjectEditorSaveState;
   initialTheme?: ProjectTheme | null;
   initialThemeState?: ProjectThemeActionState;
+  initialVersions?: ProjectVersion[];
   project: ContentProject;
   saveAction: (state: ProjectEditorSaveState, formData: FormData) => Promise<ProjectEditorSaveState>;
   themeAction?: ProjectThemeAction;
@@ -59,22 +78,32 @@ type EditableField = keyof Extract<CanvasElement, { type: "text" }> | keyof Extr
 const canvasPreviewSize = 560;
 
 const fallbackAiGenerationAction: AiGenerationAction = async () => initialAiGenerationActionState;
+const fallbackAutosaveAction: ProjectEditorAutosaveAction = async () => initialProjectEditorSaveState;
 const fallbackThemeAction: ProjectThemeAction = async () => initialProjectThemeActionState;
 
 export function ProjectEditorShell({
   accountControl,
   aiGenerationAction = fallbackAiGenerationAction,
+  autosaveAction = fallbackAutosaveAction,
+  autosaveDelayMs = 1200,
   initialAiGenerationState = initialAiGenerationActionState,
   initialState,
   initialTheme = null,
   initialThemeState = initialProjectThemeActionState,
+  initialVersions = [],
   project,
   saveAction,
   themeAction = fallbackThemeAction
 }: ProjectEditorShellProps) {
   const [state, formAction, pending] = useActionState(saveAction, initialState);
-  const [document, setDocument] = useState<CanvasDocument>(() => normalizeEditorCanvas(project.canvasJson));
+  const initialDocument = useMemo(() => normalizeEditorCanvas(project.canvasJson), [project.canvasJson]);
+  const [document, setDocument] = useState<CanvasDocument>(initialDocument);
   const [activeTheme, setActiveTheme] = useState<ProjectTheme | null>(initialTheme);
+  const [autosaveState, setAutosaveState] = useState<ProjectEditorSaveState>(initialProjectEditorSaveState);
+  const [versionHistory, setVersionHistory] = useState<ProjectVersion[]>(initialVersions);
+  const [, startAutosaveTransition] = useTransition();
+  const documentJson = useMemo(() => JSON.stringify(document), [document]);
+  const lastAutosavedJsonRef = useRef(JSON.stringify(initialDocument));
   const sortedSlides = useMemo(
     () => [...document.slides].sort((first, second) => first.order - second.order),
     [document.slides]
@@ -83,6 +112,52 @@ export function ProjectEditorShell({
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const activeSlide = sortedSlides.find((slide) => slide.id === activeSlideId) ?? sortedSlides[0];
   const selectedElement = activeSlide?.elements.find((element) => element.id === selectedElementId) ?? null;
+
+  const upsertVersion = useCallback((version: ProjectVersion) => {
+    setVersionHistory((currentVersions) => [
+      version,
+      ...currentVersions.filter((currentVersion) => currentVersion.id !== version.id)
+    ].slice(0, 8));
+  }, []);
+  const displayedVersions = useMemo(
+    () =>
+      state.version
+        ? [state.version, ...versionHistory.filter((version) => version.id !== state.version?.id)].slice(0, 8)
+        : versionHistory,
+    [state.version, versionHistory]
+  );
+
+  useEffect(() => {
+    if (autosaveAction === fallbackAutosaveAction || documentJson === lastAutosavedJsonRef.current) {
+      return;
+    }
+
+    const autosaveTimer = window.setTimeout(() => {
+      const formData = new FormData();
+
+      formData.set("projectId", project.id);
+      formData.set("canvasJson", documentJson);
+      setAutosaveState({
+        message: "Autosaving...",
+        status: "pending"
+      });
+      startAutosaveTransition(() => {
+        void autosaveAction(initialProjectEditorSaveState, formData).then((result) => {
+          setAutosaveState(result);
+
+          if (result.status === "saved") {
+            lastAutosavedJsonRef.current = documentJson;
+          }
+
+          if (result.version) {
+            upsertVersion(result.version);
+          }
+        });
+      });
+    }, autosaveDelayMs);
+
+    return () => window.clearTimeout(autosaveTimer);
+  }, [autosaveAction, autosaveDelayMs, documentJson, project.id, upsertVersion]);
 
   function nextElementId(type: CanvasElement["type"]) {
     const randomId = globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 12);
@@ -179,8 +254,9 @@ export function ProjectEditorShell({
             data-testid="project-editor-canvas-json"
             name="canvasJson"
             type="hidden"
-            value={JSON.stringify(document)}
+            value={documentJson}
           />
+          <AutosaveStatus state={autosaveState} />
           {state.message ? (
             <span
               className={[
@@ -297,6 +373,7 @@ export function ProjectEditorShell({
             onGenerated={applyGeneratedDocument}
             projectId={project.id}
           />
+          <VersionHistoryPanel versions={displayedVersions} />
 
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold text-[#CBD5E1]">
@@ -329,6 +406,75 @@ export function ProjectEditorShell({
       </section>
     </main>
   );
+}
+
+function AutosaveStatus({ state }: { state: ProjectEditorSaveState }) {
+  if (state.status === "idle") {
+    return null;
+  }
+
+  return (
+    <span
+      className={[
+        "hidden rounded-full border px-3 py-1 text-sm md:inline-flex",
+        state.status === "error"
+          ? "border-[#EF4444] text-[#EF4444]"
+          : state.status === "pending"
+            ? "border-[#F59E0B] text-[#F59E0B]"
+            : "border-[#22C55E] text-[#22C55E]"
+      ].join(" ")}
+    >
+      {state.message}
+    </span>
+  );
+}
+
+function VersionHistoryPanel({ versions }: { versions: ProjectVersion[] }) {
+  return (
+    <section className="rounded-lg border border-[#263244] bg-[#0B0F19] p-4" aria-label="Version History">
+      <div className="flex items-center gap-2 text-sm font-semibold text-[#F8FAFC]">
+        <History aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
+        <h2>Version History</h2>
+      </div>
+
+      {versions.length > 0 ? (
+        <ol className="mt-4 grid gap-2">
+          {versions.map((version) => (
+            <li
+              className="rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2"
+              key={version.id}
+            >
+              <div className="flex items-center justify-between gap-3">
+                <span className="text-sm font-semibold text-[#F8FAFC]">Version {version.versionNumber}</span>
+                <span className="text-xs text-[#00E5FF]">{sourceLabel(version.source)}</span>
+              </div>
+              <div className="mt-1 flex items-center gap-1 text-xs text-[#94A3B8]">
+                <Clock3 aria-hidden="true" className="h-3 w-3" />
+                {formatVersionTime(version.createdAt)}
+              </div>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="mt-4 rounded-lg border border-[#263244] bg-[#141A26] p-3 text-sm text-[#CBD5E1]">
+          Versions appear after autosave.
+        </p>
+      )}
+    </section>
+  );
+}
+
+function sourceLabel(source: ProjectVersionSource): string {
+  return source === "autosave" ? "Autosave" : "Manual save";
+}
+
+function formatVersionTime(value: Date): string {
+  const date = value instanceof Date ? value : new Date(value);
+
+  return date.toLocaleTimeString([], {
+    hour: "numeric",
+    minute: "2-digit"
+  });
 }
 
 function SlideCanvas({

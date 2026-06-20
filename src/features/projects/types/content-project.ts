@@ -5,6 +5,7 @@ import type {
   contentProjectCreateInputSchema,
   contentProjectSchema
 } from "../schemas/content-project.schema";
+import type { ProjectVersion } from "./project-version";
 
 export type ContentProject = z.infer<typeof contentProjectSchema>;
 export type ContentProjectCreateFormInput = z.input<typeof contentProjectCreateInputSchema>;
@@ -67,6 +68,7 @@ export type ContentProjectCanvasSaveResult =
       ok: true;
       project: ContentProject;
       status: "saved";
+      version?: ProjectVersion;
     }
   | {
       error: {

@@ -213,6 +213,7 @@ export type ContentProjectWhereInput = {
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   brand?: Prisma.XOR<Prisma.BrandScalarRelationFilter, Prisma.BrandWhereInput>
   generationCosts?: Prisma.GenerationCostListRelationFilter
+  versions?: Prisma.ProjectVersionListRelationFilter
   theme?: Prisma.XOR<Prisma.ThemeNullableScalarRelationFilter, Prisma.ThemeWhereInput> | null
 }
 
@@ -229,6 +230,7 @@ export type ContentProjectOrderByWithRelationInput = {
   owner?: Prisma.UserOrderByWithRelationInput
   brand?: Prisma.BrandOrderByWithRelationInput
   generationCosts?: Prisma.GenerationCostOrderByRelationAggregateInput
+  versions?: Prisma.ProjectVersionOrderByRelationAggregateInput
   theme?: Prisma.ThemeOrderByWithRelationInput
 }
 
@@ -248,6 +250,7 @@ export type ContentProjectWhereUniqueInput = Prisma.AtLeast<{
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   brand?: Prisma.XOR<Prisma.BrandScalarRelationFilter, Prisma.BrandWhereInput>
   generationCosts?: Prisma.GenerationCostListRelationFilter
+  versions?: Prisma.ProjectVersionListRelationFilter
   theme?: Prisma.XOR<Prisma.ThemeNullableScalarRelationFilter, Prisma.ThemeWhereInput> | null
 }, "id">
 
@@ -292,6 +295,7 @@ export type ContentProjectCreateInput = {
   owner: Prisma.UserCreateNestedOneWithoutProjectsInput
   brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeCreateNestedOneWithoutProjectInput
 }
 
@@ -306,6 +310,7 @@ export type ContentProjectUncheckedCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
 }
 
@@ -320,6 +325,7 @@ export type ContentProjectUpdateInput = {
   owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUpdateOneWithoutProjectNestedInput
 }
 
@@ -334,6 +340,7 @@ export type ContentProjectUncheckedUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
 }
 
@@ -518,6 +525,20 @@ export type ContentProjectUpdateOneRequiredWithoutGenerationCostsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContentProjectUpdateToOneWithWhereWithoutGenerationCostsInput, Prisma.ContentProjectUpdateWithoutGenerationCostsInput>, Prisma.ContentProjectUncheckedUpdateWithoutGenerationCostsInput>
 }
 
+export type ContentProjectCreateNestedOneWithoutVersionsInput = {
+  create?: Prisma.XOR<Prisma.ContentProjectCreateWithoutVersionsInput, Prisma.ContentProjectUncheckedCreateWithoutVersionsInput>
+  connectOrCreate?: Prisma.ContentProjectCreateOrConnectWithoutVersionsInput
+  connect?: Prisma.ContentProjectWhereUniqueInput
+}
+
+export type ContentProjectUpdateOneRequiredWithoutVersionsNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentProjectCreateWithoutVersionsInput, Prisma.ContentProjectUncheckedCreateWithoutVersionsInput>
+  connectOrCreate?: Prisma.ContentProjectCreateOrConnectWithoutVersionsInput
+  upsert?: Prisma.ContentProjectUpsertWithoutVersionsInput
+  connect?: Prisma.ContentProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContentProjectUpdateToOneWithWhereWithoutVersionsInput, Prisma.ContentProjectUpdateWithoutVersionsInput>, Prisma.ContentProjectUncheckedUpdateWithoutVersionsInput>
+}
+
 export type ContentProjectCreateNestedOneWithoutThemeInput = {
   create?: Prisma.XOR<Prisma.ContentProjectCreateWithoutThemeInput, Prisma.ContentProjectUncheckedCreateWithoutThemeInput>
   connectOrCreate?: Prisma.ContentProjectCreateOrConnectWithoutThemeInput
@@ -542,6 +563,7 @@ export type ContentProjectCreateWithoutOwnerInput = {
   updatedAt?: Date | string
   brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeCreateNestedOneWithoutProjectInput
 }
 
@@ -555,6 +577,7 @@ export type ContentProjectUncheckedCreateWithoutOwnerInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
 }
 
@@ -609,6 +632,7 @@ export type ContentProjectCreateWithoutBrandInput = {
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutProjectsInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeCreateNestedOneWithoutProjectInput
 }
 
@@ -622,6 +646,7 @@ export type ContentProjectUncheckedCreateWithoutBrandInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
 }
 
@@ -661,6 +686,7 @@ export type ContentProjectCreateWithoutGenerationCostsInput = {
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutProjectsInput
   brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
+  versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeCreateNestedOneWithoutProjectInput
 }
 
@@ -674,6 +700,7 @@ export type ContentProjectUncheckedCreateWithoutGenerationCostsInput = {
   canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
 }
 
@@ -703,6 +730,7 @@ export type ContentProjectUpdateWithoutGenerationCostsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
+  versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUpdateOneWithoutProjectNestedInput
 }
 
@@ -716,6 +744,79 @@ export type ContentProjectUncheckedUpdateWithoutGenerationCostsInput = {
   canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
+  theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
+}
+
+export type ContentProjectCreateWithoutVersionsInput = {
+  id?: string
+  title: string
+  format?: string
+  status?: string
+  canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  owner: Prisma.UserCreateNestedOneWithoutProjectsInput
+  brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
+  generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
+  theme?: Prisma.ThemeCreateNestedOneWithoutProjectInput
+}
+
+export type ContentProjectUncheckedCreateWithoutVersionsInput = {
+  id?: string
+  ownerUserId: string
+  brandId: string
+  title: string
+  format?: string
+  status?: string
+  canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
+  theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
+}
+
+export type ContentProjectCreateOrConnectWithoutVersionsInput = {
+  where: Prisma.ContentProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentProjectCreateWithoutVersionsInput, Prisma.ContentProjectUncheckedCreateWithoutVersionsInput>
+}
+
+export type ContentProjectUpsertWithoutVersionsInput = {
+  update: Prisma.XOR<Prisma.ContentProjectUpdateWithoutVersionsInput, Prisma.ContentProjectUncheckedUpdateWithoutVersionsInput>
+  create: Prisma.XOR<Prisma.ContentProjectCreateWithoutVersionsInput, Prisma.ContentProjectUncheckedCreateWithoutVersionsInput>
+  where?: Prisma.ContentProjectWhereInput
+}
+
+export type ContentProjectUpdateToOneWithWhereWithoutVersionsInput = {
+  where?: Prisma.ContentProjectWhereInput
+  data: Prisma.XOR<Prisma.ContentProjectUpdateWithoutVersionsInput, Prisma.ContentProjectUncheckedUpdateWithoutVersionsInput>
+}
+
+export type ContentProjectUpdateWithoutVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  format?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
+  brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
+  generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
+  theme?: Prisma.ThemeUpdateOneWithoutProjectNestedInput
+}
+
+export type ContentProjectUncheckedUpdateWithoutVersionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  format?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
 }
 
@@ -730,6 +831,7 @@ export type ContentProjectCreateWithoutThemeInput = {
   owner: Prisma.UserCreateNestedOneWithoutProjectsInput
   brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
 }
 
 export type ContentProjectUncheckedCreateWithoutThemeInput = {
@@ -743,6 +845,7 @@ export type ContentProjectUncheckedCreateWithoutThemeInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ContentProjectCreateOrConnectWithoutThemeInput = {
@@ -772,6 +875,7 @@ export type ContentProjectUpdateWithoutThemeInput = {
   owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
 }
 
 export type ContentProjectUncheckedUpdateWithoutThemeInput = {
@@ -785,6 +889,7 @@ export type ContentProjectUncheckedUpdateWithoutThemeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ContentProjectCreateManyOwnerInput = {
@@ -808,6 +913,7 @@ export type ContentProjectUpdateWithoutOwnerInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUpdateOneWithoutProjectNestedInput
 }
 
@@ -821,6 +927,7 @@ export type ContentProjectUncheckedUpdateWithoutOwnerInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
 }
 
@@ -856,6 +963,7 @@ export type ContentProjectUpdateWithoutBrandInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUpdateOneWithoutProjectNestedInput
 }
 
@@ -869,6 +977,7 @@ export type ContentProjectUncheckedUpdateWithoutBrandInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
 }
 
@@ -890,10 +999,12 @@ export type ContentProjectUncheckedUpdateManyWithoutBrandInput = {
 
 export type ContentProjectCountOutputType = {
   generationCosts: number
+  versions: number
 }
 
 export type ContentProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   generationCosts?: boolean | ContentProjectCountOutputTypeCountGenerationCostsArgs
+  versions?: boolean | ContentProjectCountOutputTypeCountVersionsArgs
 }
 
 /**
@@ -913,6 +1024,13 @@ export type ContentProjectCountOutputTypeCountGenerationCostsArgs<ExtArgs extend
   where?: Prisma.GenerationCostWhereInput
 }
 
+/**
+ * ContentProjectCountOutputType without action
+ */
+export type ContentProjectCountOutputTypeCountVersionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.ProjectVersionWhereInput
+}
+
 
 export type ContentProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -927,6 +1045,7 @@ export type ContentProjectSelect<ExtArgs extends runtime.Types.Extensions.Intern
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.BrandDefaultArgs<ExtArgs>
   generationCosts?: boolean | Prisma.ContentProject$generationCostsArgs<ExtArgs>
+  versions?: boolean | Prisma.ContentProject$versionsArgs<ExtArgs>
   theme?: boolean | Prisma.ContentProject$themeArgs<ExtArgs>
   _count?: boolean | Prisma.ContentProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["contentProject"]>
@@ -976,6 +1095,7 @@ export type ContentProjectInclude<ExtArgs extends runtime.Types.Extensions.Inter
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   brand?: boolean | Prisma.BrandDefaultArgs<ExtArgs>
   generationCosts?: boolean | Prisma.ContentProject$generationCostsArgs<ExtArgs>
+  versions?: boolean | Prisma.ContentProject$versionsArgs<ExtArgs>
   theme?: boolean | Prisma.ContentProject$themeArgs<ExtArgs>
   _count?: boolean | Prisma.ContentProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -994,6 +1114,7 @@ export type $ContentProjectPayload<ExtArgs extends runtime.Types.Extensions.Inte
     owner: Prisma.$UserPayload<ExtArgs>
     brand: Prisma.$BrandPayload<ExtArgs>
     generationCosts: Prisma.$GenerationCostPayload<ExtArgs>[]
+    versions: Prisma.$ProjectVersionPayload<ExtArgs>[]
     theme: Prisma.$ThemePayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1403,6 +1524,7 @@ export interface Prisma__ContentProjectClient<T, Null = never, ExtArgs extends r
   owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   brand<T extends Prisma.BrandDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BrandDefaultArgs<ExtArgs>>): Prisma.Prisma__BrandClient<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   generationCosts<T extends Prisma.ContentProject$generationCostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentProject$generationCostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GenerationCostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  versions<T extends Prisma.ContentProject$versionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentProject$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   theme<T extends Prisma.ContentProject$themeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentProject$themeArgs<ExtArgs>>): Prisma.Prisma__ThemeClient<runtime.Types.Result.GetResult<Prisma.$ThemePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1864,6 +1986,30 @@ export type ContentProject$generationCostsArgs<ExtArgs extends runtime.Types.Ext
   take?: number
   skip?: number
   distinct?: Prisma.GenerationCostScalarFieldEnum | Prisma.GenerationCostScalarFieldEnum[]
+}
+
+/**
+ * ContentProject.versions
+ */
+export type ContentProject$versionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the ProjectVersion
+   */
+  select?: Prisma.ProjectVersionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the ProjectVersion
+   */
+  omit?: Prisma.ProjectVersionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProjectVersionInclude<ExtArgs> | null
+  where?: Prisma.ProjectVersionWhereInput
+  orderBy?: Prisma.ProjectVersionOrderByWithRelationInput | Prisma.ProjectVersionOrderByWithRelationInput[]
+  cursor?: Prisma.ProjectVersionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.ProjectVersionScalarFieldEnum | Prisma.ProjectVersionScalarFieldEnum[]
 }
 
 /**

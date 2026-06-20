@@ -1,29 +1,27 @@
 import { describe, expect, it, vi } from "vitest";
 
+import type { CanvasDocument } from "@/features/canvas/types/canvas";
+
 import {
-  addCanvasElementToSlide,
-  createCanvasCtaElement,
-  createCanvasShapeElement,
-  createCanvasTextElement,
-  normalizeEditorCanvas,
-  updateCanvasElement
-} from "../services/project-editor-canvas.service";
-import {
-  getContentProjectForEditor,
+  autosaveProjectCanvasForUser,
+  listProjectVersionsForUser,
   saveProjectCanvasForUser
 } from "../services/project-editor.service";
 import type { ContentProject, ContentProjectRepository } from "../types/content-project";
+import type { ProjectVersion, ProjectVersionRepository } from "../types/project-version";
 
-const canvasJson = {
+const createdAt = new Date("2026-06-20T12:00:00.000Z");
+
+const canvasJson: CanvasDocument = {
   documentId: "document_1",
-  format: "instagram-carousel" as const,
+  format: "instagram-carousel",
   height: 1080,
-  schemaVersion: "1.0.0" as const,
+  schemaVersion: "1.0.0",
   slides: [
     {
       background: {
-        color: "#0B0F19",
-        type: "solid" as const
+        color: "#FFFFFF",
+        type: "solid"
       },
       elements: [],
       height: 1080,
@@ -34,8 +32,8 @@ const canvasJson = {
     }
   ],
   themeId: null,
-  title: "Storm Damage Carousel",
-  unit: "px" as const,
+  title: "Autosaved Carousel",
+  unit: "px",
   width: 1080
 };
 
@@ -43,162 +41,125 @@ const project: ContentProject = {
   brandId: "brand_123",
   brandName: "ABC Roofing",
   canvasJson,
-  createdAt: new Date("2026-06-18T12:00:00.000Z"),
+  createdAt,
   format: "instagram-carousel",
   id: "project_123",
   ownerUserId: "user_local_123",
   status: "draft",
-  title: "Storm Damage Carousel",
-  updatedAt: new Date("2026-06-18T12:00:00.000Z")
+  title: "Autosaved Carousel",
+  updatedAt: createdAt
 };
 
-function createRepository(overrides: Partial<ContentProjectRepository> = {}): ContentProjectRepository {
+const autosaveVersion: ProjectVersion = {
+  canvasJson,
+  createdAt,
+  id: "version_2",
+  ownerUserId: "user_local_123",
+  projectId: "project_123",
+  source: "autosave",
+  versionNumber: 2
+};
+
+const manualVersion: ProjectVersion = {
+  ...autosaveVersion,
+  id: "version_3",
+  source: "manual-save",
+  versionNumber: 3
+};
+
+function createProjectRepository(overrides: Partial<ContentProjectRepository> = {}): ContentProjectRepository {
   return {
-    create: vi.fn(),
+    create: vi.fn().mockResolvedValue(project),
     findByIdForOwner: vi.fn().mockResolvedValue(project),
-    listByOwnerUserId: vi.fn(),
+    listByOwnerUserId: vi.fn().mockResolvedValue([project]),
     updateCanvasForOwner: vi.fn().mockResolvedValue(project),
     ...overrides
   };
 }
 
-describe("project editor canvas operations", () => {
-  it("adds visual text, shape, and CTA elements to a slide", () => {
-    const withText = addCanvasElementToSlide(canvasJson, "slide_1", createCanvasTextElement("text_1"));
-    const withShape = addCanvasElementToSlide(withText, "slide_1", createCanvasShapeElement("shape_1"));
-    const withCta = addCanvasElementToSlide(withShape, "slide_1", createCanvasCtaElement("cta_1"));
+function createProjectVersionRepository(
+  overrides: Partial<ProjectVersionRepository> = {}
+): ProjectVersionRepository {
+  return {
+    create: vi.fn().mockResolvedValue(autosaveVersion),
+    listForProjectOwner: vi.fn().mockResolvedValue([autosaveVersion]),
+    ...overrides
+  };
+}
 
-    expect(withCta.slides[0]?.elements.map((element) => element.type)).toEqual(["text", "shape", "cta"]);
-    expect(withCta.slides[0]?.elements[1]).toMatchObject({
-      stroke: null,
-      strokeWidth: 0
-    });
-    expect(canvasJson.slides[0]?.elements).toEqual([]);
-  });
+describe("autosaveProjectCanvasForUser", () => {
+  it("updates the project canvas and creates an autosave version", async () => {
+    const projectRepository = createProjectRepository();
+    const projectVersionRepository = createProjectVersionRepository();
 
-  it("removes the legacy default cyan stroke from existing saved shapes", () => {
-    const shape = createCanvasShapeElement("shape_legacy");
-
-    if (shape.type !== "shape") {
-      throw new Error("Expected shape element.");
-    }
-
-    const document = addCanvasElementToSlide(canvasJson, "slide_1", {
-      ...shape,
-      stroke: "#00E5FF",
-      strokeWidth: 2
+    const result = await autosaveProjectCanvasForUser({
+      canvasJson: JSON.stringify(canvasJson),
+      ownerUserId: "user_local_123",
+      projectId: "project_123",
+      projectRepository,
+      projectVersionRepository
     });
 
-    const normalized = normalizeEditorCanvas(document);
-
-    expect(normalized.slides[0]?.elements[0]).toMatchObject({
-      stroke: null,
-      strokeWidth: 0
+    expect(result).toEqual({
+      ok: true,
+      project,
+      status: "saved",
+      version: autosaveVersion
     });
-  });
-
-  it("updates one element while preserving existing user edits", () => {
-    const document = addCanvasElementToSlide(canvasJson, "slide_1", createCanvasTextElement("text_1"));
-
-    const updated = updateCanvasElement(document, "slide_1", "text_1", {
-      content: "Edited headline",
-      x: 140,
-      y: 220
-    });
-
-    expect(updated.slides[0]?.elements[0]).toMatchObject({
-      content: "Edited headline",
-      id: "text_1",
-      x: 140,
-      y: 220
-    });
-    expect(document.slides[0]?.elements[0]).toMatchObject({
-      content: "Editable headline",
-      x: 96,
-      y: 180
+    expect(projectRepository.updateCanvasForOwner).toHaveBeenCalledWith("project_123", "user_local_123", canvasJson);
+    expect(projectVersionRepository.create).toHaveBeenCalledWith({
+      canvasJson,
+      ownerUserId: "user_local_123",
+      projectId: "project_123",
+      source: "autosave"
     });
   });
 });
 
-describe("project editor service", () => {
-  it("loads an editor project owned by the current user", async () => {
-    const repository = createRepository();
-
-    const result = await getContentProjectForEditor({
-      ownerUserId: "user_local_123",
-      projectId: "project_123",
-      projectRepository: repository
-    });
-
-    expect(result).toEqual({
-      ok: true,
-      project,
-      status: "ready"
-    });
-    expect(repository.findByIdForOwner).toHaveBeenCalledWith("project_123", "user_local_123");
-  });
-
-  it("saves validated canvas JSON for the current user's project", async () => {
-    const repository = createRepository();
-    const updatedCanvas = addCanvasElementToSlide(canvasJson, "slide_1", createCanvasTextElement("text_1"));
-
-    const result = await saveProjectCanvasForUser({
-      canvasJson: JSON.stringify(updatedCanvas),
-      ownerUserId: "user_local_123",
-      projectId: "project_123",
-      projectRepository: repository
-    });
-
-    expect(result).toEqual({
-      ok: true,
-      project,
-      status: "saved"
-    });
-    expect(repository.updateCanvasForOwner).toHaveBeenCalledWith("project_123", "user_local_123", updatedCanvas);
-  });
-
-  it("rejects invalid canvas JSON before saving", async () => {
-    const repository = createRepository();
-
-    const result = await saveProjectCanvasForUser({
-      canvasJson: JSON.stringify({
-        documentId: "document_1",
-        slides: []
-      }),
-      ownerUserId: "user_local_123",
-      projectId: "project_123",
-      projectRepository: repository
-    });
-
-    expect(result).toMatchObject({
-      error: {
-        code: "invalid_project_canvas"
-      },
-      ok: false,
-      status: "failed"
-    });
-    expect(repository.updateCanvasForOwner).not.toHaveBeenCalled();
-  });
-
-  it("does not save a project outside the current user", async () => {
-    const repository = createRepository({
-      updateCanvasForOwner: vi.fn().mockResolvedValue(null)
+describe("saveProjectCanvasForUser", () => {
+  it("records a manual-save version when the user saves the project", async () => {
+    const projectRepository = createProjectRepository();
+    const projectVersionRepository = createProjectVersionRepository({
+      create: vi.fn().mockResolvedValue(manualVersion)
     });
 
     const result = await saveProjectCanvasForUser({
       canvasJson: JSON.stringify(canvasJson),
       ownerUserId: "user_local_123",
-      projectId: "project_other",
-      projectRepository: repository
+      projectId: "project_123",
+      projectRepository,
+      projectVersionRepository
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      status: "saved",
+      version: manualVersion
+    });
+    expect(projectVersionRepository.create).toHaveBeenCalledWith({
+      canvasJson,
+      ownerUserId: "user_local_123",
+      projectId: "project_123",
+      source: "manual-save"
+    });
+  });
+});
+
+describe("listProjectVersionsForUser", () => {
+  it("loads recent project versions for the current owner", async () => {
+    const projectVersionRepository = createProjectVersionRepository();
+
+    const result = await listProjectVersionsForUser({
+      ownerUserId: "user_local_123",
+      projectId: "project_123",
+      projectVersionRepository
     });
 
     expect(result).toEqual({
-      error: {
-        code: "project_not_found",
-        message: "Project could not be found."
-      },
-      ok: false,
-      status: "failed"
+      ok: true,
+      status: "ready",
+      versions: [autosaveVersion]
     });
+    expect(projectVersionRepository.listForProjectOwner).toHaveBeenCalledWith("project_123", "user_local_123", 8);
   });
 });

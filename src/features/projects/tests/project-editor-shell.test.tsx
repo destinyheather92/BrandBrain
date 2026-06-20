@@ -1,9 +1,10 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { ProjectEditorShell } from "../components/project-editor-shell";
 import type { ContentProject } from "../types/content-project";
 import { initialProjectEditorSaveState } from "../types/project-editor-form-state";
+import type { ProjectVersion } from "../types/project-version";
 
 const project: ContentProject = {
   brandId: "brand_123",
@@ -39,6 +40,16 @@ const project: ContentProject = {
   status: "draft",
   title: "Storm Damage Carousel",
   updatedAt: new Date("2026-06-18T12:00:00.000Z")
+};
+
+const version: ProjectVersion = {
+  canvasJson: project.canvasJson,
+  createdAt: new Date("2026-06-18T12:05:00.000Z"),
+  id: "version_1",
+  ownerUserId: "user_local_123",
+  projectId: "project_123",
+  source: "manual-save",
+  versionNumber: 1
 };
 
 describe("ProjectEditorShell", () => {
@@ -120,5 +131,45 @@ describe("ProjectEditorShell", () => {
       borderStyle: "none",
       borderWidth: "0px"
     });
+  });
+
+  it("autosaves canvas edits and shows recent versions", async () => {
+    const autosavedVersion: ProjectVersion = {
+      ...version,
+      id: "version_2",
+      source: "autosave",
+      versionNumber: 2
+    };
+    const autosaveAction = vi.fn().mockResolvedValue({
+      message: "Autosaved.",
+      status: "saved",
+      version: autosavedVersion
+    });
+
+    render(
+      <ProjectEditorShell
+        autosaveAction={autosaveAction}
+        autosaveDelayMs={0}
+        initialState={initialProjectEditorSaveState}
+        initialVersions={[version]}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Version History" })).toBeInTheDocument();
+    expect(screen.getByText("Manual save")).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+
+    await waitFor(() => expect(autosaveAction).toHaveBeenCalled());
+
+    const autosaveFormData = autosaveAction.mock.calls[0]?.[1] as FormData;
+
+    expect(autosaveFormData.get("projectId")).toBe("project_123");
+    expect(autosaveFormData.get("canvasJson")).toContain("Editable headline");
+    expect(await screen.findByText("Autosaved.")).toBeInTheDocument();
+    expect(screen.getByText("Autosave")).toBeInTheDocument();
+    expect(screen.getByText("Version 2")).toBeInTheDocument();
   });
 });
