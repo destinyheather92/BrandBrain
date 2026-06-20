@@ -502,29 +502,6 @@ export function ProjectEditorShell({
         </section>
 
         <aside className="grid content-start gap-4 border-t border-[#263244] bg-[#141A26] p-4 lg:border-l lg:border-t-0">
-          <ThemeEnginePanel
-            initialState={initialThemeState}
-            initialTheme={activeTheme}
-            onApplyTheme={applyThemeToDocument}
-            onThemeGenerated={setActiveTheme}
-            projectId={project.id}
-            themeAction={themeAction}
-          />
-          <AiGenerationPanel
-            generationAction={aiGenerationAction}
-            hasTheme={Boolean(activeTheme)}
-            initialState={initialAiGenerationState}
-            onGenerated={applyGeneratedDocument}
-            projectId={project.id}
-          />
-          <ExportPanel document={document} projectTitle={project.title} />
-          <VersionHistoryPanel
-            projectId={project.id}
-            restoreFormAction={restoreFormAction}
-            restorePending={restorePending}
-            versions={displayedVersions}
-          />
-
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold text-[#CBD5E1]">
               <MousePointer2 aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
@@ -552,6 +529,29 @@ export function ProjectEditorShell({
               </div>
             )}
           </div>
+
+          <ThemeEnginePanel
+            initialState={initialThemeState}
+            initialTheme={activeTheme}
+            onApplyTheme={applyThemeToDocument}
+            onThemeGenerated={setActiveTheme}
+            projectId={project.id}
+            themeAction={themeAction}
+          />
+          <AiGenerationPanel
+            generationAction={aiGenerationAction}
+            hasTheme={Boolean(activeTheme)}
+            initialState={initialAiGenerationState}
+            onGenerated={applyGeneratedDocument}
+            projectId={project.id}
+          />
+          <ExportPanel document={document} projectTitle={project.title} />
+          <VersionHistoryPanel
+            projectId={project.id}
+            restoreFormAction={restoreFormAction}
+            restorePending={restorePending}
+            versions={displayedVersions}
+          />
         </aside>
       </section>
     </main>

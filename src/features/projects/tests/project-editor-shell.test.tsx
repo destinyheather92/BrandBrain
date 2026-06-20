@@ -105,6 +105,23 @@ describe("ProjectEditorShell", () => {
     expect(screen.getByLabelText("Slide 1 canvas")).toBeInTheDocument();
   });
 
+  it("places properties above theme controls in the right rail", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    const propertiesLabel = screen.getByText("Properties");
+    const themeEngineHeading = screen.getByRole("heading", { name: "Theme Engine" });
+
+    expect(Boolean(propertiesLabel.compareDocumentPosition(themeEngineHeading) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(
+      true
+    );
+  });
+
   it("adds and edits a text element on the canvas", () => {
     render(
       <ProjectEditorShell
