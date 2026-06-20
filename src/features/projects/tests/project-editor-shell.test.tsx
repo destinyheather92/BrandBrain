@@ -52,6 +52,37 @@ const version: ProjectVersion = {
   versionNumber: 1
 };
 
+const restoredCanvasJson = {
+  ...project.canvasJson,
+  slides: [
+    {
+      ...project.canvasJson.slides[0],
+      elements: [
+        {
+          color: "#F8FAFC",
+          content: "Restored version headline",
+          fontFamily: "Geist",
+          fontSize: 72,
+          fontWeight: "bold" as const,
+          height: 180,
+          id: "headline_restored",
+          letterSpacing: 0,
+          lineHeight: 1.1,
+          locked: false,
+          opacity: 1,
+          rotation: 0,
+          textAlign: "left" as const,
+          type: "text" as const,
+          width: 720,
+          x: 96,
+          y: 180,
+          zIndex: 1
+        }
+      ]
+    }
+  ]
+};
+
 describe("ProjectEditorShell", () => {
   it("renders a visual editor for a saved content project", () => {
     render(
@@ -197,5 +228,39 @@ describe("ProjectEditorShell", () => {
     expect(await screen.findByText("Autosaved.")).toBeInTheDocument();
     expect(screen.getByText("Autosave")).toBeInTheDocument();
     expect(screen.getByText("Version 2")).toBeInTheDocument();
+  });
+
+  it("restores a version into the visible editor canvas", async () => {
+    const restoredVersion: ProjectVersion = {
+      ...version,
+      canvasJson: restoredCanvasJson,
+      id: "version_2",
+      source: "version-restore",
+      versionNumber: 2
+    };
+    const restoreVersionAction = vi.fn().mockResolvedValue({
+      canvasJson: restoredCanvasJson,
+      message: "Version 1 restored.",
+      restoredVersionId: "version_1",
+      status: "saved",
+      version: restoredVersion
+    });
+
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        initialVersions={[version]}
+        project={project}
+        restoreVersionAction={restoreVersionAction}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Restore Version 1" }));
+
+    await waitFor(() => expect(restoreVersionAction).toHaveBeenCalled());
+    expect(await screen.findByRole("button", { name: "Restored version headline" })).toBeInTheDocument();
+    expect(screen.getByText("Version 1 restored.")).toBeInTheDocument();
+    expect(screen.getByText("Version restore")).toBeInTheDocument();
   });
 });

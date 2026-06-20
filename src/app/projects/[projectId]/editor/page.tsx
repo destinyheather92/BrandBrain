@@ -6,6 +6,7 @@ import { generateProjectDraftAction } from "@/features/ai/actions/generate-proje
 import { initialAiGenerationActionState } from "@/features/ai/types/ai-generation-action-state";
 import {
   autosaveProjectCanvasAction,
+  restoreProjectVersionAction,
   saveProjectCanvasAction
 } from "@/features/projects/actions/save-project-canvas.action";
 import { ProjectEditorShell } from "@/features/projects/components/project-editor-shell";
@@ -80,6 +81,7 @@ export default async function ProjectEditorPage({ params }: ProjectEditorPagePro
       initialThemeState={initialProjectThemeActionState}
       initialVersions={versionResult.ok ? versionResult.versions : []}
       project={editorResult.project}
+      restoreVersionAction={restoreProjectVersionAction}
       saveAction={saveProjectCanvasAction}
       themeAction={generateProjectThemeAction}
     />

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import { canvasDocumentSchema } from "@/features/canvas/schemas/canvas-object.schema";
 
-export const projectVersionSourceSchema = z.enum(["autosave", "manual-save"]);
+export const projectVersionSourceSchema = z.enum(["autosave", "manual-save", "version-restore"]);
 
 export const projectVersionSchema = z.object({
   canvasJson: canvasDocumentSchema,

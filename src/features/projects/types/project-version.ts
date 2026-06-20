@@ -27,5 +27,6 @@ export type ProjectVersionListResult =
 
 export type ProjectVersionRepository = {
   create(input: ProjectVersionCreateInput): Promise<ProjectVersion>;
+  findForProjectOwner(versionId: string, projectId: string, ownerUserId: string): Promise<ProjectVersion | null>;
   listForProjectOwner(projectId: string, ownerUserId: string, limit: number): Promise<ProjectVersion[]>;
 };

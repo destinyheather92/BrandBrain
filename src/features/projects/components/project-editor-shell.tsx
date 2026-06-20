@@ -54,9 +54,13 @@ import {
 import type { ContentProject } from "../types/content-project";
 import type {
   ProjectEditorAutosaveAction,
+  ProjectEditorRestoreAction,
   ProjectEditorSaveState
 } from "../types/project-editor-form-state";
-import { initialProjectEditorSaveState } from "../types/project-editor-form-state";
+import {
+  initialProjectEditorRestoreState,
+  initialProjectEditorSaveState
+} from "../types/project-editor-form-state";
 import type { ProjectVersion, ProjectVersionSource } from "../types/project-version";
 
 type ProjectEditorShellProps = {
@@ -70,6 +74,7 @@ type ProjectEditorShellProps = {
   initialThemeState?: ProjectThemeActionState;
   initialVersions?: ProjectVersion[];
   project: ContentProject;
+  restoreVersionAction?: ProjectEditorRestoreAction;
   saveAction: (state: ProjectEditorSaveState, formData: FormData) => Promise<ProjectEditorSaveState>;
   themeAction?: ProjectThemeAction;
 };
@@ -80,6 +85,7 @@ const canvasPreviewSize = 560;
 
 const fallbackAiGenerationAction: AiGenerationAction = async () => initialAiGenerationActionState;
 const fallbackAutosaveAction: ProjectEditorAutosaveAction = async () => initialProjectEditorSaveState;
+const fallbackRestoreVersionAction: ProjectEditorRestoreAction = async () => initialProjectEditorRestoreState;
 const fallbackThemeAction: ProjectThemeAction = async () => initialProjectThemeActionState;
 
 export function ProjectEditorShell({
@@ -93,10 +99,15 @@ export function ProjectEditorShell({
   initialThemeState = initialProjectThemeActionState,
   initialVersions = [],
   project,
+  restoreVersionAction = fallbackRestoreVersionAction,
   saveAction,
   themeAction = fallbackThemeAction
 }: ProjectEditorShellProps) {
   const [state, formAction, pending] = useActionState(saveAction, initialState);
+  const [restoreState, restoreFormAction, restorePending] = useActionState(
+    restoreVersionAction,
+    initialProjectEditorRestoreState
+  );
   const initialDocument = useMemo(() => normalizeEditorCanvas(project.canvasJson), [project.canvasJson]);
   const [document, setDocument] = useState<CanvasDocument>(initialDocument);
   const [activeTheme, setActiveTheme] = useState<ProjectTheme | null>(initialTheme);
@@ -105,6 +116,7 @@ export function ProjectEditorShell({
   const [, startAutosaveTransition] = useTransition();
   const documentJson = useMemo(() => JSON.stringify(document), [document]);
   const lastAutosavedJsonRef = useRef(JSON.stringify(initialDocument));
+  const processedRestoreIdRef = useRef<string | null>(null);
   const sortedSlides = useMemo(
     () => [...document.slides].sort((first, second) => first.order - second.order),
     [document.slides]
@@ -121,11 +133,18 @@ export function ProjectEditorShell({
     ].slice(0, 8));
   }, []);
   const displayedVersions = useMemo(
-    () =>
-      state.version
-        ? [state.version, ...versionHistory.filter((version) => version.id !== state.version?.id)].slice(0, 8)
-        : versionHistory,
-    [state.version, versionHistory]
+    () => {
+      const priorityVersions = [restoreState.version, state.version].filter(
+        (version): version is ProjectVersion => Boolean(version)
+      );
+      const priorityVersionIds = new Set(priorityVersions.map((version) => version.id));
+
+      return [
+        ...priorityVersions,
+        ...versionHistory.filter((version) => !priorityVersionIds.has(version.id))
+      ].slice(0, 8);
+    },
+    [restoreState.version, state.version, versionHistory]
   );
 
   useEffect(() => {
@@ -159,6 +178,33 @@ export function ProjectEditorShell({
 
     return () => window.clearTimeout(autosaveTimer);
   }, [autosaveAction, autosaveDelayMs, documentJson, project.id, upsertVersion]);
+
+  useEffect(() => {
+    const restoreId = restoreState.version?.id ?? restoreState.restoredVersionId;
+
+    if (
+      restoreState.status !== "saved" ||
+      !restoreState.canvasJson ||
+      !restoreId ||
+      restoreId === processedRestoreIdRef.current
+    ) {
+      return;
+    }
+
+    const restoredDocument = normalizeEditorCanvas(restoreState.canvasJson);
+    const restoredSlides = [...restoredDocument.slides].sort((first, second) => first.order - second.order);
+
+    processedRestoreIdRef.current = restoreId;
+    setDocument(restoredDocument);
+    setActiveSlideId(restoredSlides[0]?.id ?? "");
+    setSelectedElementId(null);
+    lastAutosavedJsonRef.current = JSON.stringify(restoredDocument);
+    setAutosaveState({
+      message: restoreState.message ?? "Version restored.",
+      status: "saved"
+    });
+
+  }, [restoreState]);
 
   function nextElementId(type: CanvasElement["type"]) {
     const randomId = globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 12);
@@ -375,7 +421,12 @@ export function ProjectEditorShell({
             projectId={project.id}
           />
           <ExportPanel document={document} projectTitle={project.title} />
-          <VersionHistoryPanel versions={displayedVersions} />
+          <VersionHistoryPanel
+            projectId={project.id}
+            restoreFormAction={restoreFormAction}
+            restorePending={restorePending}
+            versions={displayedVersions}
+          />
 
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold text-[#CBD5E1]">
@@ -431,7 +482,17 @@ function AutosaveStatus({ state }: { state: ProjectEditorSaveState }) {
   );
 }
 
-function VersionHistoryPanel({ versions }: { versions: ProjectVersion[] }) {
+function VersionHistoryPanel({
+  projectId,
+  restoreFormAction,
+  restorePending,
+  versions
+}: {
+  projectId: string;
+  restoreFormAction: (formData: FormData) => void;
+  restorePending: boolean;
+  versions: ProjectVersion[];
+}) {
   return (
     <section className="rounded-lg border border-[#263244] bg-[#0B0F19] p-4" aria-label="Version History">
       <div className="flex items-center gap-2 text-sm font-semibold text-[#F8FAFC]">
@@ -454,6 +515,17 @@ function VersionHistoryPanel({ versions }: { versions: ProjectVersion[] }) {
                 <Clock3 aria-hidden="true" className="h-3 w-3" />
                 {formatVersionTime(version.createdAt)}
               </div>
+              <form action={restoreFormAction} className="mt-3">
+                <input name="projectId" type="hidden" value={projectId} />
+                <input name="versionId" type="hidden" value={version.id} />
+                <button
+                  className="inline-flex min-h-8 w-full items-center justify-center rounded-lg border border-[#263244] px-3 py-1.5 text-xs font-semibold text-[#F8FAFC] hover:border-[#00E5FF] disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={restorePending}
+                  type="submit"
+                >
+                  Restore Version {version.versionNumber}
+                </button>
+              </form>
             </li>
           ))}
         </ol>
@@ -467,7 +539,7 @@ function VersionHistoryPanel({ versions }: { versions: ProjectVersion[] }) {
 }
 
 function sourceLabel(source: ProjectVersionSource): string {
-  return source === "autosave" ? "Autosave" : "Manual save";
+  return source === "autosave" ? "Autosave" : source === "manual-save" ? "Manual save" : "Version restore";
 }
 
 function formatVersionTime(value: Date): string {

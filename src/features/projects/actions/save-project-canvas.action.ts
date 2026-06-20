@@ -10,9 +10,13 @@ import { createPrismaContentProjectRepository } from "../repositories/prisma-con
 import { createPrismaProjectVersionRepository } from "../repositories/prisma-project-version.repository";
 import {
   autosaveProjectCanvasForUser,
+  restoreProjectVersionForUser,
   saveProjectCanvasForUser
 } from "../services/project-editor.service";
-import type { ProjectEditorSaveState } from "../types/project-editor-form-state";
+import type {
+  ProjectEditorRestoreState,
+  ProjectEditorSaveState
+} from "../types/project-editor-form-state";
 
 export async function saveProjectCanvasAction(
   _previousState: ProjectEditorSaveState,
@@ -117,6 +121,62 @@ export async function autosaveProjectCanvasAction(
 
   return {
     message: "Autosaved.",
+    status: "saved",
+    version: result.version
+  };
+}
+
+export async function restoreProjectVersionAction(
+  _previousState: ProjectEditorRestoreState,
+  formData: FormData
+): Promise<ProjectEditorRestoreState> {
+  const clerkUser = await currentUser();
+
+  if (!clerkUser) {
+    redirect("/sign-in");
+  }
+
+  const projectId = formData.get("projectId");
+  const versionId = formData.get("versionId");
+
+  if (typeof projectId !== "string" || typeof versionId !== "string") {
+    return {
+      message: "Version could not be restored.",
+      status: "error"
+    };
+  }
+
+  const syncResult = await syncCurrentClerkUserToLocalUser(clerkUser);
+
+  if (!syncResult.ok) {
+    return {
+      message: syncResult.error.message,
+      status: "error"
+    };
+  }
+
+  const result = await restoreProjectVersionForUser({
+    ownerUserId: syncResult.user.id,
+    projectId,
+    projectRepository: createPrismaContentProjectRepository(),
+    projectVersionId: versionId,
+    projectVersionRepository: createPrismaProjectVersionRepository()
+  });
+
+  if (!result.ok) {
+    return {
+      message: result.error.message,
+      status: "error"
+    };
+  }
+
+  revalidatePath(`/projects/${projectId}/editor`);
+  revalidatePath("/projects");
+
+  return {
+    canvasJson: result.project.canvasJson,
+    message: "Version restored.",
+    restoredVersionId: versionId,
     status: "saved",
     version: result.version
   };

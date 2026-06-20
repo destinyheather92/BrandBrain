@@ -31,6 +31,11 @@ type ListProjectVersionsForUserParams = {
   projectVersionRepository: ProjectVersionRepository;
 };
 
+type RestoreProjectVersionForUserParams = ListProjectVersionsForUserParams & {
+  projectRepository: ContentProjectRepository;
+  projectVersionId: string;
+};
+
 function isMissingPrismaDelegateError(error: unknown): boolean {
   return error instanceof TypeError && error.message.includes("Cannot read properties of undefined");
 }
@@ -51,6 +56,17 @@ function saveNotFoundResult(): ContentProjectCanvasSaveResult {
     error: {
       code: "project_not_found",
       message: "Project could not be found."
+    },
+    ok: false,
+    status: "failed"
+  };
+}
+
+function versionNotFoundResult(): ContentProjectCanvasSaveResult {
+  return {
+    error: {
+      code: "project_version_not_found",
+      message: "Project version could not be found."
     },
     ok: false,
     status: "failed"
@@ -200,6 +216,48 @@ export async function listProjectVersionsForUser({
     };
   } catch (error) {
     return versionRepositoryError(error);
+  }
+}
+
+export async function restoreProjectVersionForUser({
+  ownerUserId,
+  projectId,
+  projectRepository,
+  projectVersionId,
+  projectVersionRepository
+}: RestoreProjectVersionForUserParams): Promise<ContentProjectCanvasSaveResult> {
+  try {
+    const version = await projectVersionRepository.findForProjectOwner(
+      projectVersionId,
+      projectId,
+      ownerUserId
+    );
+
+    if (!version) {
+      return versionNotFoundResult();
+    }
+
+    const project = await projectRepository.updateCanvasForOwner(projectId, ownerUserId, version.canvasJson);
+
+    if (!project) {
+      return saveNotFoundResult();
+    }
+
+    const restoreVersion = await projectVersionRepository.create({
+      canvasJson: version.canvasJson,
+      ownerUserId,
+      projectId,
+      source: "version-restore"
+    });
+
+    return {
+      ok: true,
+      project,
+      status: "saved",
+      version: restoreVersion
+    };
+  } catch (error) {
+    return saveRepositoryError(error);
   }
 }
 

@@ -75,6 +75,7 @@ export type ContentProjectCanvasSaveResult =
         code:
           | "invalid_project_canvas"
           | "project_not_found"
+          | "project_version_not_found"
           | "project_repository_error"
           | "project_repository_unavailable";
         issues?: string[];

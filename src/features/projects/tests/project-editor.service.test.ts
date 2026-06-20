@@ -5,6 +5,7 @@ import type { CanvasDocument } from "@/features/canvas/types/canvas";
 import {
   autosaveProjectCanvasForUser,
   listProjectVersionsForUser,
+  restoreProjectVersionForUser,
   saveProjectCanvasForUser
 } from "../services/project-editor.service";
 import type { ContentProject, ContentProjectRepository } from "../types/content-project";
@@ -67,6 +68,52 @@ const manualVersion: ProjectVersion = {
   versionNumber: 3
 };
 
+const restoredCanvasJson: CanvasDocument = {
+  ...canvasJson,
+  slides: [
+    {
+      ...canvasJson.slides[0],
+      background: {
+        color: "#F8FAFC",
+        type: "solid"
+      },
+      elements: [
+        {
+          color: "#0B0F19",
+          content: "Restored headline",
+          fontFamily: "Geist",
+          fontSize: 72,
+          fontWeight: "bold",
+          height: 180,
+          id: "headline_restored",
+          letterSpacing: 0,
+          lineHeight: 1.1,
+          locked: false,
+          opacity: 1,
+          rotation: 0,
+          textAlign: "left",
+          type: "text",
+          width: 720,
+          x: 96,
+          y: 180,
+          zIndex: 1
+        }
+      ]
+    }
+  ],
+  title: "Restored Carousel"
+};
+
+const restoredVersion: ProjectVersion = {
+  canvasJson: restoredCanvasJson,
+  createdAt,
+  id: "version_4",
+  ownerUserId: "user_local_123",
+  projectId: "project_123",
+  source: "version-restore",
+  versionNumber: 4
+};
+
 function createProjectRepository(overrides: Partial<ContentProjectRepository> = {}): ContentProjectRepository {
   return {
     create: vi.fn().mockResolvedValue(project),
@@ -82,6 +129,7 @@ function createProjectVersionRepository(
 ): ProjectVersionRepository {
   return {
     create: vi.fn().mockResolvedValue(autosaveVersion),
+    findForProjectOwner: vi.fn().mockResolvedValue(manualVersion),
     listForProjectOwner: vi.fn().mockResolvedValue([autosaveVersion]),
     ...overrides
   };
@@ -161,5 +209,80 @@ describe("listProjectVersionsForUser", () => {
       versions: [autosaveVersion]
     });
     expect(projectVersionRepository.listForProjectOwner).toHaveBeenCalledWith("project_123", "user_local_123", 8);
+  });
+});
+
+describe("restoreProjectVersionForUser", () => {
+  it("restores a selected version and creates a restore snapshot", async () => {
+    const restoredProject = {
+      ...project,
+      canvasJson: restoredCanvasJson
+    };
+    const projectRepository = createProjectRepository({
+      updateCanvasForOwner: vi.fn().mockResolvedValue(restoredProject)
+    });
+    const projectVersionRepository = createProjectVersionRepository({
+      create: vi.fn().mockResolvedValue(restoredVersion),
+      findForProjectOwner: vi.fn().mockResolvedValue({
+        ...manualVersion,
+        canvasJson: restoredCanvasJson
+      })
+    });
+
+    const result = await restoreProjectVersionForUser({
+      ownerUserId: "user_local_123",
+      projectId: "project_123",
+      projectRepository,
+      projectVersionId: "version_3",
+      projectVersionRepository
+    });
+
+    expect(result).toEqual({
+      ok: true,
+      project: restoredProject,
+      status: "saved",
+      version: restoredVersion
+    });
+    expect(projectVersionRepository.findForProjectOwner).toHaveBeenCalledWith(
+      "version_3",
+      "project_123",
+      "user_local_123"
+    );
+    expect(projectRepository.updateCanvasForOwner).toHaveBeenCalledWith(
+      "project_123",
+      "user_local_123",
+      restoredCanvasJson
+    );
+    expect(projectVersionRepository.create).toHaveBeenCalledWith({
+      canvasJson: restoredCanvasJson,
+      ownerUserId: "user_local_123",
+      projectId: "project_123",
+      source: "version-restore"
+    });
+  });
+
+  it("does not restore a missing or unauthorized version", async () => {
+    const projectRepository = createProjectRepository();
+    const projectVersionRepository = createProjectVersionRepository({
+      findForProjectOwner: vi.fn().mockResolvedValue(null)
+    });
+
+    const result = await restoreProjectVersionForUser({
+      ownerUserId: "user_local_123",
+      projectId: "project_123",
+      projectRepository,
+      projectVersionId: "version_other",
+      projectVersionRepository
+    });
+
+    expect(result).toMatchObject({
+      error: {
+        code: "project_version_not_found"
+      },
+      ok: false,
+      status: "failed"
+    });
+    expect(projectRepository.updateCanvasForOwner).not.toHaveBeenCalled();
+    expect(projectVersionRepository.create).not.toHaveBeenCalled();
   });
 });

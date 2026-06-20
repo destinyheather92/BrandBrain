@@ -51,6 +51,22 @@ export class PrismaProjectVersionRepository implements ProjectVersionRepository 
     return parseProjectVersion(version);
   }
 
+  async findForProjectOwner(
+    versionId: string,
+    projectId: string,
+    ownerUserId: string
+  ): Promise<ProjectVersion | null> {
+    const version = await this.client.projectVersion.findFirst({
+      where: {
+        id: versionId,
+        ownerUserId,
+        projectId
+      }
+    });
+
+    return version ? parseProjectVersion(version) : null;
+  }
+
   async listForProjectOwner(projectId: string, ownerUserId: string, limit: number): Promise<ProjectVersion[]> {
     const versions = await this.client.projectVersion.findMany({
       orderBy: {
