@@ -262,6 +262,137 @@ describe("ProjectEditorShell", () => {
     expect(labelInput).toHaveValue("");
   });
 
+  it("edits text typography and shared object styles from the inspector", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+
+    fireEvent.change(screen.getByLabelText("Font Family"), {
+      target: {
+        value: "Inter"
+      }
+    });
+    fireEvent.change(screen.getByLabelText("Weight"), {
+      target: {
+        value: "semibold"
+      }
+    });
+    fireEvent.click(screen.getByRole("button", { name: "Align center" }));
+    fireEvent.change(screen.getByLabelText("Line Height"), {
+      target: {
+        value: "1.4"
+      }
+    });
+    fireEvent.change(screen.getByLabelText("Letter Spacing"), {
+      target: {
+        value: "2"
+      }
+    });
+    fireEvent.change(screen.getByLabelText("Opacity"), {
+      target: {
+        value: "0.65"
+      }
+    });
+    fireEvent.change(screen.getByLabelText("Rotation"), {
+      target: {
+        value: "-6"
+      }
+    });
+
+    const canvasJson = JSON.parse((screen.getByTestId("project-editor-canvas-json") as HTMLInputElement).value);
+    const textElement = canvasJson.slides[0].elements.find((element: { type: string }) => element.type === "text");
+
+    expect(textElement).toMatchObject({
+      fontFamily: "Inter",
+      fontWeight: "semibold",
+      letterSpacing: 2,
+      lineHeight: 1.4,
+      opacity: 0.65,
+      rotation: -6,
+      textAlign: "center"
+    });
+  });
+
+  it("edits CTA typography from the inspector", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add CTA" }));
+
+    fireEvent.change(screen.getByLabelText("Font Family"), {
+      target: {
+        value: "Inter"
+      }
+    });
+    fireEvent.change(screen.getByLabelText("Font Size"), {
+      target: {
+        value: "36"
+      }
+    });
+    fireEvent.change(screen.getByLabelText("Corner Radius"), {
+      target: {
+        value: "24"
+      }
+    });
+
+    const canvasJson = JSON.parse((screen.getByTestId("project-editor-canvas-json") as HTMLInputElement).value);
+    const ctaElement = canvasJson.slides[0].elements.find((element: { type: string }) => element.type === "cta");
+
+    expect(ctaElement).toMatchObject({
+      borderRadius: 24,
+      fontFamily: "Inter",
+      fontSize: 36
+    });
+  });
+
+  it("edits shape radius and stroke from the inspector", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Shape" }));
+
+    fireEvent.change(screen.getByLabelText("Corner Radius"), {
+      target: {
+        value: "48"
+      }
+    });
+    fireEvent.change(screen.getByLabelText("Stroke Color"), {
+      target: {
+        value: "#0B0F19"
+      }
+    });
+    fireEvent.change(screen.getByLabelText("Stroke Width"), {
+      target: {
+        value: "6"
+      }
+    });
+
+    const canvasJson = JSON.parse((screen.getByTestId("project-editor-canvas-json") as HTMLInputElement).value);
+    const shapeElement = canvasJson.slides[0].elements.find((element: { type: string }) => element.type === "shape");
+
+    expect(shapeElement).toMatchObject({
+      borderRadius: 48,
+      stroke: "#0B0F19",
+      strokeWidth: 6
+    });
+  });
+
   it("autosaves canvas edits and shows recent versions", async () => {
     const autosavedVersion: ProjectVersion = {
       ...version,

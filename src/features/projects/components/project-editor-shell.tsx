@@ -1,6 +1,9 @@
 "use client";
 
 import {
+  AlignCenter,
+  AlignLeft,
+  AlignRight,
   ArrowLeft,
   Badge,
   BoxSelect,
@@ -83,8 +86,63 @@ type ProjectEditorShellProps = {
 };
 
 type EditableField = keyof Extract<CanvasElement, { type: "text" }> | keyof Extract<CanvasElement, { type: "cta" }>;
+type CanvasTextElement = Extract<CanvasElement, { type: "text" }>;
+type SelectOption<TValue extends string> = {
+  label: string;
+  value: TValue;
+};
 
 const canvasPreviewSize = 560;
+const fontFamilyOptions = [
+  {
+    label: "Geist",
+    value: "Geist"
+  },
+  {
+    label: "Inter",
+    value: "Inter"
+  },
+  {
+    label: "Arial",
+    value: "Arial"
+  },
+  {
+    label: "Georgia",
+    value: "Georgia"
+  }
+] satisfies SelectOption<string>[];
+const fontWeightOptions = [
+  {
+    label: "Regular",
+    value: "regular"
+  },
+  {
+    label: "Medium",
+    value: "medium"
+  },
+  {
+    label: "Semibold",
+    value: "semibold"
+  },
+  {
+    label: "Bold",
+    value: "bold"
+  }
+] satisfies SelectOption<CanvasTextElement["fontWeight"]>[];
+const shapeOptions = [
+  {
+    label: "Rectangle",
+    value: "rectangle"
+  },
+  {
+    label: "Ellipse",
+    value: "ellipse"
+  },
+  {
+    label: "Line",
+    value: "line"
+  }
+] satisfies SelectOption<Extract<CanvasElement, { type: "shape" }>["shape"]>[];
 
 const fallbackAiGenerationAction: AiGenerationAction = async () => initialAiGenerationActionState;
 const fallbackAutosaveAction: ProjectEditorAutosaveAction = async () => initialProjectEditorSaveState;
@@ -902,19 +960,121 @@ function ElementProperties({
         <NumberField label="Layer" value={element.zIndex} onChange={(zIndex) => onUpdate({ zIndex })} />
       </div>
 
+      <div className="grid grid-cols-2 gap-3">
+        <NumberField
+          label="Opacity"
+          max={1}
+          min={0}
+          onChange={(opacity) => onUpdate({ opacity })}
+          step={0.05}
+          value={element.opacity}
+        />
+        <NumberField
+          label="Rotation"
+          max={360}
+          min={-360}
+          onChange={(rotation) => onUpdate({ rotation })}
+          step={1}
+          value={element.rotation}
+        />
+      </div>
+
       {element.type === "text" ? (
         <>
-          <NumberField label="Font Size" value={element.fontSize} onChange={(fontSize) => onUpdate({ fontSize })} />
+          <SelectField
+            label="Font Family"
+            onChange={(fontFamily) => onUpdate({ fontFamily })}
+            options={fontFamilyOptions}
+            value={element.fontFamily}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField label="Font Size" value={element.fontSize} onChange={(fontSize) => onUpdate({ fontSize })} />
+            <SelectField
+              label="Weight"
+              onChange={(fontWeight) => onUpdate({ fontWeight })}
+              options={fontWeightOptions}
+              value={element.fontWeight}
+            />
+          </div>
+          <AlignmentField value={element.textAlign} onChange={(textAlign) => onUpdate({ textAlign })} />
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField
+              label="Line Height"
+              max={3}
+              min={0.8}
+              onChange={(lineHeight) => onUpdate({ lineHeight })}
+              step={0.05}
+              value={element.lineHeight}
+            />
+            <NumberField
+              label="Letter Spacing"
+              max={50}
+              min={-10}
+              onChange={(letterSpacing) => onUpdate({ letterSpacing })}
+              step={0.5}
+              value={element.letterSpacing}
+            />
+          </div>
           <ColorField label="Color" value={element.color} onChange={(color) => onUpdate({ color })} />
         </>
       ) : null}
 
       {element.type === "shape" ? (
-        <ColorField label="Fill" value={element.fill} onChange={(fill) => onUpdate({ fill })} />
+        <>
+          <SelectField
+            label="Shape"
+            onChange={(shape) => onUpdate({ shape })}
+            options={shapeOptions}
+            value={element.shape}
+          />
+          <NumberField
+            label="Corner Radius"
+            min={0}
+            onChange={(borderRadius) => onUpdate({ borderRadius })}
+            value={element.borderRadius}
+          />
+          <ColorField label="Fill" value={element.fill} onChange={(fill) => onUpdate({ fill })} />
+          <ColorField
+            label="Stroke Color"
+            value={element.stroke ?? "#263244"}
+            onChange={(stroke) =>
+              onUpdate({
+                stroke,
+                strokeWidth: element.strokeWidth > 0 ? element.strokeWidth : 1
+              })
+            }
+          />
+          <NumberField
+            label="Stroke Width"
+            min={0}
+            onChange={(strokeWidth) =>
+              onUpdate({
+                stroke: strokeWidth > 0 ? element.stroke ?? "#263244" : null,
+                strokeWidth
+              })
+            }
+            value={element.strokeWidth}
+          />
+        </>
       ) : null}
 
       {element.type === "cta" ? (
         <>
+          <SelectField
+            label="Font Family"
+            onChange={(fontFamily) => onUpdate({ fontFamily })}
+            options={fontFamilyOptions}
+            value={element.fontFamily}
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <NumberField label="Font Size" value={element.fontSize} onChange={(fontSize) => onUpdate({ fontSize })} />
+            <NumberField
+              label="Corner Radius"
+              min={0}
+              onChange={(borderRadius) => onUpdate({ borderRadius })}
+              value={element.borderRadius}
+            />
+          </div>
           <ColorField
             label="Background"
             value={element.backgroundColor}
@@ -962,11 +1122,17 @@ function TextField({
 
 function NumberField({
   label,
+  max,
+  min,
   onChange,
+  step = 1,
   value
 }: {
   label: string;
+  max?: number;
+  min?: number;
   onChange: (value: number) => void;
+  step?: number;
   value: number;
 }) {
   return (
@@ -974,11 +1140,96 @@ function NumberField({
       <span className="text-sm font-medium text-[#F8FAFC]">{label}</span>
       <input
         className="mt-2 min-h-10 w-full rounded-lg border border-[#263244] bg-[#0B0F19] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
+        max={max}
+        min={min}
         onChange={(event) => onChange(Number(event.target.value))}
+        step={step}
         type="number"
         value={value}
       />
     </label>
+  );
+}
+
+function SelectField<TValue extends string>({
+  label,
+  onChange,
+  options,
+  value
+}: {
+  label: string;
+  onChange: (value: TValue) => void;
+  options: SelectOption<TValue>[];
+  value: TValue;
+}) {
+  return (
+    <label className="block">
+      <span className="text-sm font-medium text-[#F8FAFC]">{label}</span>
+      <select
+        className="mt-2 min-h-10 w-full rounded-lg border border-[#263244] bg-[#0B0F19] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
+        onChange={(event) => onChange(event.target.value as TValue)}
+        value={value}
+      >
+        {options.map((option) => (
+          <option key={option.value} value={option.value}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function AlignmentField({
+  onChange,
+  value
+}: {
+  onChange: (value: CanvasTextElement["textAlign"]) => void;
+  value: CanvasTextElement["textAlign"];
+}) {
+  const options = [
+    {
+      Icon: AlignLeft,
+      label: "Align left",
+      value: "left"
+    },
+    {
+      Icon: AlignCenter,
+      label: "Align center",
+      value: "center"
+    },
+    {
+      Icon: AlignRight,
+      label: "Align right",
+      value: "right"
+    }
+  ] satisfies Array<{
+    Icon: typeof AlignLeft;
+    label: string;
+    value: CanvasTextElement["textAlign"];
+  }>;
+
+  return (
+    <div>
+      <p className="text-sm font-medium text-[#F8FAFC]">Alignment</p>
+      <div className="mt-2 grid grid-cols-3 overflow-hidden rounded-lg border border-[#263244] bg-[#0B0F19]">
+        {options.map(({ Icon, label, value: optionValue }) => (
+          <button
+            aria-label={label}
+            aria-pressed={value === optionValue}
+            className={[
+              "inline-flex min-h-10 items-center justify-center border-r border-[#263244] text-[#CBD5E1] last:border-r-0 hover:text-[#F8FAFC]",
+              value === optionValue ? "bg-[#1C2433] text-[#00E5FF]" : "bg-transparent"
+            ].join(" ")}
+            key={optionValue}
+            onClick={() => onChange(optionValue)}
+            type="button"
+          >
+            <Icon aria-hidden="true" className="h-4 w-4" />
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -998,19 +1249,23 @@ function ColorField({
         <input
           aria-label={`${label} swatch`}
           className="h-7 w-9 shrink-0 cursor-pointer rounded border border-[#263244] bg-transparent"
-          onChange={(event) => onChange(event.target.value)}
+          onChange={(event) => onChange(normalizeHexInput(event.target.value))}
           type="color"
           value={value}
         />
         <input
           className="min-w-0 flex-1 bg-transparent text-sm text-[#F8FAFC] outline-none"
-          onChange={(event) => onChange(event.target.value)}
+          onChange={(event) => onChange(normalizeHexInput(event.target.value))}
           type="text"
           value={value}
         />
       </div>
     </label>
   );
+}
+
+function normalizeHexInput(value: string): string {
+  return value.startsWith("#") ? value.toUpperCase() : value;
 }
 
 function fontWeightValue(weight: Extract<CanvasElement, { type: "text" }>["fontWeight"]) {
