@@ -32,6 +32,7 @@ import type {
 } from "@/features/ai/types/ai-generation-action-state";
 import { getCanvasElementsInPaintOrder } from "@/features/canvas/services/canvas-object-model.service";
 import type { CanvasDocument, CanvasElement, CanvasSlide } from "@/features/canvas/types/canvas";
+import { ExportPanel } from "@/features/exports/components/export-panel";
 import { ThemeEnginePanel } from "@/features/themes/components/theme-engine-panel";
 import { applyProjectThemeToCanvas } from "@/features/themes/services/theme-engine.service";
 import { initialProjectThemeActionState } from "@/features/themes/types/project-theme-action-state";
@@ -373,6 +374,7 @@ export function ProjectEditorShell({
             onGenerated={applyGeneratedDocument}
             projectId={project.id}
           />
+          <ExportPanel document={document} projectTitle={project.title} />
           <VersionHistoryPanel versions={displayedVersions} />
 
           <div>

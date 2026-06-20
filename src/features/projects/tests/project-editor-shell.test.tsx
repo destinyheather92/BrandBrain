@@ -67,6 +67,10 @@ describe("ProjectEditorShell", () => {
     expect(screen.getByRole("button", { name: "Add Shape" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add CTA" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save Project" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Export" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export PNG" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export JPG" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export PDF" })).toBeInTheDocument();
     expect(screen.getByLabelText("Slide 1 canvas")).toBeInTheDocument();
   });
 
