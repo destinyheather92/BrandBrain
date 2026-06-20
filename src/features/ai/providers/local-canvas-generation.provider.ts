@@ -131,11 +131,7 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
   const slideCount = Math.min(10, Math.max(3, payload.outputRules?.slideCount ?? 3));
   const title = payload.projectTitle?.trim() || "Generated BrandBrain Carousel";
   const brandName = payload.brand?.name?.trim() || "Brand";
-  const cta = fitCanvasText(
-    payload.brand?.memory?.preferredCtas?.split(/\r?\n|,/)[0],
-    previewCtaLabelMaxLength,
-    "Learn more"
-  );
+  const cta = selectCtaLabel(payload.brand?.memory?.preferredCtas);
   const topic = fitCanvasText(payload.userRequest, 160, title);
   const audience = fitCanvasText(payload.brand?.memory?.audience, 96, "your ideal customers");
   const services = getServices(payload.brand?.memory?.productsServices);
@@ -415,6 +411,31 @@ function fitCanvasText(value: string | null | undefined, maxLength: number, fall
   }
 
   return `${text.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
+function selectCtaLabel(value: string | null | undefined): string {
+  const candidates = getCtaCandidates(value);
+  const selected =
+    candidates.find((candidate) => /^(book|call|contact|download|explore|get|join|learn|schedule|start|try|visit)\b/i.test(candidate)) ??
+    candidates[0];
+
+  return fitCanvasText(selected, previewCtaLabelMaxLength, "Learn more");
+}
+
+function getCtaCandidates(value: string | null | undefined): string[] {
+  const source = (value ?? "")
+    .replace(/\b(?:cta|ctas|examples?|preferred)\s*:/gi, "")
+    .split(/\r?\n|[.;!?]+|,|\s+\|\s+/)
+    .map((candidate) =>
+      candidate
+        .replace(/^[-*•\d.)\s]+/, "")
+        .replace(/^["'“”‘’]+|["'“”‘’]+$/g, "")
+        .replace(/\s+/g, " ")
+        .trim()
+    )
+    .filter((candidate) => candidate.length > 0 && !/^(and|or)$/i.test(candidate));
+
+  return source.length > 0 ? source : ["Learn more"];
 }
 
 function getServices(value: string | null | undefined): string[] {

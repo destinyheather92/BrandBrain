@@ -60,6 +60,21 @@ describe("LocalCanvasGenerationProvider", () => {
     });
     expect(cta?.type === "cta" ? cta.label.length : 0).toBeLessThanOrEqual(200);
   });
+
+  it("selects one CTA from sentence-separated brand memory examples", async () => {
+    const document = await generateTestDocument({
+      preferredCtas:
+        "Schedule a consultation. Learn more about nervous system regulation. Explore counseling services. Download a resource. Try a grounding exercise. Follow us for mental health content."
+    });
+    const ctaLabels = document.slides
+      .flatMap((slide) => slide.elements)
+      .filter((element) => element.type === "cta")
+      .map((element) => (element.type === "cta" ? element.label : ""));
+
+    expect(new Set(ctaLabels)).toEqual(new Set(["Schedule a consultation"]));
+    expect(ctaLabels[0]).not.toContain("Learn more");
+    expect(ctaLabels[0]).not.toContain("Download");
+  });
 });
 
 async function generateTestDocument({
