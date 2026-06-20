@@ -95,8 +95,10 @@ describe("canvas export service", () => {
 
     expect(svg).toContain('<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1080"');
     expect(svg).toContain('fill="#FFFFFF"');
-    expect(svg).toContain("Export &lt;ready&gt; &amp; editable");
+    expect(svg).toContain("Export &lt;ready&gt; &amp;");
+    expect(svg).toContain("editable");
     expect(svg).toContain("Book now");
+    expect(svg).not.toContain("<foreignObject");
     expect(svg).not.toContain("<script");
   });
 

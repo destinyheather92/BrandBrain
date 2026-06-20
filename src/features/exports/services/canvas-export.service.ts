@@ -4,7 +4,6 @@ import type { CanvasElement, CanvasSlide } from "@/features/canvas/types/canvas"
 import type { CanvasExportFormat, PdfImagePage } from "../types/canvas-export";
 
 const xmlNamespace = "http://www.w3.org/2000/svg";
-const xhtmlNamespace = "http://www.w3.org/1999/xhtml";
 const textEncoder = new TextEncoder();
 
 export function buildCanvasSlideSvg(slide: CanvasSlide): string {
@@ -158,6 +157,7 @@ function renderElement(element: CanvasElement): string {
         height: element.height,
         lineHeight: 1.15,
         textAlign: "center",
+        verticalAlign: "center",
         width: element.width,
         x: element.x,
         y: element.y
@@ -178,6 +178,7 @@ function renderElement(element: CanvasElement): string {
         height: element.height,
         lineHeight: element.lineHeight,
         textAlign: element.textAlign,
+        verticalAlign: "top",
         width: element.width,
         x: element.x,
         y: element.y
@@ -196,6 +197,7 @@ function renderElement(element: CanvasElement): string {
       height: element.height,
       lineHeight: 1.1,
       textAlign: "left",
+      verticalAlign: "center",
       width: element.width,
       x: element.x,
       y: element.y
@@ -238,6 +240,7 @@ function renderTextBox({
   height,
   lineHeight,
   textAlign,
+  verticalAlign,
   width,
   x,
   y
@@ -250,35 +253,34 @@ function renderTextBox({
   height: number;
   lineHeight: number;
   textAlign: "center" | "left" | "right";
+  verticalAlign: "center" | "top";
   width: number;
   x: number;
   y: number;
 }): string {
-  const justifyContent = textAlign === "center" ? "center" : "flex-start";
+  const lines = wrapText(content, width, fontSize);
+  const lineHeightPx = fontSize * lineHeight;
+  const maxLines = Math.max(1, Math.floor(height / lineHeightPx));
+  const visibleLines = lines.slice(0, maxLines);
 
-  return [
-    `<foreignObject x="${x}" y="${y}" width="${width}" height="${height}">`,
-    `<div xmlns="${xhtmlNamespace}" style="${[
-      "box-sizing:border-box",
-      `color:${color}`,
-      "display:flex",
-      `font-family:${escapeStyle(fontFamily)},Inter,sans-serif`,
-      `font-size:${fontSize}px`,
-      `font-weight:${fontWeight}`,
-      `height:${height}px`,
-      `line-height:${lineHeight}`,
-      "overflow:hidden",
-      "white-space:pre-wrap",
-      "word-break:break-word",
-      `align-items:${justifyContent}`,
-      `justify-content:${justifyContent}`,
-      `text-align:${textAlign}`,
-      `width:${width}px`
-    ].join(";")}">`,
-    escapeHtml(content),
-    "</div>",
-    "</foreignObject>"
-  ].join("");
+  if (visibleLines.length === 0) {
+    return "";
+  }
+
+  const textX = textAlign === "center" ? x + width / 2 : textAlign === "right" ? x + width : x;
+  const textAnchor = textAlign === "center" ? "middle" : textAlign === "right" ? "end" : "start";
+  const totalTextHeight = visibleLines.length * lineHeightPx;
+  const firstLineBaseline =
+    verticalAlign === "center"
+      ? y + (height - totalTextHeight) / 2 + fontSize * 0.82
+      : y + fontSize * 0.82;
+  const tspans = visibleLines
+    .map((line, index) =>
+      `<tspan x="${textX}" ${index === 0 ? `y="${firstLineBaseline}"` : `dy="${lineHeightPx}"`}>${escapeHtml(line)}</tspan>`
+    )
+    .join("");
+
+  return `<text fill="${color}" font-family="${escapeAttribute(fontFamily)}, Inter, sans-serif" font-size="${fontSize}" font-weight="${fontWeight}" text-anchor="${textAnchor}">${tspans}</text>`;
 }
 
 function escapeHtml(value: string): string {
@@ -289,8 +291,42 @@ function escapeHtml(value: string): string {
     .replaceAll('"', "&quot;");
 }
 
-function escapeStyle(value: string): string {
+function escapeAttribute(value: string): string {
   return value.replaceAll(";", "").replaceAll('"', "");
+}
+
+function wrapText(content: string, width: number, fontSize: number): string[] {
+  const sourceLines = content.split(/\r?\n/);
+  const maxCharacters = Math.max(1, Math.floor(width / Math.max(1, fontSize * 0.54)));
+  const lines: string[] = [];
+
+  for (const sourceLine of sourceLines) {
+    const words = sourceLine.trim().split(/\s+/).filter(Boolean);
+
+    if (words.length === 0) {
+      lines.push("");
+      continue;
+    }
+
+    let currentLine = "";
+
+    for (const word of words) {
+      const candidate = currentLine ? `${currentLine} ${word}` : word;
+
+      if (candidate.length <= maxCharacters || currentLine.length === 0) {
+        currentLine = candidate;
+      } else {
+        lines.push(currentLine);
+        currentLine = word;
+      }
+    }
+
+    if (currentLine) {
+      lines.push(currentLine);
+    }
+  }
+
+  return lines.filter((line) => line.length > 0);
 }
 
 function fontWeightValue(weight: Extract<CanvasElement, { type: "text" }>["fontWeight"]): number {
