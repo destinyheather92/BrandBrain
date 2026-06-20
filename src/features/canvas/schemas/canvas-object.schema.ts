@@ -86,7 +86,7 @@ export const canvasCtaElementSchema = baseCanvasElementSchema
     borderRadius: z.number().finite().min(0).max(512),
     fontFamily: z.string().trim().min(1).max(120),
     fontSize: z.number().finite().positive().max(256),
-    label: z.string().trim().min(1).max(200),
+    label: z.string().max(200),
     textColor: canvasColorSchema,
     type: z.literal("cta")
   })

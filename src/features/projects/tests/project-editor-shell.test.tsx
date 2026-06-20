@@ -133,6 +133,28 @@ describe("ProjectEditorShell", () => {
     });
   });
 
+  it("allows a CTA label to be cleared before typing replacement copy", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add CTA" }));
+
+    const labelInput = screen.getByLabelText("Label");
+
+    fireEvent.change(labelInput, {
+      target: {
+        value: ""
+      }
+    });
+
+    expect(labelInput).toHaveValue("");
+  });
+
   it("autosaves canvas edits and shows recent versions", async () => {
     const autosavedVersion: ProjectVersion = {
       ...version,
