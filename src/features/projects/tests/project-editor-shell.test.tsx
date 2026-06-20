@@ -144,6 +144,78 @@ describe("ProjectEditorShell", () => {
     expect((canvasJsonInput as HTMLInputElement).value).toContain("\"type\":\"cta\"");
   });
 
+  it("moves a canvas object by dragging it directly on the canvas", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+
+    const textLayer = screen.getByRole("button", { name: "Editable headline" });
+
+    fireEvent.pointerDown(textLayer, {
+      clientX: 100,
+      clientY: 100,
+      pointerId: 1
+    });
+    fireEvent.pointerMove(textLayer, {
+      clientX: 128,
+      clientY: 156,
+      pointerId: 1
+    });
+    fireEvent.pointerUp(textLayer, {
+      pointerId: 1
+    });
+
+    const canvasJson = JSON.parse((screen.getByTestId("project-editor-canvas-json") as HTMLInputElement).value);
+    const textElement = canvasJson.slides[0].elements.find((element: { type: string }) => element.type === "text");
+
+    expect(textElement).toMatchObject({
+      x: 150,
+      y: 288
+    });
+  });
+
+  it("resizes a selected canvas object with a resize handle", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+
+    const resizeHandle = screen.getByRole("button", { name: "Resize Editable headline" });
+
+    fireEvent.pointerDown(resizeHandle, {
+      clientX: 100,
+      clientY: 100,
+      pointerId: 1
+    });
+    fireEvent.pointerMove(resizeHandle, {
+      clientX: 128,
+      clientY: 156,
+      pointerId: 1
+    });
+    fireEvent.pointerUp(resizeHandle, {
+      pointerId: 1
+    });
+
+    const canvasJson = JSON.parse((screen.getByTestId("project-editor-canvas-json") as HTMLInputElement).value);
+    const textElement = canvasJson.slides[0].elements.find((element: { type: string }) => element.type === "text");
+
+    expect(textElement).toMatchObject({
+      height: 288,
+      width: 774
+    });
+  });
+
   it("renders CTA layers without a browser border or focus outline", () => {
     render(
       <ProjectEditorShell

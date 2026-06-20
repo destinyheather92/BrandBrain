@@ -1,6 +1,24 @@
 import { canvasDocumentSchema, canvasElementSchema } from "@/features/canvas/schemas/canvas-object.schema";
 import type { CanvasDocument, CanvasElement } from "@/features/canvas/types/canvas";
 
+const minimumCanvasElementSize = 32;
+
+type CanvasElementMoveInput = {
+  deltaX: number;
+  deltaY: number;
+  document: CanvasDocument;
+  elementId: string;
+  slideId: string;
+};
+
+type CanvasElementResizeInput = {
+  deltaHeight: number;
+  deltaWidth: number;
+  document: CanvasDocument;
+  elementId: string;
+  slideId: string;
+};
+
 export function createCanvasTextElement(id: string): CanvasElement {
   return canvasElementSchema.parse({
     color: "#F8FAFC",
@@ -110,6 +128,46 @@ export function updateCanvasElement(
   });
 }
 
+export function moveCanvasElementInSlide({
+  deltaX,
+  deltaY,
+  document,
+  elementId,
+  slideId
+}: CanvasElementMoveInput): CanvasDocument {
+  const slide = document.slides.find((candidate) => candidate.id === slideId);
+  const element = slide?.elements.find((candidate) => candidate.id === elementId);
+
+  if (!slide || !element || element.locked) {
+    return document;
+  }
+
+  return updateCanvasElement(document, slideId, elementId, {
+    x: clampCanvasNumber(element.x + deltaX, 0, slide.width - element.width),
+    y: clampCanvasNumber(element.y + deltaY, 0, slide.height - element.height)
+  });
+}
+
+export function resizeCanvasElementInSlide({
+  deltaHeight,
+  deltaWidth,
+  document,
+  elementId,
+  slideId
+}: CanvasElementResizeInput): CanvasDocument {
+  const slide = document.slides.find((candidate) => candidate.id === slideId);
+  const element = slide?.elements.find((candidate) => candidate.id === elementId);
+
+  if (!slide || !element || element.locked) {
+    return document;
+  }
+
+  return updateCanvasElement(document, slideId, elementId, {
+    height: clampCanvasNumber(element.height + deltaHeight, minimumCanvasElementSize, slide.height - element.y),
+    width: clampCanvasNumber(element.width + deltaWidth, minimumCanvasElementSize, slide.width - element.x)
+  });
+}
+
 export function removeCanvasElement(document: CanvasDocument, slideId: string, elementId: string): CanvasDocument {
   return canvasDocumentSchema.parse({
     ...document,
@@ -122,6 +180,10 @@ export function removeCanvasElement(document: CanvasDocument, slideId: string, e
         : slide
       )
   });
+}
+
+function clampCanvasNumber(value: number, minimum: number, maximum: number): number {
+  return Math.round(Math.min(Math.max(value, minimum), Math.max(minimum, maximum)));
 }
 
 export function normalizeEditorCanvas(document: CanvasDocument): CanvasDocument {

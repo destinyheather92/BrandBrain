@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import {
+  type PointerEvent,
   type ReactNode,
   useActionState,
   useCallback,
@@ -47,8 +48,10 @@ import {
   createCanvasCtaElement,
   createCanvasShapeElement,
   createCanvasTextElement,
+  moveCanvasElementInSlide,
   normalizeEditorCanvas,
   removeCanvasElement,
+  resizeCanvasElementInSlide,
   updateCanvasElement
 } from "../services/project-editor-canvas.service";
 import type { ContentProject } from "../types/content-project";
@@ -237,6 +240,40 @@ export function ProjectEditorShell({
     setDocument(updateCanvasElement(document, activeSlide.id, selectedElement.id, changes));
   }
 
+  function moveElement(elementId: string, deltaX: number, deltaY: number) {
+    if (!activeSlide) {
+      return;
+    }
+
+    setDocument((currentDocument) =>
+      moveCanvasElementInSlide({
+        deltaX,
+        deltaY,
+        document: currentDocument,
+        elementId,
+        slideId: activeSlide.id
+      })
+    );
+    setSelectedElementId(elementId);
+  }
+
+  function resizeElement(elementId: string, deltaWidth: number, deltaHeight: number) {
+    if (!activeSlide) {
+      return;
+    }
+
+    setDocument((currentDocument) =>
+      resizeCanvasElementInSlide({
+        deltaHeight,
+        deltaWidth,
+        document: currentDocument,
+        elementId,
+        slideId: activeSlide.id
+      })
+    );
+    setSelectedElementId(elementId);
+  }
+
   function deleteSelectedElement() {
     if (!activeSlide || !selectedElement) {
       return;
@@ -397,6 +434,8 @@ export function ProjectEditorShell({
             {activeSlide ? (
               <SlideCanvas
                 activeElementId={selectedElementId}
+                onMoveElement={moveElement}
+                onResizeElement={resizeElement}
                 onSelectElement={setSelectedElementId}
                 slide={activeSlide}
               />
@@ -553,10 +592,14 @@ function formatVersionTime(value: Date): string {
 
 function SlideCanvas({
   activeElementId,
+  onMoveElement,
+  onResizeElement,
   onSelectElement,
   slide
 }: {
   activeElementId: string | null;
+  onMoveElement: (elementId: string, deltaX: number, deltaY: number) => void;
+  onResizeElement: (elementId: string, deltaWidth: number, deltaHeight: number) => void;
   onSelectElement: (elementId: string) => void;
   slide: CanvasSlide;
 }) {
@@ -577,6 +620,8 @@ function SlideCanvas({
           key={element.id}
           active={element.id === activeElementId}
           element={element}
+          onMove={onMoveElement}
+          onResize={onResizeElement}
           onSelect={() => onSelectElement(element.id)}
           slide={slide}
         />
@@ -588,14 +633,23 @@ function SlideCanvas({
 function CanvasElementButton({
   active,
   element,
+  onMove,
+  onResize,
   onSelect,
   slide
 }: {
   active: boolean;
   element: CanvasElement;
+  onMove: (elementId: string, deltaX: number, deltaY: number) => void;
+  onResize: (elementId: string, deltaWidth: number, deltaHeight: number) => void;
   onSelect: () => void;
   slide: CanvasSlide;
 }) {
+  const interactionRef = useRef<{
+    lastClientX: number;
+    lastClientY: number;
+    mode: "move" | "resize";
+  } | null>(null);
   const baseStyle = {
     height: `${(element.height / slide.height) * 100}%`,
     left: `${(element.x / slide.width) * 100}%`,
@@ -605,88 +659,197 @@ function CanvasElementButton({
     width: `${(element.width / slide.width) * 100}%`,
     zIndex: element.zIndex
   };
-  const canvasLayerClass = "border-0 appearance-none outline-none focus:outline-none focus-visible:outline-none";
+  const canvasLayerClass = "h-full w-full border-0 appearance-none outline-none focus:outline-none focus-visible:outline-none";
   const activeClass = active ? "shadow-[0_0_0_1px_rgba(203,213,225,0.18)]" : "shadow-none";
+  const elementLabel = canvasElementLabel(element);
+  const frameStyle = {
+    ...baseStyle,
+    transform: `rotate(${element.rotation}deg)`
+  };
+  const scaleX = slide.width / canvasPreviewSize;
+  const scaleY = slide.height / canvasPreviewSize;
+
+  function beginInteraction(event: PointerEvent<HTMLElement>, mode: "move" | "resize") {
+    if (element.locked) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.setPointerCapture?.(event.pointerId);
+    interactionRef.current = {
+      lastClientX: event.clientX,
+      lastClientY: event.clientY,
+      mode
+    };
+    onSelect();
+  }
+
+  function updateInteraction(event: PointerEvent<HTMLElement>) {
+    const interaction = interactionRef.current;
+
+    if (!interaction) {
+      return;
+    }
+
+    event.preventDefault();
+    const deltaX = (event.clientX - interaction.lastClientX) * scaleX;
+    const deltaY = (event.clientY - interaction.lastClientY) * scaleY;
+
+    if (deltaX === 0 && deltaY === 0) {
+      return;
+    }
+
+    if (interaction.mode === "move") {
+      onMove(element.id, deltaX, deltaY);
+    } else {
+      onResize(element.id, deltaX, deltaY);
+    }
+
+    interactionRef.current = {
+      ...interaction,
+      lastClientX: event.clientX,
+      lastClientY: event.clientY
+    };
+  }
+
+  function endInteraction(event: PointerEvent<HTMLElement>) {
+    event.currentTarget.releasePointerCapture?.(event.pointerId);
+    interactionRef.current = null;
+  }
+
+  const interactionHandlers = {
+    onPointerCancel: endInteraction,
+    onPointerMove: updateInteraction,
+    onPointerUp: endInteraction
+  };
+
+  const resizeHandle = active ? (
+    <button
+      aria-label={`Resize ${elementLabel}`}
+      className="absolute -bottom-1.5 -right-1.5 h-4 w-4 rounded-sm border border-[#0B0F19] bg-[#00E5FF] shadow-[0_0_0_1px_rgba(248,250,252,0.65)]"
+      onClick={(event) => event.stopPropagation()}
+      onPointerDown={(event) => beginInteraction(event, "resize")}
+      type="button"
+      {...interactionHandlers}
+    />
+  ) : null;
 
   if (element.type === "shape") {
     return (
-      <button
-        aria-label={`${element.shape} shape`}
-        className={`absolute ${canvasLayerClass} ${activeClass}`}
-        onClick={onSelect}
-        style={{
-          ...baseStyle,
-          backgroundColor: element.fill,
-          ...(element.stroke
-            ? {
-                border: `${element.strokeWidth}px solid ${element.stroke}`
-              }
-            : {
-                borderStyle: "none",
-                borderWidth: 0
-              }),
-          borderRadius: element.borderRadius
-        }}
-        type="button"
-      />
+      <div className={`absolute ${activeClass}`} style={frameStyle}>
+        <button
+          aria-label={elementLabel}
+          className={canvasLayerClass}
+          onClick={onSelect}
+          onPointerDown={(event) => beginInteraction(event, "move")}
+          style={{
+            backgroundColor: element.fill,
+            ...(element.stroke
+              ? {
+                  border: `${element.strokeWidth}px solid ${element.stroke}`
+                }
+              : {
+                  borderStyle: "none",
+                  borderWidth: 0
+                }),
+            borderRadius: element.borderRadius
+          }}
+          type="button"
+          {...interactionHandlers}
+        />
+        {resizeHandle}
+      </div>
     );
   }
 
   if (element.type === "cta") {
     return (
-      <button
-        className={`absolute flex items-center justify-center overflow-hidden break-words px-3 text-center font-semibold leading-tight ${canvasLayerClass} ${activeClass}`}
-        onClick={onSelect}
-        style={{
-          ...baseStyle,
-          backgroundColor: element.backgroundColor,
-          borderStyle: "none",
-          borderWidth: 0,
-          borderRadius: element.borderRadius,
-          color: element.textColor,
-          fontFamily: element.fontFamily,
-          fontSize: `${Math.max(10, element.fontSize * (canvasPreviewSize / slide.width))}px`
-        }}
-        type="button"
-      >
-        {element.label}
-      </button>
+      <div className={`absolute ${activeClass}`} style={frameStyle}>
+        <button
+          className={`flex items-center justify-center overflow-hidden break-words px-3 text-center font-semibold leading-tight ${canvasLayerClass}`}
+          onClick={onSelect}
+          onPointerDown={(event) => beginInteraction(event, "move")}
+          style={{
+            backgroundColor: element.backgroundColor,
+            borderStyle: "none",
+            borderWidth: 0,
+            borderRadius: element.borderRadius,
+            color: element.textColor,
+            fontFamily: element.fontFamily,
+            fontSize: `${Math.max(10, element.fontSize * (canvasPreviewSize / slide.width))}px`
+          }}
+          type="button"
+          {...interactionHandlers}
+        >
+          {element.label}
+        </button>
+        {resizeHandle}
+      </div>
     );
   }
 
   if (element.type === "text") {
     return (
-      <button
-        className={`absolute overflow-hidden bg-transparent text-left ${canvasLayerClass} ${activeClass}`}
-        onClick={onSelect}
-        style={{
-          ...baseStyle,
-          borderStyle: "none",
-          borderWidth: 0,
-          color: element.color,
-          fontFamily: element.fontFamily,
-          fontSize: `${Math.max(10, element.fontSize * (canvasPreviewSize / slide.width))}px`,
-          fontWeight: fontWeightValue(element.fontWeight),
-          letterSpacing: element.letterSpacing,
-          lineHeight: element.lineHeight,
-          textAlign: element.textAlign
-        }}
-        type="button"
-      >
-        {element.content}
-      </button>
+      <div className={`absolute ${activeClass}`} style={frameStyle}>
+        <button
+          className={`overflow-hidden bg-transparent text-left ${canvasLayerClass}`}
+          onClick={onSelect}
+          onPointerDown={(event) => beginInteraction(event, "move")}
+          style={{
+            borderStyle: "none",
+            borderWidth: 0,
+            color: element.color,
+            fontFamily: element.fontFamily,
+            fontSize: `${Math.max(10, element.fontSize * (canvasPreviewSize / slide.width))}px`,
+            fontWeight: fontWeightValue(element.fontWeight),
+            letterSpacing: element.letterSpacing,
+            lineHeight: element.lineHeight,
+            textAlign: element.textAlign
+          }}
+          type="button"
+          {...interactionHandlers}
+        >
+          {element.content}
+        </button>
+        {resizeHandle}
+      </div>
     );
   }
 
   return (
-    <button
-      aria-label={element.type}
-      className={`absolute border border-[#00E5FF] ${activeClass}`}
-      onClick={onSelect}
-      style={baseStyle}
-      type="button"
-    />
+    <div className={`absolute ${activeClass}`} style={frameStyle}>
+      <button
+        aria-label={element.type}
+        className="h-full w-full border border-[#00E5FF]"
+        onClick={onSelect}
+        onPointerDown={(event) => beginInteraction(event, "move")}
+        type="button"
+        {...interactionHandlers}
+      />
+      {resizeHandle}
+    </div>
   );
+}
+
+function canvasElementLabel(element: CanvasElement): string {
+  if (element.type === "text") {
+    return element.content || "Text object";
+  }
+
+  if (element.type === "cta") {
+    return element.label || "CTA object";
+  }
+
+  if (element.type === "shape") {
+    return `${element.shape} shape`;
+  }
+
+  if (element.type === "logo") {
+    return `${element.brandName} logo`;
+  }
+
+  return element.type;
 }
 
 function SlideProperties({
