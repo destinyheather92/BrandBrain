@@ -122,6 +122,22 @@ describe("ProjectEditorShell", () => {
     );
   });
 
+  it("keeps the right inspector within the viewport with internal scrolling", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    const inspector = screen.getByLabelText("Editor inspector");
+
+    expect(inspector).toHaveClass("lg:h-[calc(100vh-4rem)]");
+    expect(inspector).toHaveClass("lg:overflow-y-auto");
+    expect(inspector).toHaveClass("p-3");
+  });
+
   it("adds and edits a text element on the canvas", () => {
     render(
       <ProjectEditorShell

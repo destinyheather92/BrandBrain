@@ -423,7 +423,7 @@ export function ProjectEditorShell({
         </form>
       </header>
 
-      <section className="grid min-h-[calc(100vh-4rem)] grid-cols-1 lg:grid-cols-[15rem_1fr_21rem]">
+      <section className="grid min-h-[calc(100vh-4rem)] grid-cols-1 lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:overflow-hidden lg:grid-cols-[15rem_1fr_21rem]">
         <aside className="border-b border-[#263244] bg-[#0B0F19] p-4 lg:border-b-0 lg:border-r">
           <div className="flex items-center gap-2 text-sm font-semibold text-[#CBD5E1]">
             <BoxSelect aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
@@ -501,7 +501,10 @@ export function ProjectEditorShell({
           </div>
         </section>
 
-        <aside className="grid content-start gap-4 border-t border-[#263244] bg-[#141A26] p-4 lg:border-l lg:border-t-0">
+        <aside
+          aria-label="Editor inspector"
+          className="grid content-start gap-3 border-t border-[#263244] bg-[#141A26] p-3 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto lg:border-l lg:border-t-0"
+        >
           <div>
             <div className="flex items-center gap-2 text-sm font-semibold text-[#CBD5E1]">
               <MousePointer2 aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
