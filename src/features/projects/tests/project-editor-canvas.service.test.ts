@@ -95,8 +95,8 @@ describe("project editor canvas interactions", () => {
     const smallerElement = smaller.slides[0]?.elements[0];
 
     expect(smallerElement).toMatchObject({
-      height: 32,
-      width: 32
+      height: 159,
+      width: 358
     });
   });
 });

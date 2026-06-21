@@ -1,7 +1,8 @@
 import { canvasDocumentSchema, canvasElementSchema } from "@/features/canvas/schemas/canvas-object.schema";
 import type { CanvasDocument, CanvasElement } from "@/features/canvas/types/canvas";
 
-const minimumCanvasElementSize = 32;
+const defaultMinimumCanvasElementSize = 32;
+const textCharacterWidthRatio = 0.62;
 
 type CanvasElementMoveInput = {
   deltaX: number;
@@ -162,9 +163,13 @@ export function resizeCanvasElementInSlide({
     return document;
   }
 
+  const minimumWidth = getMinimumCanvasElementWidth(element);
+  const width = clampCanvasNumber(element.width + deltaWidth, minimumWidth, slide.width - element.x);
+  const minimumHeight = getMinimumCanvasElementHeight(element, width);
+
   return updateCanvasElement(document, slideId, elementId, {
-    height: clampCanvasNumber(element.height + deltaHeight, minimumCanvasElementSize, slide.height - element.y),
-    width: clampCanvasNumber(element.width + deltaWidth, minimumCanvasElementSize, slide.width - element.x)
+    height: clampCanvasNumber(element.height + deltaHeight, minimumHeight, slide.height - element.y),
+    width
   });
 }
 
@@ -184,6 +189,89 @@ export function removeCanvasElement(document: CanvasDocument, slideId: string, e
 
 function clampCanvasNumber(value: number, minimum: number, maximum: number): number {
   return Math.round(Math.min(Math.max(value, minimum), Math.max(minimum, maximum)));
+}
+
+function getMinimumCanvasElementWidth(element: CanvasElement): number {
+  if (element.type === "text") {
+    const longestWordLength = getLongestWordLength(element.content);
+
+    return Math.max(
+      defaultMinimumCanvasElementSize,
+      Math.ceil(element.fontSize * textCharacterWidthRatio * longestWordLength)
+    );
+  }
+
+  if (element.type === "cta") {
+    const longestWordLength = getLongestWordLength(element.label);
+
+    return Math.max(96, Math.ceil(element.fontSize * textCharacterWidthRatio * longestWordLength + 48));
+  }
+
+  return defaultMinimumCanvasElementSize;
+}
+
+function getMinimumCanvasElementHeight(element: CanvasElement, width: number): number {
+  if (element.type === "text") {
+    const lineCount = getWrappedTextLineCount({
+      fontSize: element.fontSize,
+      text: element.content,
+      width
+    });
+
+    return Math.max(defaultMinimumCanvasElementSize, Math.ceil(element.fontSize * element.lineHeight * lineCount));
+  }
+
+  if (element.type === "cta") {
+    const lineCount = getWrappedTextLineCount({
+      fontSize: element.fontSize,
+      text: element.label,
+      width: Math.max(1, width - 48)
+    });
+
+    return Math.max(defaultMinimumCanvasElementSize, Math.ceil(element.fontSize * 1.15 * lineCount + 24));
+  }
+
+  return defaultMinimumCanvasElementSize;
+}
+
+function getWrappedTextLineCount({
+  fontSize,
+  text,
+  width
+}: {
+  fontSize: number;
+  text: string;
+  width: number;
+}): number {
+  const charactersPerLine = Math.max(1, Math.floor(width / Math.max(1, fontSize * textCharacterWidthRatio)));
+
+  return text.split(/\r?\n/).reduce((lineCount, line) => {
+    const words = line.trim().split(/\s+/).filter(Boolean);
+
+    if (words.length === 0) {
+      return lineCount + 1;
+    }
+
+    let wrappedLines = 1;
+    let currentLineLength = 0;
+
+    for (const word of words) {
+      const nextLength = currentLineLength === 0 ? word.length : currentLineLength + 1 + word.length;
+
+      if (nextLength > charactersPerLine && currentLineLength > 0) {
+        wrappedLines += 1;
+        currentLineLength = word.length;
+      } else {
+        currentLineLength = nextLength;
+      }
+    }
+
+    return lineCount + wrappedLines;
+  }, 0);
+}
+
+function getLongestWordLength(value: string): number {
+  return Math.max(1, ...value.trim().split(/\s+/).map((word) => word.length));
 }
 
 export function normalizeEditorCanvas(document: CanvasDocument): CanvasDocument {

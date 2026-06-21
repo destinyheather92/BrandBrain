@@ -343,6 +343,35 @@ describe("ProjectEditorShell", () => {
     });
   });
 
+  it("opens an element context menu on right-click and deletes the targeted object", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+
+    const textLayer = screen.getByRole("button", { name: "Editable headline" });
+
+    fireEvent.contextMenu(textLayer, {
+      clientX: 220,
+      clientY: 240
+    });
+
+    expect(screen.getByRole("menu", { name: "Element actions" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("menuitem", { name: "Delete element" }));
+
+    expect(screen.queryByRole("button", { name: "Editable headline" })).not.toBeInTheDocument();
+
+    const canvasJson = JSON.parse((screen.getByTestId("project-editor-canvas-json") as HTMLInputElement).value);
+
+    expect(canvasJson.slides[0].elements).toHaveLength(0);
+  });
+
   it("renders CTA layers without a browser border or focus outline", () => {
     render(
       <ProjectEditorShell

@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import {
+  type MouseEvent,
   type PointerEvent,
   type ReactNode,
   useActionState,
@@ -93,6 +94,11 @@ type ProjectEditorShellProps = {
 
 type EditableField = keyof Extract<CanvasElement, { type: "text" }> | keyof Extract<CanvasElement, { type: "cta" }>;
 type CanvasTextElement = Extract<CanvasElement, { type: "text" }>;
+type CanvasElementContextMenuState = {
+  elementId: string;
+  x: number;
+  y: number;
+};
 type PropertySection = "content" | "position" | "style";
 type PropertySectionOption = {
   Icon: LucideIcon;
@@ -214,6 +220,7 @@ export function ProjectEditorShell({
   const [activeSlideId, setActiveSlideId] = useState(sortedSlides[0]?.id ?? "");
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [editingElementId, setEditingElementId] = useState<string | null>(null);
+  const [elementContextMenu, setElementContextMenu] = useState<CanvasElementContextMenuState | null>(null);
   const activeSlide = sortedSlides.find((slide) => slide.id === activeSlideId) ?? sortedSlides[0];
   const selectedElement = activeSlide?.elements.find((element) => element.id === selectedElementId) ?? null;
 
@@ -320,6 +327,7 @@ export function ProjectEditorShell({
     setDocument(nextDocument);
     setSelectedElementId(element.id);
     setEditingElementId(null);
+    setElementContextMenu(null);
   }
 
   function updateSelectedElement(changes: Partial<CanvasElement>) {
@@ -345,6 +353,7 @@ export function ProjectEditorShell({
       })
     );
     setSelectedElementId(elementId);
+    setElementContextMenu(null);
   }
 
   function resizeElement(elementId: string, deltaWidth: number, deltaHeight: number) {
@@ -362,16 +371,41 @@ export function ProjectEditorShell({
       })
     );
     setSelectedElementId(elementId);
+    setElementContextMenu(null);
   }
 
   function deleteSelectedElement() {
-    if (!activeSlide || !selectedElement) {
+    if (!selectedElement) {
       return;
     }
 
-    setDocument(removeCanvasElement(document, activeSlide.id, selectedElement.id));
+    deleteElement(selectedElement.id);
+  }
+
+  function deleteElement(elementId: string) {
+    if (!activeSlide) {
+      return;
+    }
+
+    setDocument((currentDocument) => removeCanvasElement(currentDocument, activeSlide.id, elementId));
     setSelectedElementId(null);
     setEditingElementId(null);
+    setElementContextMenu(null);
+  }
+
+  function openElementContextMenu(elementId: string, x: number, y: number) {
+    setSelectedElementId(elementId);
+    setEditingElementId(null);
+    setElementContextMenu({
+      elementId,
+      x,
+      y
+    });
+  }
+
+  function selectElement(elementId: string) {
+    setSelectedElementId(elementId);
+    setElementContextMenu(null);
   }
 
   function updateActiveSlideBackground(color: string) {
@@ -400,12 +434,14 @@ export function ProjectEditorShell({
     setDocument(applyProjectThemeToCanvas(document, theme));
     setSelectedElementId(null);
     setEditingElementId(null);
+    setElementContextMenu(null);
   }
 
   function applyGeneratedDocument(generatedDocument: CanvasDocument) {
     setDocument(normalizeEditorCanvas(generatedDocument));
     setSelectedElementId(null);
     setEditingElementId(null);
+    setElementContextMenu(null);
   }
 
   function beginInlineTextEdit(elementId: string) {
@@ -417,6 +453,7 @@ export function ProjectEditorShell({
 
     setSelectedElementId(elementId);
     setEditingElementId(elementId);
+    setElementContextMenu(null);
   }
 
   function updateInlineText(elementId: string, value: string) {
@@ -523,6 +560,8 @@ export function ProjectEditorShell({
                 onClick={() => {
                   setActiveSlideId(slide.id);
                   setSelectedElementId(null);
+                  setEditingElementId(null);
+                  setElementContextMenu(null);
                 }}
                 type="button"
               >
@@ -581,8 +620,9 @@ export function ProjectEditorShell({
                 onChangeInlineText={updateInlineText}
                 onFinishInlineEdit={finishInlineTextEdit}
                 onMoveElement={moveElement}
+                onOpenElementContextMenu={openElementContextMenu}
                 onResizeElement={resizeElement}
-                onSelectElement={setSelectedElementId}
+                onSelectElement={selectElement}
                 slide={activeSlide}
               />
             ) : null}
@@ -647,6 +687,14 @@ export function ProjectEditorShell({
           />
         </aside>
       </section>
+      {elementContextMenu ? (
+        <ElementContextMenu
+          onDelete={() => deleteElement(elementContextMenu.elementId)}
+          onDismiss={() => setElementContextMenu(null)}
+          x={elementContextMenu.x}
+          y={elementContextMenu.y}
+        />
+      ) : null}
     </main>
   );
 }
@@ -669,6 +717,46 @@ function AutosaveStatus({ state }: { state: ProjectEditorSaveState }) {
     >
       {state.message}
     </span>
+  );
+}
+
+function ElementContextMenu({
+  onDelete,
+  onDismiss,
+  x,
+  y
+}: {
+  onDelete: () => void;
+  onDismiss: () => void;
+  x: number;
+  y: number;
+}) {
+  return (
+    <div
+      aria-label="Element actions"
+      className="fixed z-50 min-w-44 rounded-lg border border-[#263244] bg-[#0B0F19] p-1 shadow-[0_16px_48px_rgba(0,0,0,0.42)]"
+      onContextMenu={(event) => event.preventDefault()}
+      onKeyDown={(event) => {
+        if (event.key === "Escape") {
+          onDismiss();
+        }
+      }}
+      role="menu"
+      style={{
+        left: x,
+        top: y
+      }}
+    >
+      <button
+        className="flex min-h-10 w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-semibold text-[#EF4444] hover:bg-[#141A26]"
+        onClick={onDelete}
+        role="menuitem"
+        type="button"
+      >
+        <Trash2 aria-hidden="true" className="h-4 w-4" />
+        Delete element
+      </button>
+    </div>
   );
 }
 
@@ -762,6 +850,7 @@ function SlideCanvas({
   onChangeInlineText,
   onFinishInlineEdit,
   onMoveElement,
+  onOpenElementContextMenu,
   onResizeElement,
   onSelectElement,
   slide
@@ -772,6 +861,7 @@ function SlideCanvas({
   onChangeInlineText: (elementId: string, value: string) => void;
   onFinishInlineEdit: () => void;
   onMoveElement: (elementId: string, deltaX: number, deltaY: number) => void;
+  onOpenElementContextMenu: (elementId: string, x: number, y: number) => void;
   onResizeElement: (elementId: string, deltaWidth: number, deltaHeight: number) => void;
   onSelectElement: (elementId: string) => void;
   slide: CanvasSlide;
@@ -798,6 +888,7 @@ function SlideCanvas({
           onChangeInlineText={onChangeInlineText}
           onFinishInlineEdit={onFinishInlineEdit}
           onMove={onMoveElement}
+          onOpenContextMenu={onOpenElementContextMenu}
           onResize={onResizeElement}
           onSelect={() => onSelectElement(element.id)}
           slide={slide}
@@ -815,6 +906,7 @@ function CanvasElementButton({
   onChangeInlineText,
   onFinishInlineEdit,
   onMove,
+  onOpenContextMenu,
   onResize,
   onSelect,
   slide
@@ -826,6 +918,7 @@ function CanvasElementButton({
   onChangeInlineText: (elementId: string, value: string) => void;
   onFinishInlineEdit: () => void;
   onMove: (elementId: string, deltaX: number, deltaY: number) => void;
+  onOpenContextMenu: (elementId: string, x: number, y: number) => void;
   onResize: (elementId: string, deltaWidth: number, deltaHeight: number) => void;
   onSelect: () => void;
   slide: CanvasSlide;
@@ -903,6 +996,12 @@ function CanvasElementButton({
     interactionRef.current = null;
   }
 
+  function openContextMenu(event: MouseEvent<HTMLElement>) {
+    event.preventDefault();
+    event.stopPropagation();
+    onOpenContextMenu(element.id, event.clientX, event.clientY);
+  }
+
   const interactionHandlers = {
     onPointerCancel: endInteraction,
     onPointerMove: updateInteraction,
@@ -925,7 +1024,7 @@ function CanvasElementButton({
     const value = isTextElement ? element.content : element.label;
 
     return (
-      <div className={`absolute ${activeClass}`} style={frameStyle}>
+      <div className={`absolute ${activeClass}`} onContextMenu={openContextMenu} style={frameStyle}>
         <textarea
           aria-label="Edit text on canvas"
           autoFocus
@@ -977,7 +1076,7 @@ function CanvasElementButton({
 
   if (element.type === "shape") {
     return (
-      <div className={`absolute ${activeClass}`} style={frameStyle}>
+      <div className={`absolute ${activeClass}`} onContextMenu={openContextMenu} style={frameStyle}>
         <button
           aria-label={elementLabel}
           className={canvasLayerClass}
@@ -1005,7 +1104,7 @@ function CanvasElementButton({
 
   if (element.type === "cta") {
     return (
-      <div className={`absolute ${activeClass}`} style={frameStyle}>
+      <div className={`absolute ${activeClass}`} onContextMenu={openContextMenu} style={frameStyle}>
         <button
           aria-label={elementLabel}
           className={`flex items-center justify-center overflow-hidden break-words px-3 text-center font-semibold leading-tight ${canvasLayerClass}`}
@@ -1037,7 +1136,7 @@ function CanvasElementButton({
 
   if (element.type === "text") {
     return (
-      <div className={`absolute ${activeClass}`} style={frameStyle}>
+      <div className={`absolute ${activeClass}`} onContextMenu={openContextMenu} style={frameStyle}>
         <button
           aria-label={elementLabel}
           className={`overflow-hidden bg-transparent text-left ${canvasLayerClass}`}
@@ -1070,7 +1169,7 @@ function CanvasElementButton({
   }
 
   return (
-    <div className={`absolute ${activeClass}`} style={frameStyle}>
+    <div className={`absolute ${activeClass}`} onContextMenu={openContextMenu} style={frameStyle}>
       <button
         aria-label={element.type}
         className="h-full w-full border border-[#00E5FF]"
