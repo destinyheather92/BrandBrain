@@ -138,6 +138,24 @@ describe("ProjectEditorShell", () => {
     expect(inspector).toHaveClass("p-3");
   });
 
+  it("keeps the slide rail and canvas workspace independently scrollable", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    const slideNavigator = screen.getByLabelText("Slide navigator");
+    const canvasWorkspace = screen.getByLabelText("Canvas workspace");
+
+    expect(slideNavigator).toHaveClass("lg:h-[calc(100vh-4rem)]");
+    expect(slideNavigator).toHaveClass("lg:overflow-y-auto");
+    expect(canvasWorkspace).toHaveClass("lg:h-full");
+    expect(canvasWorkspace).toHaveClass("overflow-auto");
+  });
+
   it("adds and edits a text element on the canvas", () => {
     render(
       <ProjectEditorShell

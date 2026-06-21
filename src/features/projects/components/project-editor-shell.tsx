@@ -424,7 +424,10 @@ export function ProjectEditorShell({
       </header>
 
       <section className="grid min-h-[calc(100vh-4rem)] grid-cols-1 lg:h-[calc(100vh-4rem)] lg:min-h-0 lg:overflow-hidden lg:grid-cols-[15rem_1fr_21rem]">
-        <aside className="border-b border-[#263244] bg-[#0B0F19] p-4 lg:border-b-0 lg:border-r">
+        <aside
+          aria-label="Slide navigator"
+          className="border-b border-[#263244] bg-[#0B0F19] p-4 lg:h-[calc(100vh-4rem)] lg:overflow-y-auto lg:border-b-0 lg:border-r"
+        >
           <div className="flex items-center gap-2 text-sm font-semibold text-[#CBD5E1]">
             <BoxSelect aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
             Slides
@@ -460,7 +463,7 @@ export function ProjectEditorShell({
           </div>
         </aside>
 
-        <section className="min-w-0 bg-[#0B0F19]">
+        <section className="min-w-0 bg-[#0B0F19] lg:grid lg:h-[calc(100vh-4rem)] lg:grid-rows-[auto_1fr] lg:overflow-hidden">
           <div className="flex flex-wrap items-center gap-3 border-b border-[#263244] bg-[#141A26] px-4 py-3">
             <button
               className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-[#263244] px-3 py-2 text-sm font-semibold text-[#F8FAFC] hover:border-[#00E5FF]"
@@ -488,7 +491,10 @@ export function ProjectEditorShell({
             </button>
           </div>
 
-          <div className="flex min-h-[calc(100vh-8rem)] items-center justify-center overflow-auto p-6">
+          <div
+            aria-label="Canvas workspace"
+            className="flex min-h-[calc(100vh-8rem)] items-center justify-center overflow-auto p-6 lg:h-full lg:min-h-0"
+          >
             {activeSlide ? (
               <SlideCanvas
                 activeElementId={selectedElementId}
