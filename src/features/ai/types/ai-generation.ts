@@ -2,7 +2,11 @@ import type { BrandMemory } from "@/features/brands/types/brand-memory";
 import type { CanvasDocument } from "@/features/canvas/types/canvas";
 import type { ContentProject } from "@/features/projects/types/content-project";
 
-export type AiWorkflow = "canvas-generation";
+export type AiCanvasWorkflow = "canvas-generation";
+export type AiImageWorkflow = "image-generation";
+export type AiWorkflow = AiCanvasWorkflow | AiImageWorkflow;
+export type AiImageProviderId = "flux" | "ideogram" | "imagen" | "openai";
+export type AiImageProviderPreference = "auto" | AiImageProviderId;
 
 export type AiGenerationBrandContext = {
   description: string | null;
@@ -42,7 +46,17 @@ export type AiGenerationPrompt = {
   system: string;
   temperature: number;
   user: string;
-  workflow: AiWorkflow;
+  workflow: AiCanvasWorkflow;
+};
+
+export type AiImageGenerationPrompt = {
+  negativePrompt: string;
+  prompt: string;
+  provider: AiImageProviderId;
+  system: string;
+  temperature: number;
+  user: string;
+  workflow: AiImageWorkflow;
 };
 
 export type AiProviderUsage = {
@@ -58,8 +72,20 @@ export type AiCanvasGenerationProvider = {
   id: string;
 };
 
+export type AiImageGenerationProvider = {
+  generateImage(prompt: AiImageGenerationPrompt): Promise<{
+    imageUrl: string;
+    usage: AiProviderUsage;
+  }>;
+  id: AiImageProviderId;
+};
+
 export type AiProviderRegistry = {
-  getProvider(workflow: AiWorkflow): AiCanvasGenerationProvider;
+  getProvider(workflow: AiCanvasWorkflow): AiCanvasGenerationProvider;
+};
+
+export type AiImageProviderRegistry = {
+  getImageProvider(providerId: AiImageProviderId): AiImageGenerationProvider;
 };
 
 export type GenerationCostCreateInput = {
@@ -90,6 +116,29 @@ export type AiGenerationResult =
           | "invalid_ai_canvas"
           | "project_not_found"
           | "project_repository_error"
+          | "theme_required";
+        issues?: string[];
+        message: string;
+      };
+      ok: false;
+      status: "failed";
+    };
+
+export type AiImageGenerationResult =
+  | {
+      ok: true;
+      project: ContentProject;
+      status: "generated";
+    }
+  | {
+      error: {
+        code:
+          | "ai_image_generation_failed"
+          | "brand_not_found"
+          | "invalid_ai_image_canvas"
+          | "project_not_found"
+          | "project_repository_error"
+          | "slide_not_found"
           | "theme_required";
         issues?: string[];
         message: string;

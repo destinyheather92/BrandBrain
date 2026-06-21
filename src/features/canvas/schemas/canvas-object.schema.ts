@@ -6,6 +6,19 @@ const canvasCoordinateSchema = z.number().finite().min(-10000).max(10000);
 const canvasLengthSchema = z.number().finite().positive().max(10000);
 const canvasOpacitySchema = z.number().finite().min(0).max(1);
 const canvasRotationSchema = z.number().finite().min(-360).max(360);
+const canvasImageSourceSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(50000)
+  .refine(
+    (value) =>
+      value.startsWith("data:image/") ||
+      value.startsWith("https://") ||
+      value.startsWith("/") ||
+      value.startsWith("blob:"),
+    "Image source must be a safe image URL."
+  );
 
 const baseCanvasElementSchema = z
   .object({
@@ -48,6 +61,9 @@ export const canvasImageElementSchema = baseCanvasElementSchema
       })
       .strict()
       .nullable(),
+    prompt: z.string().max(2000).nullable(),
+    provider: z.enum(["flux", "ideogram", "imagen", "openai"]),
+    src: canvasImageSourceSchema,
     type: z.literal("image")
   })
   .strict();

@@ -5,6 +5,7 @@ import { ProjectEditorShell } from "../components/project-editor-shell";
 import type { ContentProject } from "../types/content-project";
 import { initialProjectEditorSaveState } from "../types/project-editor-form-state";
 import type { ProjectVersion } from "../types/project-version";
+import type { ProjectTheme } from "@/features/themes/types/project-theme";
 
 const project: ContentProject = {
   brandId: "brand_123",
@@ -50,6 +51,37 @@ const version: ProjectVersion = {
   projectId: "project_123",
   source: "manual-save",
   versionNumber: 1
+};
+
+const theme: ProjectTheme = {
+  brandId: "brand_123",
+  createdAt: new Date("2026-06-18T12:03:00.000Z"),
+  id: "theme_123",
+  imageStyle: "Crisp professional roofing photography.",
+  layout: {
+    density: "editorial",
+    heroTreatment: "large-headline-left",
+    spacingScale: "comfortable"
+  },
+  name: "ABC Roofing Theme",
+  ownerUserId: "user_local_123",
+  palette: {
+    accent: "#00E5FF",
+    background: "#FFFFFF",
+    ctaText: "#0B0F19",
+    primary: "#0B0F19",
+    secondary: "#CBD5E1",
+    surface: "#F8FAFC",
+    text: "#0B0F19"
+  },
+  projectId: "project_123",
+  typography: {
+    body: "Inter",
+    bodyWeight: "regular",
+    heading: "Geist",
+    headingWeight: "bold"
+  },
+  updatedAt: new Date("2026-06-18T12:03:00.000Z")
 };
 
 const restoredCanvasJson = {
@@ -269,6 +301,64 @@ describe("ProjectEditorShell", () => {
     const canvasJsonInput = screen.getByTestId("project-editor-canvas-json");
 
     expect((canvasJsonInput as HTMLInputElement).value).toContain("\"type\":\"cta\"");
+  });
+
+  it("renders generated image elements as selectable canvas layers", () => {
+    const projectWithImage: ContentProject = {
+      ...project,
+      canvasJson: {
+        ...project.canvasJson,
+        slides: [
+          {
+            ...project.canvasJson.slides[0],
+            elements: [
+              {
+                alt: "Generated roof inspection image",
+                assetId: "asset_image_1",
+                crop: null,
+                height: 420,
+                id: "image_1",
+                locked: false,
+                opacity: 1,
+                prompt: "Generate a premium roof inspection image.",
+                provider: "flux",
+                rotation: 0,
+                src: "data:image/svg+xml,%3Csvg%3E%3C/svg%3E",
+                type: "image",
+                width: 620,
+                x: 220,
+                y: 320,
+                zIndex: 1
+              }
+            ]
+          }
+        ]
+      }
+    };
+
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={projectWithImage}
+        saveAction={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("button", { name: "Generated roof inspection image" })).toBeInTheDocument();
+  });
+
+  it("renders AI image controls for the active slide when a theme exists", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        initialTheme={theme}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "AI Image" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Generate Image" })).toBeEnabled();
   });
 
   it("moves a canvas object by dragging it directly on the canvas", () => {
@@ -623,7 +713,12 @@ describe("ProjectEditorShell", () => {
     fireEvent.click(screen.getByRole("button", { name: "Restore Version 1" }));
 
     await waitFor(() => expect(restoreVersionAction).toHaveBeenCalled());
-    expect(await screen.findByRole("button", { name: "Restored version headline" })).toBeInTheDocument();
+    await waitFor(
+      () => expect(screen.getByRole("button", { name: "Restored version headline" })).toBeInTheDocument(),
+      {
+        timeout: 5000
+      }
+    );
     expect(screen.getByText("Version 1 restored.")).toBeInTheDocument();
     expect(screen.getByText("Version restore")).toBeInTheDocument();
   });

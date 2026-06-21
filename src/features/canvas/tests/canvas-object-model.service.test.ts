@@ -121,6 +121,59 @@ describe("canvas object model", () => {
     });
   });
 
+  it("accepts AI-generated image elements as editable canvas objects", () => {
+    const result = validateCanvasDocument({
+      documentId: "document_1",
+      format: "instagram-carousel",
+      height: 1080,
+      schemaVersion: "1.0.0",
+      slides: [
+        {
+          background: {
+            color: "#FFFFFF",
+            type: "solid"
+          },
+          elements: [
+            {
+              alt: "Land Strong generated image",
+              assetId: "asset_image_1",
+              crop: null,
+              height: 520,
+              id: "image_1",
+              locked: false,
+              opacity: 1,
+              prompt: "Brand-consistent marketing photography for Land Strong.",
+              provider: "flux",
+              rotation: 0,
+              src: "data:image/svg+xml,%3Csvg%3E%3C/svg%3E",
+              type: "image",
+              width: 888,
+              x: 96,
+              y: 280,
+              zIndex: 1
+            }
+          ],
+          height: 1080,
+          id: "slide_1",
+          name: "Hook",
+          order: 1,
+          width: 1080
+        }
+      ],
+      themeId: null,
+      title: "Generated Image",
+      unit: "px",
+      width: 1080
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.ok ? result.document.slides[0]?.elements[0] : null).toMatchObject({
+      provider: "flux",
+      src: "data:image/svg+xml,%3Csvg%3E%3C/svg%3E",
+      type: "image"
+    });
+  });
+
   it("rejects duplicate slide order and duplicate element IDs", () => {
     const document = createBlankCanvasDocument({
       idFactory: createIdFactory(["document_1", "slide_1", "slide_2"]),

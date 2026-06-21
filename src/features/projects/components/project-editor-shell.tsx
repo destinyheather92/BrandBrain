@@ -21,6 +21,7 @@ import {
   Type,
   type LucideIcon
 } from "lucide-react";
+import NextImage from "next/image";
 import Link from "next/link";
 import {
   type MouseEvent,
@@ -36,11 +37,17 @@ import {
 } from "react";
 
 import { AiGenerationPanel } from "@/features/ai/components/ai-generation-panel";
+import { AiImageGenerationPanel } from "@/features/ai/components/ai-image-generation-panel";
 import { initialAiGenerationActionState } from "@/features/ai/types/ai-generation-action-state";
 import type {
   AiGenerationAction,
   AiGenerationActionState
 } from "@/features/ai/types/ai-generation-action-state";
+import { initialAiImageGenerationActionState } from "@/features/ai/types/ai-image-generation-action-state";
+import type {
+  AiImageGenerationAction,
+  AiImageGenerationActionState
+} from "@/features/ai/types/ai-image-generation-action-state";
 import { getCanvasElementsInPaintOrder } from "@/features/canvas/services/canvas-object-model.service";
 import type { CanvasDocument, CanvasElement, CanvasSlide } from "@/features/canvas/types/canvas";
 import { ExportPanel } from "@/features/exports/components/export-panel";
@@ -81,7 +88,9 @@ type ProjectEditorShellProps = {
   aiGenerationAction?: AiGenerationAction;
   autosaveAction?: ProjectEditorAutosaveAction;
   autosaveDelayMs?: number;
+  imageGenerationAction?: AiImageGenerationAction;
   initialAiGenerationState?: AiGenerationActionState;
+  initialAiImageGenerationState?: AiImageGenerationActionState;
   initialState: ProjectEditorSaveState;
   initialTheme?: ProjectTheme | null;
   initialThemeState?: ProjectThemeActionState;
@@ -180,6 +189,7 @@ const propertySectionOptions = [
 ] satisfies PropertySectionOption[];
 
 const fallbackAiGenerationAction: AiGenerationAction = async () => initialAiGenerationActionState;
+const fallbackAiImageGenerationAction: AiImageGenerationAction = async () => initialAiImageGenerationActionState;
 const fallbackAutosaveAction: ProjectEditorAutosaveAction = async () => initialProjectEditorSaveState;
 const fallbackRestoreVersionAction: ProjectEditorRestoreAction = async () => initialProjectEditorRestoreState;
 const fallbackThemeAction: ProjectThemeAction = async () => initialProjectThemeActionState;
@@ -189,7 +199,9 @@ export function ProjectEditorShell({
   aiGenerationAction = fallbackAiGenerationAction,
   autosaveAction = fallbackAutosaveAction,
   autosaveDelayMs = 1200,
+  imageGenerationAction = fallbackAiImageGenerationAction,
   initialAiGenerationState = initialAiGenerationActionState,
+  initialAiImageGenerationState = initialAiImageGenerationActionState,
   initialState,
   initialTheme = null,
   initialThemeState = initialProjectThemeActionState,
@@ -678,6 +690,14 @@ export function ProjectEditorShell({
             onGenerated={applyGeneratedDocument}
             projectId={project.id}
           />
+          <AiImageGenerationPanel
+            activeSlideId={activeSlide?.id ?? ""}
+            hasTheme={Boolean(activeTheme)}
+            imageGenerationAction={imageGenerationAction}
+            initialState={initialAiImageGenerationState}
+            onGenerated={applyGeneratedDocument}
+            projectId={project.id}
+          />
           <ExportPanel document={document} projectTitle={project.title} />
           <VersionHistoryPanel
             projectId={project.id}
@@ -1102,6 +1122,36 @@ function CanvasElementButton({
     );
   }
 
+  if (element.type === "image") {
+    return (
+      <div className={`absolute ${activeClass}`} onContextMenu={openContextMenu} style={frameStyle}>
+        <button
+          aria-label={elementLabel}
+          className={`overflow-hidden bg-[#141A26] ${canvasLayerClass}`}
+          onClick={onSelect}
+          onPointerDown={(event) => beginInteraction(event, "move")}
+          style={{
+            borderStyle: "none",
+            borderWidth: 0
+          }}
+          type="button"
+          {...interactionHandlers}
+        >
+          <NextImage
+            alt=""
+            className="h-full w-full object-cover"
+            draggable={false}
+            height={Math.round(element.height)}
+            unoptimized
+            src={element.src}
+            width={Math.round(element.width)}
+          />
+        </button>
+        {resizeHandle}
+      </div>
+    );
+  }
+
   if (element.type === "cta") {
     return (
       <div className={`absolute ${activeClass}`} onContextMenu={openContextMenu} style={frameStyle}>
@@ -1194,6 +1244,10 @@ function canvasElementLabel(element: CanvasElement): string {
 
   if (element.type === "shape") {
     return `${element.shape} shape`;
+  }
+
+  if (element.type === "image") {
+    return element.alt || "Generated image";
   }
 
   if (element.type === "logo") {

@@ -74,6 +74,24 @@ const document: CanvasDocument = {
           x: 96,
           y: 860,
           zIndex: 2
+        },
+        {
+          alt: "Generated roof inspection image",
+          assetId: "asset_image_1",
+          crop: null,
+          height: 300,
+          id: "image_1",
+          locked: false,
+          opacity: 0.9,
+          prompt: "Brand-consistent storm damage roof image.",
+          provider: "flux",
+          rotation: 0,
+          src: "data:image/svg+xml,%3Csvg%3E%3C/svg%3E",
+          type: "image",
+          width: 420,
+          x: 620,
+          y: 520,
+          zIndex: 3
         }
       ],
       height: 1080,
@@ -98,6 +116,8 @@ describe("canvas export service", () => {
     expect(svg).toContain("Export &lt;ready&gt; &amp;");
     expect(svg).toContain("editable");
     expect(svg).toContain("Book now");
+    expect(svg).toContain("<image ");
+    expect(svg).toContain('href="data:image/svg+xml,%3Csvg%3E%3C/svg%3E"');
     expect(svg).not.toContain("<foreignObject");
     expect(svg).not.toContain("<script");
   });

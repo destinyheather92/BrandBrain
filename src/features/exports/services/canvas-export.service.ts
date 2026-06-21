@@ -187,6 +187,15 @@ function renderElement(element: CanvasElement): string {
     ].join("");
   }
 
+  if (element.type === "image") {
+    return [
+      `<g transform="${transform}" opacity="${opacity}">`,
+      `<title>${escapeHtml(element.alt)}</title>`,
+      `<image href="${escapeAttribute(element.src)}" x="${element.x}" y="${element.y}" width="${element.width}" height="${element.height}" preserveAspectRatio="xMidYMid slice" />`,
+      "</g>"
+    ].join("");
+  }
+
   if (element.type === "logo") {
     return renderTextBox({
       color: "#0B0F19",
