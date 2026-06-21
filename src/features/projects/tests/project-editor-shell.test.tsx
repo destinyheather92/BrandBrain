@@ -98,10 +98,8 @@ describe("ProjectEditorShell", () => {
     expect(screen.getByRole("button", { name: "Add Shape" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add CTA" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Save Project" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Export" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Export PNG" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Export JPG" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Export PDF" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Export PNG" })).not.toBeInTheDocument();
     expect(screen.getByLabelText("Slide 1 canvas")).toBeInTheDocument();
   });
 
@@ -177,6 +175,84 @@ describe("ProjectEditorShell", () => {
 
     expect(screen.getByRole("button", { name: "Roof inspection checklist" })).toBeInTheDocument();
     expect(screen.getByLabelText("Text")).toHaveValue("Roof inspection checklist");
+  });
+
+  it("edits text directly on the canvas from the selected element", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+    fireEvent.click(screen.getByRole("button", { name: "Edit Text on Canvas" }));
+
+    const inlineEditor = screen.getByLabelText("Edit text on canvas");
+
+    fireEvent.change(inlineEditor, {
+      target: {
+        value: "Inline edited headline"
+      }
+    });
+
+    const canvasJson = JSON.parse((screen.getByTestId("project-editor-canvas-json") as HTMLInputElement).value);
+    const textElement = canvasJson.slides[0].elements.find((element: { type: string }) => element.type === "text");
+
+    expect(textElement).toMatchObject({
+      content: "Inline edited headline"
+    });
+
+    fireEvent.blur(inlineEditor);
+
+    expect(screen.getByRole("button", { name: "Inline edited headline" })).toBeInTheDocument();
+  });
+
+  it("starts inline text editing by double-clicking the canvas text object", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+    fireEvent.doubleClick(screen.getByRole("button", { name: "Editable headline" }));
+
+    expect(screen.getByLabelText("Edit text on canvas")).toHaveValue("Editable headline");
+  });
+
+  it("organizes properties into content, position, and style sections", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+
+    expect(screen.getByRole("button", { name: "Content" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByLabelText("Text")).toBeInTheDocument();
+    expect(screen.queryByLabelText("X")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Position" }));
+
+    expect(screen.getByLabelText("X")).toBeInTheDocument();
+    expect(screen.getByLabelText("Y")).toBeInTheDocument();
+    expect(screen.getByLabelText("Width")).toBeInTheDocument();
+    expect(screen.getByLabelText("Height")).toBeInTheDocument();
+    expect(screen.getByLabelText("Layer")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Text")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Style" }));
+
+    expect(screen.getByLabelText("Font Family")).toBeInTheDocument();
+    expect(screen.getByLabelText("Opacity")).toBeInTheDocument();
+    expect(screen.queryByLabelText("X")).not.toBeInTheDocument();
   });
 
   it("stores the edited canvas JSON in the save form", () => {
@@ -323,6 +399,7 @@ describe("ProjectEditorShell", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+    fireEvent.click(screen.getByRole("button", { name: "Style" }));
 
     fireEvent.change(screen.getByLabelText("Font Family"), {
       target: {
@@ -380,6 +457,7 @@ describe("ProjectEditorShell", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Add CTA" }));
+    fireEvent.click(screen.getByRole("button", { name: "Style" }));
 
     fireEvent.change(screen.getByLabelText("Font Family"), {
       target: {
@@ -417,6 +495,7 @@ describe("ProjectEditorShell", () => {
     );
 
     fireEvent.click(screen.getByRole("button", { name: "Add Shape" }));
+    fireEvent.click(screen.getByRole("button", { name: "Style" }));
 
     fireEvent.change(screen.getByLabelText("Corner Radius"), {
       target: {
@@ -468,7 +547,8 @@ describe("ProjectEditorShell", () => {
       />
     );
 
-    expect(screen.getByRole("heading", { name: "Version History" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Version History" })).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(screen.getByRole("button", { name: "Version History" }));
     expect(screen.getByText("Manual save")).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
@@ -510,6 +590,7 @@ describe("ProjectEditorShell", () => {
       />
     );
 
+    fireEvent.click(screen.getByRole("button", { name: "Version History" }));
     fireEvent.click(screen.getByRole("button", { name: "Restore Version 1" }));
 
     await waitFor(() => expect(restoreVersionAction).toHaveBeenCalled());

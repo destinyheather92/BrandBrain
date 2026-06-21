@@ -42,7 +42,11 @@ describe("ExportPanel", () => {
       />
     );
 
-    expect(screen.getByRole("heading", { name: "Export" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Export" })).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByRole("button", { name: "Export PNG" })).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Export" }));
+
     expect(screen.getByRole("button", { name: "Export PNG" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Export JPG" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Export PDF" })).toBeInTheDocument();

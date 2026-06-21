@@ -7,13 +7,19 @@ import {
   ArrowLeft,
   Badge,
   BoxSelect,
+  ChevronDown,
+  ChevronRight,
   Clock3,
   History,
   MousePointer2,
+  Move,
+  Palette,
+  PencilLine,
   Save,
   Square,
   Trash2,
-  Type
+  Type,
+  type LucideIcon
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -87,6 +93,12 @@ type ProjectEditorShellProps = {
 
 type EditableField = keyof Extract<CanvasElement, { type: "text" }> | keyof Extract<CanvasElement, { type: "cta" }>;
 type CanvasTextElement = Extract<CanvasElement, { type: "text" }>;
+type PropertySection = "content" | "position" | "style";
+type PropertySectionOption = {
+  Icon: LucideIcon;
+  id: PropertySection;
+  label: string;
+};
 type SelectOption<TValue extends string> = {
   label: string;
   value: TValue;
@@ -143,6 +155,23 @@ const shapeOptions = [
     value: "line"
   }
 ] satisfies SelectOption<Extract<CanvasElement, { type: "shape" }>["shape"]>[];
+const propertySectionOptions = [
+  {
+    Icon: PencilLine,
+    id: "content",
+    label: "Content"
+  },
+  {
+    Icon: Move,
+    id: "position",
+    label: "Position"
+  },
+  {
+    Icon: Palette,
+    id: "style",
+    label: "Style"
+  }
+] satisfies PropertySectionOption[];
 
 const fallbackAiGenerationAction: AiGenerationAction = async () => initialAiGenerationActionState;
 const fallbackAutosaveAction: ProjectEditorAutosaveAction = async () => initialProjectEditorSaveState;
@@ -184,6 +213,7 @@ export function ProjectEditorShell({
   );
   const [activeSlideId, setActiveSlideId] = useState(sortedSlides[0]?.id ?? "");
   const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
+  const [editingElementId, setEditingElementId] = useState<string | null>(null);
   const activeSlide = sortedSlides.find((slide) => slide.id === activeSlideId) ?? sortedSlides[0];
   const selectedElement = activeSlide?.elements.find((element) => element.id === selectedElementId) ?? null;
 
@@ -259,6 +289,7 @@ export function ProjectEditorShell({
     setDocument(restoredDocument);
     setActiveSlideId(restoredSlides[0]?.id ?? "");
     setSelectedElementId(null);
+    setEditingElementId(null);
     lastAutosavedJsonRef.current = JSON.stringify(restoredDocument);
     setAutosaveState({
       message: restoreState.message ?? "Version restored.",
@@ -288,6 +319,7 @@ export function ProjectEditorShell({
 
     setDocument(nextDocument);
     setSelectedElementId(element.id);
+    setEditingElementId(null);
   }
 
   function updateSelectedElement(changes: Partial<CanvasElement>) {
@@ -339,6 +371,7 @@ export function ProjectEditorShell({
 
     setDocument(removeCanvasElement(document, activeSlide.id, selectedElement.id));
     setSelectedElementId(null);
+    setEditingElementId(null);
   }
 
   function updateActiveSlideBackground(color: string) {
@@ -366,11 +399,56 @@ export function ProjectEditorShell({
     setActiveTheme(theme);
     setDocument(applyProjectThemeToCanvas(document, theme));
     setSelectedElementId(null);
+    setEditingElementId(null);
   }
 
   function applyGeneratedDocument(generatedDocument: CanvasDocument) {
     setDocument(normalizeEditorCanvas(generatedDocument));
     setSelectedElementId(null);
+    setEditingElementId(null);
+  }
+
+  function beginInlineTextEdit(elementId: string) {
+    const element = activeSlide?.elements.find((candidate) => candidate.id === elementId);
+
+    if (!element || (element.type !== "text" && element.type !== "cta")) {
+      return;
+    }
+
+    setSelectedElementId(elementId);
+    setEditingElementId(elementId);
+  }
+
+  function updateInlineText(elementId: string, value: string) {
+    if (!activeSlide) {
+      return;
+    }
+
+    setDocument((currentDocument) => {
+      const slide = currentDocument.slides.find((candidate) => candidate.id === activeSlide.id);
+      const element = slide?.elements.find((candidate) => candidate.id === elementId);
+
+      if (!slide || !element || (element.type !== "text" && element.type !== "cta")) {
+        return currentDocument;
+      }
+
+      return updateCanvasElement(
+        currentDocument,
+        slide.id,
+        elementId,
+        element.type === "text"
+          ? {
+              content: value
+            }
+          : {
+              label: value
+            }
+      );
+    });
+  }
+
+  function finishInlineTextEdit() {
+    setEditingElementId(null);
   }
 
   return (
@@ -498,6 +576,10 @@ export function ProjectEditorShell({
             {activeSlide ? (
               <SlideCanvas
                 activeElementId={selectedElementId}
+                editingElementId={editingElementId}
+                onBeginInlineEdit={beginInlineTextEdit}
+                onChangeInlineText={updateInlineText}
+                onFinishInlineEdit={finishInlineTextEdit}
                 onMoveElement={moveElement}
                 onResizeElement={resizeElement}
                 onSelectElement={setSelectedElementId}
@@ -521,7 +603,9 @@ export function ProjectEditorShell({
               <div className="mt-4 grid gap-4">
                 <ElementProperties
                   element={selectedElement}
+                  key={selectedElement.id}
                   onDelete={deleteSelectedElement}
+                  onEditInline={() => beginInlineTextEdit(selectedElement.id)}
                   onUpdate={updateSelectedElement}
                 />
               </div>
@@ -599,47 +683,61 @@ function VersionHistoryPanel({
   restorePending: boolean;
   versions: ProjectVersion[];
 }) {
-  return (
-    <section className="rounded-lg border border-[#263244] bg-[#0B0F19] p-4" aria-label="Version History">
-      <div className="flex items-center gap-2 text-sm font-semibold text-[#F8FAFC]">
-        <History aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
-        <h2>Version History</h2>
-      </div>
+  const [expanded, setExpanded] = useState(false);
+  const DisclosureIcon = expanded ? ChevronDown : ChevronRight;
 
-      {versions.length > 0 ? (
-        <ol className="mt-4 grid gap-2">
-          {versions.map((version) => (
-            <li
-              className="rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2"
-              key={version.id}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="text-sm font-semibold text-[#F8FAFC]">Version {version.versionNumber}</span>
-                <span className="text-xs text-[#00E5FF]">{sourceLabel(version.source)}</span>
-              </div>
-              <div className="mt-1 flex items-center gap-1 text-xs text-[#94A3B8]">
-                <Clock3 aria-hidden="true" className="h-3 w-3" />
-                {formatVersionTime(version.createdAt)}
-              </div>
-              <form action={restoreFormAction} className="mt-3">
-                <input name="projectId" type="hidden" value={projectId} />
-                <input name="versionId" type="hidden" value={version.id} />
-                <button
-                  className="inline-flex min-h-8 w-full items-center justify-center rounded-lg border border-[#263244] px-3 py-1.5 text-xs font-semibold text-[#F8FAFC] hover:border-[#00E5FF] disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={restorePending}
-                  type="submit"
-                >
-                  Restore Version {version.versionNumber}
-                </button>
-              </form>
-            </li>
-          ))}
-        </ol>
-      ) : (
-        <p className="mt-4 rounded-lg border border-[#263244] bg-[#141A26] p-3 text-sm text-[#CBD5E1]">
-          Versions appear after autosave.
-        </p>
-      )}
+  return (
+    <section className="rounded-lg border border-[#263244] bg-[#0B0F19] p-3" aria-label="Version History">
+      <button
+        aria-expanded={expanded}
+        aria-label="Version History"
+        className="flex w-full items-center justify-between gap-3 text-left"
+        onClick={() => setExpanded((current) => !current)}
+        type="button"
+      >
+        <span className="flex items-center gap-2 text-sm font-semibold text-[#F8FAFC]">
+          <History aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
+          <span>Version History</span>
+        </span>
+        <DisclosureIcon aria-hidden="true" className="h-4 w-4 text-[#94A3B8]" />
+      </button>
+
+      {expanded ? (
+        versions.length > 0 ? (
+          <ol className="mt-4 grid gap-2">
+            {versions.map((version) => (
+              <li
+                className="rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2"
+                key={version.id}
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-semibold text-[#F8FAFC]">Version {version.versionNumber}</span>
+                  <span className="text-xs text-[#00E5FF]">{sourceLabel(version.source)}</span>
+                </div>
+                <div className="mt-1 flex items-center gap-1 text-xs text-[#94A3B8]">
+                  <Clock3 aria-hidden="true" className="h-3 w-3" />
+                  {formatVersionTime(version.createdAt)}
+                </div>
+                <form action={restoreFormAction} className="mt-3">
+                  <input name="projectId" type="hidden" value={projectId} />
+                  <input name="versionId" type="hidden" value={version.id} />
+                  <button
+                    className="inline-flex min-h-8 w-full items-center justify-center rounded-lg border border-[#263244] px-3 py-1.5 text-xs font-semibold text-[#F8FAFC] hover:border-[#00E5FF] disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={restorePending}
+                    type="submit"
+                  >
+                    Restore Version {version.versionNumber}
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ol>
+        ) : (
+          <p className="mt-4 rounded-lg border border-[#263244] bg-[#141A26] p-3 text-sm text-[#CBD5E1]">
+            Versions appear after autosave.
+          </p>
+        )
+      ) : null}
     </section>
   );
 }
@@ -659,12 +757,20 @@ function formatVersionTime(value: Date): string {
 
 function SlideCanvas({
   activeElementId,
+  editingElementId,
+  onBeginInlineEdit,
+  onChangeInlineText,
+  onFinishInlineEdit,
   onMoveElement,
   onResizeElement,
   onSelectElement,
   slide
 }: {
   activeElementId: string | null;
+  editingElementId: string | null;
+  onBeginInlineEdit: (elementId: string) => void;
+  onChangeInlineText: (elementId: string, value: string) => void;
+  onFinishInlineEdit: () => void;
   onMoveElement: (elementId: string, deltaX: number, deltaY: number) => void;
   onResizeElement: (elementId: string, deltaWidth: number, deltaHeight: number) => void;
   onSelectElement: (elementId: string) => void;
@@ -686,7 +792,11 @@ function SlideCanvas({
         <CanvasElementButton
           key={element.id}
           active={element.id === activeElementId}
+          editing={element.id === editingElementId}
           element={element}
+          onBeginInlineEdit={onBeginInlineEdit}
+          onChangeInlineText={onChangeInlineText}
+          onFinishInlineEdit={onFinishInlineEdit}
           onMove={onMoveElement}
           onResize={onResizeElement}
           onSelect={() => onSelectElement(element.id)}
@@ -699,14 +809,22 @@ function SlideCanvas({
 
 function CanvasElementButton({
   active,
+  editing,
   element,
+  onBeginInlineEdit,
+  onChangeInlineText,
+  onFinishInlineEdit,
   onMove,
   onResize,
   onSelect,
   slide
 }: {
   active: boolean;
+  editing: boolean;
   element: CanvasElement;
+  onBeginInlineEdit: (elementId: string) => void;
+  onChangeInlineText: (elementId: string, value: string) => void;
+  onFinishInlineEdit: () => void;
   onMove: (elementId: string, deltaX: number, deltaY: number) => void;
   onResize: (elementId: string, deltaWidth: number, deltaHeight: number) => void;
   onSelect: () => void;
@@ -802,6 +920,61 @@ function CanvasElementButton({
     />
   ) : null;
 
+  if (editing && (element.type === "text" || element.type === "cta")) {
+    const isTextElement = element.type === "text";
+    const value = isTextElement ? element.content : element.label;
+
+    return (
+      <div className={`absolute ${activeClass}`} style={frameStyle}>
+        <textarea
+          aria-label="Edit text on canvas"
+          autoFocus
+          className={[
+            "h-full w-full resize-none border border-[#00E5FF] px-3 py-2 outline-none",
+            isTextElement ? "bg-transparent" : "font-semibold"
+          ].join(" ")}
+          onBlur={onFinishInlineEdit}
+          onChange={(event) => onChangeInlineText(element.id, event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Escape" || ((event.ctrlKey || event.metaKey) && event.key === "Enter")) {
+              event.preventDefault();
+              onFinishInlineEdit();
+            }
+
+            if (!isTextElement && event.key === "Enter") {
+              event.preventDefault();
+              onFinishInlineEdit();
+            }
+          }}
+          onPointerDown={(event) => event.stopPropagation()}
+          style={
+            isTextElement
+              ? {
+                  borderRadius: 4,
+                  color: element.color,
+                  fontFamily: element.fontFamily,
+                  fontSize: `${Math.max(10, element.fontSize * (canvasPreviewSize / slide.width))}px`,
+                  fontWeight: fontWeightValue(element.fontWeight),
+                  letterSpacing: element.letterSpacing,
+                  lineHeight: element.lineHeight,
+                  textAlign: element.textAlign
+                }
+              : {
+                  backgroundColor: element.backgroundColor,
+                  borderRadius: element.borderRadius,
+                  color: element.textColor,
+                  fontFamily: element.fontFamily,
+                  fontSize: `${Math.max(10, element.fontSize * (canvasPreviewSize / slide.width))}px`,
+                  lineHeight: 1.15,
+                  textAlign: "center"
+                }
+          }
+          value={value}
+        />
+      </div>
+    );
+  }
+
   if (element.type === "shape") {
     return (
       <div className={`absolute ${activeClass}`} style={frameStyle}>
@@ -834,8 +1007,14 @@ function CanvasElementButton({
     return (
       <div className={`absolute ${activeClass}`} style={frameStyle}>
         <button
+          aria-label={elementLabel}
           className={`flex items-center justify-center overflow-hidden break-words px-3 text-center font-semibold leading-tight ${canvasLayerClass}`}
           onClick={onSelect}
+          onDoubleClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onBeginInlineEdit(element.id);
+          }}
           onPointerDown={(event) => beginInteraction(event, "move")}
           style={{
             backgroundColor: element.backgroundColor,
@@ -860,8 +1039,14 @@ function CanvasElementButton({
     return (
       <div className={`absolute ${activeClass}`} style={frameStyle}>
         <button
+          aria-label={elementLabel}
           className={`overflow-hidden bg-transparent text-left ${canvasLayerClass}`}
           onClick={onSelect}
+          onDoubleClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onBeginInlineEdit(element.id);
+          }}
           onPointerDown={(event) => beginInteraction(event, "move")}
           style={{
             borderStyle: "none",
@@ -940,12 +1125,20 @@ function SlideProperties({
 function ElementProperties({
   element,
   onDelete,
+  onEditInline,
   onUpdate
 }: {
   element: CanvasElement;
   onDelete: () => void;
+  onEditInline: () => void;
   onUpdate: (changes: Partial<CanvasElement>) => void;
 }) {
+  const [activeSection, setActiveSection] = useState<PropertySection>(defaultPropertySection(element));
+  const availableSections = getAvailablePropertySections(element);
+  const currentSection = availableSections.some((section) => section.id === activeSection)
+    ? activeSection
+    : availableSections[0]?.id ?? "position";
+
   return (
     <>
       <div className="rounded-lg border border-[#263244] bg-[#0B0F19] p-4">
@@ -953,143 +1146,171 @@ function ElementProperties({
         <p className="mt-1 truncate text-xs text-[#94A3B8]">{element.id}</p>
       </div>
 
-      {element.type === "text" ? (
-        <TextField label="Text" name="content" value={element.content} onChange={(content) => onUpdate({ content })} />
-      ) : null}
+      <PropertySectionTabs
+        activeSection={currentSection}
+        onChange={setActiveSection}
+        sections={availableSections}
+      />
 
-      {element.type === "cta" ? (
-        <TextField label="Label" name="label" value={element.label} onChange={(label) => onUpdate({ label })} />
-      ) : null}
-
-      <div className="grid grid-cols-2 gap-3">
-        <NumberField label="X" value={element.x} onChange={(x) => onUpdate({ x })} />
-        <NumberField label="Y" value={element.y} onChange={(y) => onUpdate({ y })} />
-        <NumberField label="Width" value={element.width} onChange={(width) => onUpdate({ width })} />
-        <NumberField label="Height" value={element.height} onChange={(height) => onUpdate({ height })} />
-        <NumberField label="Layer" value={element.zIndex} onChange={(zIndex) => onUpdate({ zIndex })} />
-      </div>
-
-      <div className="grid grid-cols-2 gap-3">
-        <NumberField
-          label="Opacity"
-          max={1}
-          min={0}
-          onChange={(opacity) => onUpdate({ opacity })}
-          step={0.05}
-          value={element.opacity}
-        />
-        <NumberField
-          label="Rotation"
-          max={360}
-          min={-360}
-          onChange={(rotation) => onUpdate({ rotation })}
-          step={1}
-          value={element.rotation}
-        />
-      </div>
-
-      {element.type === "text" ? (
+      {currentSection === "content" && element.type === "text" ? (
         <>
-          <SelectField
-            label="Font Family"
-            onChange={(fontFamily) => onUpdate({ fontFamily })}
-            options={fontFamilyOptions}
-            value={element.fontFamily}
+          <TextField
+            label="Text"
+            name="content"
+            value={element.content}
+            onChange={(content) => onUpdate({ content })}
           />
-          <div className="grid grid-cols-2 gap-3">
-            <NumberField label="Font Size" value={element.fontSize} onChange={(fontSize) => onUpdate({ fontSize })} />
-            <SelectField
-              label="Weight"
-              onChange={(fontWeight) => onUpdate({ fontWeight })}
-              options={fontWeightOptions}
-              value={element.fontWeight}
-            />
-          </div>
-          <AlignmentField value={element.textAlign} onChange={(textAlign) => onUpdate({ textAlign })} />
-          <div className="grid grid-cols-2 gap-3">
-            <NumberField
-              label="Line Height"
-              max={3}
-              min={0.8}
-              onChange={(lineHeight) => onUpdate({ lineHeight })}
-              step={0.05}
-              value={element.lineHeight}
-            />
-            <NumberField
-              label="Letter Spacing"
-              max={50}
-              min={-10}
-              onChange={(letterSpacing) => onUpdate({ letterSpacing })}
-              step={0.5}
-              value={element.letterSpacing}
-            />
-          </div>
-          <ColorField label="Color" value={element.color} onChange={(color) => onUpdate({ color })} />
+          <InlineEditButton label="Edit Text on Canvas" onClick={onEditInline} />
         </>
       ) : null}
 
-      {element.type === "shape" ? (
+      {currentSection === "content" && element.type === "cta" ? (
         <>
-          <SelectField
-            label="Shape"
-            onChange={(shape) => onUpdate({ shape })}
-            options={shapeOptions}
-            value={element.shape}
+          <TextField
+            label="Label"
+            name="label"
+            value={element.label}
+            onChange={(label) => onUpdate({ label })}
           />
-          <NumberField
-            label="Corner Radius"
-            min={0}
-            onChange={(borderRadius) => onUpdate({ borderRadius })}
-            value={element.borderRadius}
-          />
-          <ColorField label="Fill" value={element.fill} onChange={(fill) => onUpdate({ fill })} />
-          <ColorField
-            label="Stroke Color"
-            value={element.stroke ?? "#263244"}
-            onChange={(stroke) =>
-              onUpdate({
-                stroke,
-                strokeWidth: element.strokeWidth > 0 ? element.strokeWidth : 1
-              })
-            }
-          />
-          <NumberField
-            label="Stroke Width"
-            min={0}
-            onChange={(strokeWidth) =>
-              onUpdate({
-                stroke: strokeWidth > 0 ? element.stroke ?? "#263244" : null,
-                strokeWidth
-              })
-            }
-            value={element.strokeWidth}
-          />
+          <InlineEditButton label="Edit Label on Canvas" onClick={onEditInline} />
         </>
       ) : null}
 
-      {element.type === "cta" ? (
+      {currentSection === "position" ? (
+        <div className="grid grid-cols-2 gap-3">
+          <NumberField label="X" value={element.x} onChange={(x) => onUpdate({ x })} />
+          <NumberField label="Y" value={element.y} onChange={(y) => onUpdate({ y })} />
+          <NumberField label="Width" value={element.width} onChange={(width) => onUpdate({ width })} />
+          <NumberField label="Height" value={element.height} onChange={(height) => onUpdate({ height })} />
+          <NumberField label="Layer" value={element.zIndex} onChange={(zIndex) => onUpdate({ zIndex })} />
+        </div>
+      ) : null}
+
+      {currentSection === "style" ? (
         <>
-          <SelectField
-            label="Font Family"
-            onChange={(fontFamily) => onUpdate({ fontFamily })}
-            options={fontFamilyOptions}
-            value={element.fontFamily}
-          />
           <div className="grid grid-cols-2 gap-3">
-            <NumberField label="Font Size" value={element.fontSize} onChange={(fontSize) => onUpdate({ fontSize })} />
             <NumberField
-              label="Corner Radius"
+              label="Opacity"
+              max={1}
               min={0}
-              onChange={(borderRadius) => onUpdate({ borderRadius })}
-              value={element.borderRadius}
+              onChange={(opacity) => onUpdate({ opacity })}
+              step={0.05}
+              value={element.opacity}
+            />
+            <NumberField
+              label="Rotation"
+              max={360}
+              min={-360}
+              onChange={(rotation) => onUpdate({ rotation })}
+              step={1}
+              value={element.rotation}
             />
           </div>
-          <ColorField
-            label="Background"
-            value={element.backgroundColor}
-            onChange={(backgroundColor) => onUpdate({ backgroundColor })}
-          />
-          <ColorField label="Text Color" value={element.textColor} onChange={(textColor) => onUpdate({ textColor })} />
+
+          {element.type === "text" ? (
+            <>
+              <SelectField
+                label="Font Family"
+                onChange={(fontFamily) => onUpdate({ fontFamily })}
+                options={fontFamilyOptions}
+                value={element.fontFamily}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <NumberField label="Font Size" value={element.fontSize} onChange={(fontSize) => onUpdate({ fontSize })} />
+                <SelectField
+                  label="Weight"
+                  onChange={(fontWeight) => onUpdate({ fontWeight })}
+                  options={fontWeightOptions}
+                  value={element.fontWeight}
+                />
+              </div>
+              <AlignmentField value={element.textAlign} onChange={(textAlign) => onUpdate({ textAlign })} />
+              <div className="grid grid-cols-2 gap-3">
+                <NumberField
+                  label="Line Height"
+                  max={3}
+                  min={0.8}
+                  onChange={(lineHeight) => onUpdate({ lineHeight })}
+                  step={0.05}
+                  value={element.lineHeight}
+                />
+                <NumberField
+                  label="Letter Spacing"
+                  max={50}
+                  min={-10}
+                  onChange={(letterSpacing) => onUpdate({ letterSpacing })}
+                  step={0.5}
+                  value={element.letterSpacing}
+                />
+              </div>
+              <ColorField label="Color" value={element.color} onChange={(color) => onUpdate({ color })} />
+            </>
+          ) : null}
+
+          {element.type === "shape" ? (
+            <>
+              <SelectField
+                label="Shape"
+                onChange={(shape) => onUpdate({ shape })}
+                options={shapeOptions}
+                value={element.shape}
+              />
+              <NumberField
+                label="Corner Radius"
+                min={0}
+                onChange={(borderRadius) => onUpdate({ borderRadius })}
+                value={element.borderRadius}
+              />
+              <ColorField label="Fill" value={element.fill} onChange={(fill) => onUpdate({ fill })} />
+              <ColorField
+                label="Stroke Color"
+                value={element.stroke ?? "#263244"}
+                onChange={(stroke) =>
+                  onUpdate({
+                    stroke,
+                    strokeWidth: element.strokeWidth > 0 ? element.strokeWidth : 1
+                  })
+                }
+              />
+              <NumberField
+                label="Stroke Width"
+                min={0}
+                onChange={(strokeWidth) =>
+                  onUpdate({
+                    stroke: strokeWidth > 0 ? element.stroke ?? "#263244" : null,
+                    strokeWidth
+                  })
+                }
+                value={element.strokeWidth}
+              />
+            </>
+          ) : null}
+
+          {element.type === "cta" ? (
+            <>
+              <SelectField
+                label="Font Family"
+                onChange={(fontFamily) => onUpdate({ fontFamily })}
+                options={fontFamilyOptions}
+                value={element.fontFamily}
+              />
+              <div className="grid grid-cols-2 gap-3">
+                <NumberField label="Font Size" value={element.fontSize} onChange={(fontSize) => onUpdate({ fontSize })} />
+                <NumberField
+                  label="Corner Radius"
+                  min={0}
+                  onChange={(borderRadius) => onUpdate({ borderRadius })}
+                  value={element.borderRadius}
+                />
+              </div>
+              <ColorField
+                label="Background"
+                value={element.backgroundColor}
+                onChange={(backgroundColor) => onUpdate({ backgroundColor })}
+              />
+              <ColorField label="Text Color" value={element.textColor} onChange={(textColor) => onUpdate({ textColor })} />
+            </>
+          ) : null}
         </>
       ) : null}
 
@@ -1103,6 +1324,62 @@ function ElementProperties({
       </button>
     </>
   );
+}
+
+function PropertySectionTabs({
+  activeSection,
+  onChange,
+  sections
+}: {
+  activeSection: PropertySection;
+  onChange: (section: PropertySection) => void;
+  sections: PropertySectionOption[];
+}) {
+  return (
+    <div className="grid grid-cols-3 overflow-hidden rounded-lg border border-[#263244] bg-[#0B0F19]">
+      {sections.map(({ Icon, id, label }) => (
+        <button
+          aria-label={label}
+          aria-pressed={activeSection === id}
+          className={[
+            "inline-flex min-h-10 items-center justify-center border-r border-[#263244] text-[#CBD5E1] last:border-r-0 hover:text-[#F8FAFC]",
+            activeSection === id ? "bg-[#1C2433] text-[#00E5FF]" : "bg-transparent"
+          ].join(" ")}
+          key={id}
+          onClick={() => onChange(id)}
+          title={label}
+          type="button"
+        >
+          <Icon aria-hidden="true" className="h-4 w-4" />
+          <span className="sr-only">{label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function InlineEditButton({ label, onClick }: { label: string; onClick: () => void }) {
+  return (
+    <button
+      className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#263244] px-3 py-2 text-sm font-semibold text-[#F8FAFC] hover:border-[#00E5FF]"
+      onClick={onClick}
+      type="button"
+    >
+      <PencilLine aria-hidden="true" className="h-4 w-4 text-[#00E5FF]" />
+      {label}
+    </button>
+  );
+}
+
+function getAvailablePropertySections(element: CanvasElement): PropertySectionOption[] {
+  const availableSectionIds: PropertySection[] =
+    element.type === "text" || element.type === "cta" ? ["content", "position", "style"] : ["position", "style"];
+
+  return propertySectionOptions.filter((section) => availableSectionIds.includes(section.id));
+}
+
+function defaultPropertySection(element: CanvasElement): PropertySection {
+  return element.type === "text" || element.type === "cta" ? "content" : "position";
 }
 
 function TextField({
