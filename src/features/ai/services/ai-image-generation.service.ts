@@ -1,5 +1,7 @@
 import type { BrandRepository } from "@/features/brands/types/brand";
 import type { BrandMemoryRepository } from "@/features/brands/types/brand-memory";
+import { createGeneratedImageAssetForUser } from "@/features/assets/services/asset-library.service";
+import type { AssetRepository } from "@/features/assets/types/asset";
 import { validateCanvasDocument } from "@/features/canvas/services/canvas-object-model.service";
 import type { CanvasDocument, CanvasElement, CanvasSlide } from "@/features/canvas/types/canvas";
 import type { ContentProjectRepository } from "@/features/projects/types/content-project";
@@ -18,6 +20,7 @@ import type {
 } from "../types/ai-generation";
 
 type GenerateProjectImageForUserParams = {
+  assetRepository: AssetRepository;
   brandMemoryRepository: BrandMemoryRepository;
   brandRepository: BrandRepository;
   generationCostRepository: GenerationCostRepository;
@@ -35,6 +38,7 @@ type GenerateProjectImageForUserParams = {
 type AiImageGenerationErrorCode = Extract<AiImageGenerationResult, { ok: false }>["error"]["code"];
 
 export async function generateProjectImageForUser({
+  assetRepository,
   brandMemoryRepository,
   brandRepository,
   generationCostRepository,
@@ -117,6 +121,14 @@ export async function generateProjectImageForUser({
       tokens: response.usage.tokens,
       workflow: "image-generation"
     });
+    await recordGeneratedImageAsset({
+      assetRepository,
+      brandId: project.brandId,
+      imageElement,
+      ownerUserId,
+      projectId,
+      provider: provider.id
+    });
 
     return {
       ok: true,
@@ -128,6 +140,47 @@ export async function generateProjectImageForUser({
 
     return failure("project_repository_error", "AI image could not be generated.");
   }
+}
+
+async function recordGeneratedImageAsset({
+  assetRepository,
+  brandId,
+  imageElement,
+  ownerUserId,
+  projectId,
+  provider
+}: {
+  assetRepository: AssetRepository;
+  brandId: string;
+  imageElement: Extract<CanvasElement, { type: "image" }>;
+  ownerUserId: string;
+  projectId: string;
+  provider: AiImageProviderId;
+}): Promise<void> {
+  const result = await createGeneratedImageAssetForUser({
+    assetRepository,
+    input: {
+      brandId,
+      height: Math.round(imageElement.height),
+      name: toAssetName(imageElement.alt),
+      ownerUserId,
+      projectId,
+      prompt: imageElement.prompt ?? null,
+      provider,
+      sourceUrl: imageElement.src,
+      width: Math.round(imageElement.width)
+    }
+  });
+
+  if (!result.ok) {
+    console.warn("Generated image asset could not be recorded.", result.error);
+  }
+}
+
+function toAssetName(altText: string): string {
+  const normalized = altText.replace(/\s+/g, " ").trim();
+
+  return (normalized || "Generated image").slice(0, 160);
 }
 
 function addImageElementToSlide(
@@ -160,7 +213,7 @@ function createGeneratedImageElement({
   prompt: string;
   provider: AiImageProviderId;
   slide: CanvasSlide;
-}): CanvasElement {
+}): Extract<CanvasElement, { type: "image" }> {
   const width = Math.min(888, slide.width - 128);
   const height = Math.min(520, slide.height - 260);
 

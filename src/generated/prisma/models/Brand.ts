@@ -207,6 +207,7 @@ export type BrandWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"Brand"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Brand"> | Date | string
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  assets?: Prisma.AssetListRelationFilter
   generationCosts?: Prisma.GenerationCostListRelationFilter
   memory?: Prisma.XOR<Prisma.BrandMemoryNullableScalarRelationFilter, Prisma.BrandMemoryWhereInput> | null
   projects?: Prisma.ContentProjectListRelationFilter
@@ -223,6 +224,7 @@ export type BrandOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   owner?: Prisma.UserOrderByWithRelationInput
+  assets?: Prisma.AssetOrderByRelationAggregateInput
   generationCosts?: Prisma.GenerationCostOrderByRelationAggregateInput
   memory?: Prisma.BrandMemoryOrderByWithRelationInput
   projects?: Prisma.ContentProjectOrderByRelationAggregateInput
@@ -243,6 +245,7 @@ export type BrandWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"Brand"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Brand"> | Date | string
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  assets?: Prisma.AssetListRelationFilter
   generationCosts?: Prisma.GenerationCostListRelationFilter
   memory?: Prisma.XOR<Prisma.BrandMemoryNullableScalarRelationFilter, Prisma.BrandMemoryWhereInput> | null
   projects?: Prisma.ContentProjectListRelationFilter
@@ -286,6 +289,7 @@ export type BrandCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutBrandsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryCreateNestedOneWithoutBrandInput
   projects?: Prisma.ContentProjectCreateNestedManyWithoutBrandInput
@@ -301,6 +305,7 @@ export type BrandUncheckedCreateInput = {
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryUncheckedCreateNestedOneWithoutBrandInput
   projects?: Prisma.ContentProjectUncheckedCreateNestedManyWithoutBrandInput
@@ -316,6 +321,7 @@ export type BrandUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutBrandsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUpdateOneWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUpdateManyWithoutBrandNestedInput
@@ -331,6 +337,7 @@ export type BrandUncheckedUpdateInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUncheckedUpdateOneWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUncheckedUpdateManyWithoutBrandNestedInput
@@ -422,6 +429,11 @@ export type BrandScalarRelationFilter = {
   isNot?: Prisma.BrandWhereInput
 }
 
+export type BrandNullableScalarRelationFilter = {
+  is?: Prisma.BrandWhereInput | null
+  isNot?: Prisma.BrandWhereInput | null
+}
+
 export type BrandCreateNestedManyWithoutOwnerInput = {
   create?: Prisma.XOR<Prisma.BrandCreateWithoutOwnerInput, Prisma.BrandUncheckedCreateWithoutOwnerInput> | Prisma.BrandCreateWithoutOwnerInput[] | Prisma.BrandUncheckedCreateWithoutOwnerInput[]
   connectOrCreate?: Prisma.BrandCreateOrConnectWithoutOwnerInput | Prisma.BrandCreateOrConnectWithoutOwnerInput[]
@@ -506,6 +518,22 @@ export type BrandUpdateOneRequiredWithoutGenerationCostsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.BrandUpdateToOneWithWhereWithoutGenerationCostsInput, Prisma.BrandUpdateWithoutGenerationCostsInput>, Prisma.BrandUncheckedUpdateWithoutGenerationCostsInput>
 }
 
+export type BrandCreateNestedOneWithoutAssetsInput = {
+  create?: Prisma.XOR<Prisma.BrandCreateWithoutAssetsInput, Prisma.BrandUncheckedCreateWithoutAssetsInput>
+  connectOrCreate?: Prisma.BrandCreateOrConnectWithoutAssetsInput
+  connect?: Prisma.BrandWhereUniqueInput
+}
+
+export type BrandUpdateOneWithoutAssetsNestedInput = {
+  create?: Prisma.XOR<Prisma.BrandCreateWithoutAssetsInput, Prisma.BrandUncheckedCreateWithoutAssetsInput>
+  connectOrCreate?: Prisma.BrandCreateOrConnectWithoutAssetsInput
+  upsert?: Prisma.BrandUpsertWithoutAssetsInput
+  disconnect?: Prisma.BrandWhereInput | boolean
+  delete?: Prisma.BrandWhereInput | boolean
+  connect?: Prisma.BrandWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.BrandUpdateToOneWithWhereWithoutAssetsInput, Prisma.BrandUpdateWithoutAssetsInput>, Prisma.BrandUncheckedUpdateWithoutAssetsInput>
+}
+
 export type BrandCreateNestedOneWithoutThemesInput = {
   create?: Prisma.XOR<Prisma.BrandCreateWithoutThemesInput, Prisma.BrandUncheckedCreateWithoutThemesInput>
   connectOrCreate?: Prisma.BrandCreateOrConnectWithoutThemesInput
@@ -528,6 +556,7 @@ export type BrandCreateWithoutOwnerInput = {
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryCreateNestedOneWithoutBrandInput
   projects?: Prisma.ContentProjectCreateNestedManyWithoutBrandInput
@@ -542,6 +571,7 @@ export type BrandUncheckedCreateWithoutOwnerInput = {
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryUncheckedCreateNestedOneWithoutBrandInput
   projects?: Prisma.ContentProjectUncheckedCreateNestedManyWithoutBrandInput
@@ -597,6 +627,7 @@ export type BrandCreateWithoutMemoryInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutBrandsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutBrandInput
   projects?: Prisma.ContentProjectCreateNestedManyWithoutBrandInput
   themes?: Prisma.ThemeCreateNestedManyWithoutBrandInput
@@ -611,6 +642,7 @@ export type BrandUncheckedCreateWithoutMemoryInput = {
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutBrandInput
   projects?: Prisma.ContentProjectUncheckedCreateNestedManyWithoutBrandInput
   themes?: Prisma.ThemeUncheckedCreateNestedManyWithoutBrandInput
@@ -641,6 +673,7 @@ export type BrandUpdateWithoutMemoryInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutBrandsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUpdateManyWithoutBrandNestedInput
   themes?: Prisma.ThemeUpdateManyWithoutBrandNestedInput
@@ -655,6 +688,7 @@ export type BrandUncheckedUpdateWithoutMemoryInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUncheckedUpdateManyWithoutBrandNestedInput
   themes?: Prisma.ThemeUncheckedUpdateManyWithoutBrandNestedInput
@@ -669,6 +703,7 @@ export type BrandCreateWithoutProjectsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutBrandsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryCreateNestedOneWithoutBrandInput
   themes?: Prisma.ThemeCreateNestedManyWithoutBrandInput
@@ -683,6 +718,7 @@ export type BrandUncheckedCreateWithoutProjectsInput = {
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryUncheckedCreateNestedOneWithoutBrandInput
   themes?: Prisma.ThemeUncheckedCreateNestedManyWithoutBrandInput
@@ -713,6 +749,7 @@ export type BrandUpdateWithoutProjectsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutBrandsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUpdateOneWithoutBrandNestedInput
   themes?: Prisma.ThemeUpdateManyWithoutBrandNestedInput
@@ -727,6 +764,7 @@ export type BrandUncheckedUpdateWithoutProjectsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUncheckedUpdateOneWithoutBrandNestedInput
   themes?: Prisma.ThemeUncheckedUpdateManyWithoutBrandNestedInput
@@ -741,6 +779,7 @@ export type BrandCreateWithoutGenerationCostsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutBrandsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryCreateNestedOneWithoutBrandInput
   projects?: Prisma.ContentProjectCreateNestedManyWithoutBrandInput
   themes?: Prisma.ThemeCreateNestedManyWithoutBrandInput
@@ -755,6 +794,7 @@ export type BrandUncheckedCreateWithoutGenerationCostsInput = {
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryUncheckedCreateNestedOneWithoutBrandInput
   projects?: Prisma.ContentProjectUncheckedCreateNestedManyWithoutBrandInput
   themes?: Prisma.ThemeUncheckedCreateNestedManyWithoutBrandInput
@@ -785,6 +825,7 @@ export type BrandUpdateWithoutGenerationCostsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutBrandsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUpdateOneWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUpdateManyWithoutBrandNestedInput
   themes?: Prisma.ThemeUpdateManyWithoutBrandNestedInput
@@ -799,6 +840,83 @@ export type BrandUncheckedUpdateWithoutGenerationCostsInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutBrandNestedInput
+  memory?: Prisma.BrandMemoryUncheckedUpdateOneWithoutBrandNestedInput
+  projects?: Prisma.ContentProjectUncheckedUpdateManyWithoutBrandNestedInput
+  themes?: Prisma.ThemeUncheckedUpdateManyWithoutBrandNestedInput
+}
+
+export type BrandCreateWithoutAssetsInput = {
+  id?: string
+  name: string
+  websiteUrl?: string | null
+  industry?: string | null
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  owner: Prisma.UserCreateNestedOneWithoutBrandsInput
+  generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutBrandInput
+  memory?: Prisma.BrandMemoryCreateNestedOneWithoutBrandInput
+  projects?: Prisma.ContentProjectCreateNestedManyWithoutBrandInput
+  themes?: Prisma.ThemeCreateNestedManyWithoutBrandInput
+}
+
+export type BrandUncheckedCreateWithoutAssetsInput = {
+  id?: string
+  ownerUserId: string
+  name: string
+  websiteUrl?: string | null
+  industry?: string | null
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutBrandInput
+  memory?: Prisma.BrandMemoryUncheckedCreateNestedOneWithoutBrandInput
+  projects?: Prisma.ContentProjectUncheckedCreateNestedManyWithoutBrandInput
+  themes?: Prisma.ThemeUncheckedCreateNestedManyWithoutBrandInput
+}
+
+export type BrandCreateOrConnectWithoutAssetsInput = {
+  where: Prisma.BrandWhereUniqueInput
+  create: Prisma.XOR<Prisma.BrandCreateWithoutAssetsInput, Prisma.BrandUncheckedCreateWithoutAssetsInput>
+}
+
+export type BrandUpsertWithoutAssetsInput = {
+  update: Prisma.XOR<Prisma.BrandUpdateWithoutAssetsInput, Prisma.BrandUncheckedUpdateWithoutAssetsInput>
+  create: Prisma.XOR<Prisma.BrandCreateWithoutAssetsInput, Prisma.BrandUncheckedCreateWithoutAssetsInput>
+  where?: Prisma.BrandWhereInput
+}
+
+export type BrandUpdateToOneWithWhereWithoutAssetsInput = {
+  where?: Prisma.BrandWhereInput
+  data: Prisma.XOR<Prisma.BrandUpdateWithoutAssetsInput, Prisma.BrandUncheckedUpdateWithoutAssetsInput>
+}
+
+export type BrandUpdateWithoutAssetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  websiteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneRequiredWithoutBrandsNestedInput
+  generationCosts?: Prisma.GenerationCostUpdateManyWithoutBrandNestedInput
+  memory?: Prisma.BrandMemoryUpdateOneWithoutBrandNestedInput
+  projects?: Prisma.ContentProjectUpdateManyWithoutBrandNestedInput
+  themes?: Prisma.ThemeUpdateManyWithoutBrandNestedInput
+}
+
+export type BrandUncheckedUpdateWithoutAssetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  websiteUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  industry?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUncheckedUpdateOneWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUncheckedUpdateManyWithoutBrandNestedInput
   themes?: Prisma.ThemeUncheckedUpdateManyWithoutBrandNestedInput
@@ -813,6 +931,7 @@ export type BrandCreateWithoutThemesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutBrandsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryCreateNestedOneWithoutBrandInput
   projects?: Prisma.ContentProjectCreateNestedManyWithoutBrandInput
@@ -827,6 +946,7 @@ export type BrandUncheckedCreateWithoutThemesInput = {
   description?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutBrandInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutBrandInput
   memory?: Prisma.BrandMemoryUncheckedCreateNestedOneWithoutBrandInput
   projects?: Prisma.ContentProjectUncheckedCreateNestedManyWithoutBrandInput
@@ -857,6 +977,7 @@ export type BrandUpdateWithoutThemesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutBrandsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUpdateOneWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUpdateManyWithoutBrandNestedInput
@@ -871,6 +992,7 @@ export type BrandUncheckedUpdateWithoutThemesInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUncheckedUpdateOneWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUncheckedUpdateManyWithoutBrandNestedInput
@@ -894,6 +1016,7 @@ export type BrandUpdateWithoutOwnerInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUpdateOneWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUpdateManyWithoutBrandNestedInput
@@ -908,6 +1031,7 @@ export type BrandUncheckedUpdateWithoutOwnerInput = {
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutBrandNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutBrandNestedInput
   memory?: Prisma.BrandMemoryUncheckedUpdateOneWithoutBrandNestedInput
   projects?: Prisma.ContentProjectUncheckedUpdateManyWithoutBrandNestedInput
@@ -930,12 +1054,14 @@ export type BrandUncheckedUpdateManyWithoutOwnerInput = {
  */
 
 export type BrandCountOutputType = {
+  assets: number
   generationCosts: number
   projects: number
   themes: number
 }
 
 export type BrandCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  assets?: boolean | BrandCountOutputTypeCountAssetsArgs
   generationCosts?: boolean | BrandCountOutputTypeCountGenerationCostsArgs
   projects?: boolean | BrandCountOutputTypeCountProjectsArgs
   themes?: boolean | BrandCountOutputTypeCountThemesArgs
@@ -949,6 +1075,13 @@ export type BrandCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extens
    * Select specific fields to fetch from the BrandCountOutputType
    */
   select?: Prisma.BrandCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * BrandCountOutputType without action
+ */
+export type BrandCountOutputTypeCountAssetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AssetWhereInput
 }
 
 /**
@@ -983,6 +1116,7 @@ export type BrandSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   createdAt?: boolean
   updatedAt?: boolean
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  assets?: boolean | Prisma.Brand$assetsArgs<ExtArgs>
   generationCosts?: boolean | Prisma.Brand$generationCostsArgs<ExtArgs>
   memory?: boolean | Prisma.Brand$memoryArgs<ExtArgs>
   projects?: boolean | Prisma.Brand$projectsArgs<ExtArgs>
@@ -1028,6 +1162,7 @@ export type BrandSelectScalar = {
 export type BrandOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerUserId" | "name" | "websiteUrl" | "industry" | "description" | "createdAt" | "updatedAt", ExtArgs["result"]["brand"]>
 export type BrandInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  assets?: boolean | Prisma.Brand$assetsArgs<ExtArgs>
   generationCosts?: boolean | Prisma.Brand$generationCostsArgs<ExtArgs>
   memory?: boolean | Prisma.Brand$memoryArgs<ExtArgs>
   projects?: boolean | Prisma.Brand$projectsArgs<ExtArgs>
@@ -1045,6 +1180,7 @@ export type $BrandPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   name: "Brand"
   objects: {
     owner: Prisma.$UserPayload<ExtArgs>
+    assets: Prisma.$AssetPayload<ExtArgs>[]
     generationCosts: Prisma.$GenerationCostPayload<ExtArgs>[]
     memory: Prisma.$BrandMemoryPayload<ExtArgs> | null
     projects: Prisma.$ContentProjectPayload<ExtArgs>[]
@@ -1454,6 +1590,7 @@ readonly fields: BrandFieldRefs;
 export interface Prisma__BrandClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  assets<T extends Prisma.Brand$assetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Brand$assetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   generationCosts<T extends Prisma.Brand$generationCostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Brand$generationCostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GenerationCostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   memory<T extends Prisma.Brand$memoryArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Brand$memoryArgs<ExtArgs>>): Prisma.Prisma__BrandMemoryClient<runtime.Types.Result.GetResult<Prisma.$BrandMemoryPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   projects<T extends Prisma.Brand$projectsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Brand$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ContentProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1893,6 +2030,30 @@ export type BrandDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Interna
    * Limit how many Brands to delete.
    */
   limit?: number
+}
+
+/**
+ * Brand.assets
+ */
+export type Brand$assetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Asset
+   */
+  select?: Prisma.AssetSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Asset
+   */
+  omit?: Prisma.AssetOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AssetInclude<ExtArgs> | null
+  where?: Prisma.AssetWhereInput
+  orderBy?: Prisma.AssetOrderByWithRelationInput | Prisma.AssetOrderByWithRelationInput[]
+  cursor?: Prisma.AssetWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AssetScalarFieldEnum | Prisma.AssetScalarFieldEnum[]
 }
 
 /**

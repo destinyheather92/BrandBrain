@@ -15,6 +15,7 @@ model User {
   imageUrl        String?          @map("image_url")
   createdAt       DateTime         @default(now()) @map("created_at")
   updatedAt       DateTime         @updatedAt @map("updated_at")
+  assets          Asset[]
   brands          Brand[]
   generationCosts GenerationCost[]
   projectVersions ProjectVersion[]
@@ -35,6 +36,7 @@ model Brand {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   owner           User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  assets          Asset[]
   generationCosts GenerationCost[]
   memory          BrandMemory?
   projects        ContentProject[]
@@ -74,6 +76,7 @@ model ContentProject {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   owner           User             @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  assets          Asset[]
   brand           Brand            @relation(fields: [brandId], references: [id], onDelete: Cascade)
   generationCosts GenerationCost[]
   versions        ProjectVersion[]
@@ -102,6 +105,33 @@ model GenerationCost {
   @@index([ownerUserId, createdAt])
   @@index([projectId])
   @@map("generation_costs")
+}
+
+model Asset {
+  id          String   @id @default(cuid())
+  ownerUserId String   @map("owner_user_id")
+  brandId     String?  @map("brand_id")
+  projectId   String?  @map("project_id")
+  kind        String
+  name        String
+  sourceUrl   String   @map("source_url")
+  mimeType    String?  @map("mime_type")
+  width       Int?
+  height      Int?
+  sizeBytes   Int?     @map("size_bytes")
+  provider    String?
+  prompt      String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  owner   User            @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  brand   Brand?          @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  project ContentProject? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([ownerUserId, createdAt])
+  @@index([brandId])
+  @@index([projectId])
+  @@map("assets")
 }
 
 model ProjectVersion {

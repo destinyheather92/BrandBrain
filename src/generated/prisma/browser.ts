@@ -43,6 +43,11 @@ export type ContentProject = Prisma.ContentProjectModel
  */
 export type GenerationCost = Prisma.GenerationCostModel
 /**
+ * Model Asset
+ * 
+ */
+export type Asset = Prisma.AssetModel
+/**
  * Model ProjectVersion
  * 
  */

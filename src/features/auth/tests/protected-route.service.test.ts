@@ -6,12 +6,13 @@ import {
 } from "../services/protected-route.service";
 
 describe("protected app route service", () => {
-  it("protects dashboard, brand workspace, canvas, and project routes", () => {
+  it("protects dashboard, brand workspace, canvas, project, and asset routes", () => {
     expect(getProtectedAppRoutes()).toEqual([
       "/dashboard(.*)",
       "/brands(.*)",
       "/canvas(.*)",
-      "/projects(.*)"
+      "/projects(.*)",
+      "/assets(.*)"
     ]);
   });
 
@@ -24,6 +25,8 @@ describe("protected app route service", () => {
     expect(isProtectedAppPath("/canvas/model")).toBe(true);
     expect(isProtectedAppPath("/projects")).toBe(true);
     expect(isProtectedAppPath("/projects/project_123")).toBe(true);
+    expect(isProtectedAppPath("/assets")).toBe(true);
+    expect(isProtectedAppPath("/assets/library")).toBe(true);
     expect(isProtectedAppPath("/sign-in")).toBe(false);
   });
 });

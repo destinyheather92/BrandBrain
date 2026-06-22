@@ -5,6 +5,7 @@ import type { BrandRepository } from "@/features/brands/types/brand";
 import type { CanvasDocument } from "@/features/canvas/types/canvas";
 import type { ContentProjectRepository } from "@/features/projects/types/content-project";
 import type { ProjectThemeRepository } from "@/features/themes/types/project-theme";
+import type { AssetRepository } from "@/features/assets/types/asset";
 
 import { generateProjectImageForUser } from "../services/ai-image-generation.service";
 import type {
@@ -144,6 +145,29 @@ function createRepositories() {
     create: vi.fn().mockResolvedValue(undefined)
   } satisfies GenerationCostRepository;
 
+  const assetRepository = {
+    create: vi.fn().mockResolvedValue({
+      brandId: "brand_1",
+      brandName: "Land Strong",
+      createdAt,
+      height: 520,
+      id: "asset_image_generated_1",
+      kind: "generated-image",
+      mimeType: "image/svg+xml",
+      name: "Land Strong generated image",
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      projectTitle: "Spring Land Prep Carousel",
+      prompt: "Generated prompt",
+      provider: "flux",
+      sizeBytes: null,
+      sourceUrl: "data:image/svg+xml,%3Csvg%3E%3C/svg%3E",
+      updatedAt: createdAt,
+      width: 888
+    }),
+    listByOwnerUserId: vi.fn()
+  } satisfies AssetRepository;
+
   const provider: AiImageGenerationProvider = {
     generateImage: vi.fn().mockResolvedValue({
       imageUrl: "data:image/svg+xml,%3Csvg%3E%3C/svg%3E",
@@ -160,6 +184,7 @@ function createRepositories() {
   };
 
   return {
+    assetRepository,
     brandMemoryRepository,
     brandRepository,
     generationCostRepository,
@@ -215,6 +240,16 @@ describe("generateProjectImageForUser", () => {
         provider: "flux",
         tokens: 900,
         workflow: "image-generation"
+      })
+    );
+    expect(repositories.assetRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        brandId: "brand_1",
+        kind: "generated-image",
+        ownerUserId: "user_1",
+        projectId: "project_1",
+        provider: "flux",
+        sourceUrl: "data:image/svg+xml,%3Csvg%3E%3C/svg%3E"
       })
     );
   });

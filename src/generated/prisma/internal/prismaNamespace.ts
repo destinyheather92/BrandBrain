@@ -389,6 +389,7 @@ export const ModelName = {
   BrandMemory: 'BrandMemory',
   ContentProject: 'ContentProject',
   GenerationCost: 'GenerationCost',
+  Asset: 'Asset',
   ProjectVersion: 'ProjectVersion',
   Theme: 'Theme'
 } as const
@@ -406,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "brand" | "brandMemory" | "contentProject" | "generationCost" | "projectVersion" | "theme"
+    modelProps: "user" | "brand" | "brandMemory" | "contentProject" | "generationCost" | "asset" | "projectVersion" | "theme"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -780,6 +781,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Asset: {
+      payload: Prisma.$AssetPayload<ExtArgs>
+      fields: Prisma.AssetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AssetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AssetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload>
+        }
+        findFirst: {
+          args: Prisma.AssetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AssetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload>
+        }
+        findMany: {
+          args: Prisma.AssetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload>[]
+        }
+        create: {
+          args: Prisma.AssetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload>
+        }
+        createMany: {
+          args: Prisma.AssetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AssetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload>[]
+        }
+        delete: {
+          args: Prisma.AssetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload>
+        }
+        update: {
+          args: Prisma.AssetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload>
+        }
+        deleteMany: {
+          args: Prisma.AssetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AssetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AssetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload>[]
+        }
+        upsert: {
+          args: Prisma.AssetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AssetPayload>
+        }
+        aggregate: {
+          args: Prisma.AssetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAsset>
+        }
+        groupBy: {
+          args: Prisma.AssetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AssetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AssetCountAggregateOutputType> | number
+        }
+      }
+    }
     ProjectVersion: {
       payload: Prisma.$ProjectVersionPayload<ExtArgs>
       fields: Prisma.ProjectVersionFieldRefs
@@ -1038,6 +1113,27 @@ export const GenerationCostScalarFieldEnum = {
 } as const
 
 export type GenerationCostScalarFieldEnum = (typeof GenerationCostScalarFieldEnum)[keyof typeof GenerationCostScalarFieldEnum]
+
+
+export const AssetScalarFieldEnum = {
+  id: 'id',
+  ownerUserId: 'ownerUserId',
+  brandId: 'brandId',
+  projectId: 'projectId',
+  kind: 'kind',
+  name: 'name',
+  sourceUrl: 'sourceUrl',
+  mimeType: 'mimeType',
+  width: 'width',
+  height: 'height',
+  sizeBytes: 'sizeBytes',
+  provider: 'provider',
+  prompt: 'prompt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AssetScalarFieldEnum = (typeof AssetScalarFieldEnum)[keyof typeof AssetScalarFieldEnum]
 
 
 export const ProjectVersionScalarFieldEnum = {
@@ -1300,6 +1396,7 @@ export type GlobalOmitConfig = {
   brandMemory?: Prisma.BrandMemoryOmit
   contentProject?: Prisma.ContentProjectOmit
   generationCost?: Prisma.GenerationCostOmit
+  asset?: Prisma.AssetOmit
   projectVersion?: Prisma.ProjectVersionOmit
   theme?: Prisma.ThemeOmit
 }

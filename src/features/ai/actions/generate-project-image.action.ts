@@ -4,6 +4,7 @@ import { currentUser } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
+import { createPrismaAssetRepository } from "@/features/assets/repositories/prisma-asset.repository";
 import { createPrismaBrandMemoryRepository } from "@/features/brands/repositories/prisma-brand-memory.repository";
 import { createPrismaBrandRepository } from "@/features/brands/repositories/prisma-brand.repository";
 import { createPrismaContentProjectRepository } from "@/features/projects/repositories/prisma-content-project.repository";
@@ -56,6 +57,7 @@ export async function generateProjectImageAction(
   }
 
   const result = await generateProjectImageForUser({
+    assetRepository: createPrismaAssetRepository(),
     brandMemoryRepository: createPrismaBrandMemoryRepository(),
     brandRepository: createPrismaBrandRepository(),
     generationCostRepository: createPrismaGenerationCostRepository(),

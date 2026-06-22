@@ -211,6 +211,7 @@ export type ContentProjectWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"ContentProject"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContentProject"> | Date | string
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  assets?: Prisma.AssetListRelationFilter
   brand?: Prisma.XOR<Prisma.BrandScalarRelationFilter, Prisma.BrandWhereInput>
   generationCosts?: Prisma.GenerationCostListRelationFilter
   versions?: Prisma.ProjectVersionListRelationFilter
@@ -228,6 +229,7 @@ export type ContentProjectOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   owner?: Prisma.UserOrderByWithRelationInput
+  assets?: Prisma.AssetOrderByRelationAggregateInput
   brand?: Prisma.BrandOrderByWithRelationInput
   generationCosts?: Prisma.GenerationCostOrderByRelationAggregateInput
   versions?: Prisma.ProjectVersionOrderByRelationAggregateInput
@@ -248,6 +250,7 @@ export type ContentProjectWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ContentProject"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ContentProject"> | Date | string
   owner?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
+  assets?: Prisma.AssetListRelationFilter
   brand?: Prisma.XOR<Prisma.BrandScalarRelationFilter, Prisma.BrandWhereInput>
   generationCosts?: Prisma.GenerationCostListRelationFilter
   versions?: Prisma.ProjectVersionListRelationFilter
@@ -293,6 +296,7 @@ export type ContentProjectCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutProjectsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutProjectInput
   brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
   versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
@@ -309,6 +313,7 @@ export type ContentProjectUncheckedCreateInput = {
   canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutProjectInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
   versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
@@ -323,6 +328,7 @@ export type ContentProjectUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutProjectNestedInput
   brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
   versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
@@ -339,6 +345,7 @@ export type ContentProjectUncheckedUpdateInput = {
   canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutProjectNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
   versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
@@ -425,6 +432,11 @@ export type ContentProjectMinOrderByAggregateInput = {
 export type ContentProjectScalarRelationFilter = {
   is?: Prisma.ContentProjectWhereInput
   isNot?: Prisma.ContentProjectWhereInput
+}
+
+export type ContentProjectNullableScalarRelationFilter = {
+  is?: Prisma.ContentProjectWhereInput | null
+  isNot?: Prisma.ContentProjectWhereInput | null
 }
 
 export type ContentProjectCreateNestedManyWithoutOwnerInput = {
@@ -525,6 +537,22 @@ export type ContentProjectUpdateOneRequiredWithoutGenerationCostsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ContentProjectUpdateToOneWithWhereWithoutGenerationCostsInput, Prisma.ContentProjectUpdateWithoutGenerationCostsInput>, Prisma.ContentProjectUncheckedUpdateWithoutGenerationCostsInput>
 }
 
+export type ContentProjectCreateNestedOneWithoutAssetsInput = {
+  create?: Prisma.XOR<Prisma.ContentProjectCreateWithoutAssetsInput, Prisma.ContentProjectUncheckedCreateWithoutAssetsInput>
+  connectOrCreate?: Prisma.ContentProjectCreateOrConnectWithoutAssetsInput
+  connect?: Prisma.ContentProjectWhereUniqueInput
+}
+
+export type ContentProjectUpdateOneWithoutAssetsNestedInput = {
+  create?: Prisma.XOR<Prisma.ContentProjectCreateWithoutAssetsInput, Prisma.ContentProjectUncheckedCreateWithoutAssetsInput>
+  connectOrCreate?: Prisma.ContentProjectCreateOrConnectWithoutAssetsInput
+  upsert?: Prisma.ContentProjectUpsertWithoutAssetsInput
+  disconnect?: Prisma.ContentProjectWhereInput | boolean
+  delete?: Prisma.ContentProjectWhereInput | boolean
+  connect?: Prisma.ContentProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ContentProjectUpdateToOneWithWhereWithoutAssetsInput, Prisma.ContentProjectUpdateWithoutAssetsInput>, Prisma.ContentProjectUncheckedUpdateWithoutAssetsInput>
+}
+
 export type ContentProjectCreateNestedOneWithoutVersionsInput = {
   create?: Prisma.XOR<Prisma.ContentProjectCreateWithoutVersionsInput, Prisma.ContentProjectUncheckedCreateWithoutVersionsInput>
   connectOrCreate?: Prisma.ContentProjectCreateOrConnectWithoutVersionsInput
@@ -561,6 +589,7 @@ export type ContentProjectCreateWithoutOwnerInput = {
   canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetCreateNestedManyWithoutProjectInput
   brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
   versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
@@ -576,6 +605,7 @@ export type ContentProjectUncheckedCreateWithoutOwnerInput = {
   canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutProjectInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
   versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
@@ -631,6 +661,7 @@ export type ContentProjectCreateWithoutBrandInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutProjectsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutProjectInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
   versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeCreateNestedOneWithoutProjectInput
@@ -645,6 +676,7 @@ export type ContentProjectUncheckedCreateWithoutBrandInput = {
   canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutProjectInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
   versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
@@ -685,6 +717,7 @@ export type ContentProjectCreateWithoutGenerationCostsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutProjectsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutProjectInput
   brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
   versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeCreateNestedOneWithoutProjectInput
@@ -700,6 +733,7 @@ export type ContentProjectUncheckedCreateWithoutGenerationCostsInput = {
   canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutProjectInput
   versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
 }
@@ -729,6 +763,7 @@ export type ContentProjectUpdateWithoutGenerationCostsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutProjectNestedInput
   brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
   versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUpdateOneWithoutProjectNestedInput
@@ -744,6 +779,83 @@ export type ContentProjectUncheckedUpdateWithoutGenerationCostsInput = {
   canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
+  theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
+}
+
+export type ContentProjectCreateWithoutAssetsInput = {
+  id?: string
+  title: string
+  format?: string
+  status?: string
+  canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  owner: Prisma.UserCreateNestedOneWithoutProjectsInput
+  brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
+  generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
+  theme?: Prisma.ThemeCreateNestedOneWithoutProjectInput
+}
+
+export type ContentProjectUncheckedCreateWithoutAssetsInput = {
+  id?: string
+  ownerUserId: string
+  brandId: string
+  title: string
+  format?: string
+  status?: string
+  canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
+  versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
+  theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
+}
+
+export type ContentProjectCreateOrConnectWithoutAssetsInput = {
+  where: Prisma.ContentProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ContentProjectCreateWithoutAssetsInput, Prisma.ContentProjectUncheckedCreateWithoutAssetsInput>
+}
+
+export type ContentProjectUpsertWithoutAssetsInput = {
+  update: Prisma.XOR<Prisma.ContentProjectUpdateWithoutAssetsInput, Prisma.ContentProjectUncheckedUpdateWithoutAssetsInput>
+  create: Prisma.XOR<Prisma.ContentProjectCreateWithoutAssetsInput, Prisma.ContentProjectUncheckedCreateWithoutAssetsInput>
+  where?: Prisma.ContentProjectWhereInput
+}
+
+export type ContentProjectUpdateToOneWithWhereWithoutAssetsInput = {
+  where?: Prisma.ContentProjectWhereInput
+  data: Prisma.XOR<Prisma.ContentProjectUpdateWithoutAssetsInput, Prisma.ContentProjectUncheckedUpdateWithoutAssetsInput>
+}
+
+export type ContentProjectUpdateWithoutAssetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  format?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
+  brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
+  generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
+  versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
+  theme?: Prisma.ThemeUpdateOneWithoutProjectNestedInput
+}
+
+export type ContentProjectUncheckedUpdateWithoutAssetsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  ownerUserId?: Prisma.StringFieldUpdateOperationsInput | string
+  brandId?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  format?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.StringFieldUpdateOperationsInput | string
+  canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
   versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
 }
@@ -757,6 +869,7 @@ export type ContentProjectCreateWithoutVersionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutProjectsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutProjectInput
   brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeCreateNestedOneWithoutProjectInput
@@ -772,6 +885,7 @@ export type ContentProjectUncheckedCreateWithoutVersionsInput = {
   canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutProjectInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
   theme?: Prisma.ThemeUncheckedCreateNestedOneWithoutProjectInput
 }
@@ -801,6 +915,7 @@ export type ContentProjectUpdateWithoutVersionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutProjectNestedInput
   brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUpdateOneWithoutProjectNestedInput
@@ -816,6 +931,7 @@ export type ContentProjectUncheckedUpdateWithoutVersionsInput = {
   canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutProjectNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
 }
@@ -829,6 +945,7 @@ export type ContentProjectCreateWithoutThemeInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   owner: Prisma.UserCreateNestedOneWithoutProjectsInput
+  assets?: Prisma.AssetCreateNestedManyWithoutProjectInput
   brand: Prisma.BrandCreateNestedOneWithoutProjectsInput
   generationCosts?: Prisma.GenerationCostCreateNestedManyWithoutProjectInput
   versions?: Prisma.ProjectVersionCreateNestedManyWithoutProjectInput
@@ -844,6 +961,7 @@ export type ContentProjectUncheckedCreateWithoutThemeInput = {
   canvasJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Date | string
   updatedAt?: Date | string
+  assets?: Prisma.AssetUncheckedCreateNestedManyWithoutProjectInput
   generationCosts?: Prisma.GenerationCostUncheckedCreateNestedManyWithoutProjectInput
   versions?: Prisma.ProjectVersionUncheckedCreateNestedManyWithoutProjectInput
 }
@@ -873,6 +991,7 @@ export type ContentProjectUpdateWithoutThemeInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutProjectNestedInput
   brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
   versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
@@ -888,6 +1007,7 @@ export type ContentProjectUncheckedUpdateWithoutThemeInput = {
   canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutProjectNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
   versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
 }
@@ -911,6 +1031,7 @@ export type ContentProjectUpdateWithoutOwnerInput = {
   canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUpdateManyWithoutProjectNestedInput
   brand?: Prisma.BrandUpdateOneRequiredWithoutProjectsNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
   versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
@@ -926,6 +1047,7 @@ export type ContentProjectUncheckedUpdateWithoutOwnerInput = {
   canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutProjectNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
   versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
@@ -962,6 +1084,7 @@ export type ContentProjectUpdateWithoutBrandInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   owner?: Prisma.UserUpdateOneRequiredWithoutProjectsNestedInput
+  assets?: Prisma.AssetUpdateManyWithoutProjectNestedInput
   generationCosts?: Prisma.GenerationCostUpdateManyWithoutProjectNestedInput
   versions?: Prisma.ProjectVersionUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUpdateOneWithoutProjectNestedInput
@@ -976,6 +1099,7 @@ export type ContentProjectUncheckedUpdateWithoutBrandInput = {
   canvasJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  assets?: Prisma.AssetUncheckedUpdateManyWithoutProjectNestedInput
   generationCosts?: Prisma.GenerationCostUncheckedUpdateManyWithoutProjectNestedInput
   versions?: Prisma.ProjectVersionUncheckedUpdateManyWithoutProjectNestedInput
   theme?: Prisma.ThemeUncheckedUpdateOneWithoutProjectNestedInput
@@ -998,11 +1122,13 @@ export type ContentProjectUncheckedUpdateManyWithoutBrandInput = {
  */
 
 export type ContentProjectCountOutputType = {
+  assets: number
   generationCosts: number
   versions: number
 }
 
 export type ContentProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  assets?: boolean | ContentProjectCountOutputTypeCountAssetsArgs
   generationCosts?: boolean | ContentProjectCountOutputTypeCountGenerationCostsArgs
   versions?: boolean | ContentProjectCountOutputTypeCountVersionsArgs
 }
@@ -1015,6 +1141,13 @@ export type ContentProjectCountOutputTypeDefaultArgs<ExtArgs extends runtime.Typ
    * Select specific fields to fetch from the ContentProjectCountOutputType
    */
   select?: Prisma.ContentProjectCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * ContentProjectCountOutputType without action
+ */
+export type ContentProjectCountOutputTypeCountAssetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AssetWhereInput
 }
 
 /**
@@ -1043,6 +1176,7 @@ export type ContentProjectSelect<ExtArgs extends runtime.Types.Extensions.Intern
   createdAt?: boolean
   updatedAt?: boolean
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  assets?: boolean | Prisma.ContentProject$assetsArgs<ExtArgs>
   brand?: boolean | Prisma.BrandDefaultArgs<ExtArgs>
   generationCosts?: boolean | Prisma.ContentProject$generationCostsArgs<ExtArgs>
   versions?: boolean | Prisma.ContentProject$versionsArgs<ExtArgs>
@@ -1093,6 +1227,7 @@ export type ContentProjectSelectScalar = {
 export type ContentProjectOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerUserId" | "brandId" | "title" | "format" | "status" | "canvasJson" | "createdAt" | "updatedAt", ExtArgs["result"]["contentProject"]>
 export type ContentProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
+  assets?: boolean | Prisma.ContentProject$assetsArgs<ExtArgs>
   brand?: boolean | Prisma.BrandDefaultArgs<ExtArgs>
   generationCosts?: boolean | Prisma.ContentProject$generationCostsArgs<ExtArgs>
   versions?: boolean | Prisma.ContentProject$versionsArgs<ExtArgs>
@@ -1112,6 +1247,7 @@ export type $ContentProjectPayload<ExtArgs extends runtime.Types.Extensions.Inte
   name: "ContentProject"
   objects: {
     owner: Prisma.$UserPayload<ExtArgs>
+    assets: Prisma.$AssetPayload<ExtArgs>[]
     brand: Prisma.$BrandPayload<ExtArgs>
     generationCosts: Prisma.$GenerationCostPayload<ExtArgs>[]
     versions: Prisma.$ProjectVersionPayload<ExtArgs>[]
@@ -1522,6 +1658,7 @@ readonly fields: ContentProjectFieldRefs;
 export interface Prisma__ContentProjectClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   owner<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  assets<T extends Prisma.ContentProject$assetsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentProject$assetsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AssetPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   brand<T extends Prisma.BrandDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.BrandDefaultArgs<ExtArgs>>): Prisma.Prisma__BrandClient<runtime.Types.Result.GetResult<Prisma.$BrandPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   generationCosts<T extends Prisma.ContentProject$generationCostsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentProject$generationCostsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$GenerationCostPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   versions<T extends Prisma.ContentProject$versionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ContentProject$versionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1962,6 +2099,30 @@ export type ContentProjectDeleteManyArgs<ExtArgs extends runtime.Types.Extension
    * Limit how many ContentProjects to delete.
    */
   limit?: number
+}
+
+/**
+ * ContentProject.assets
+ */
+export type ContentProject$assetsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Asset
+   */
+  select?: Prisma.AssetSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Asset
+   */
+  omit?: Prisma.AssetOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AssetInclude<ExtArgs> | null
+  where?: Prisma.AssetWhereInput
+  orderBy?: Prisma.AssetOrderByWithRelationInput | Prisma.AssetOrderByWithRelationInput[]
+  cursor?: Prisma.AssetWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AssetScalarFieldEnum | Prisma.AssetScalarFieldEnum[]
 }
 
 /**
