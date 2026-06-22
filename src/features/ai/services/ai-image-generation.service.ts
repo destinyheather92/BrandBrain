@@ -13,7 +13,6 @@ import type {
   AiGenerationThemeContext,
   AiImageGenerationResult,
   AiImageProviderId,
-  AiImageProviderPreference,
   AiImageProviderRegistry,
   GenerationCostCreateInput,
   GenerationCostRepository
@@ -27,7 +26,6 @@ type GenerateProjectImageForUserParams = {
   idFactory?: () => string;
   imageProviderRegistry: AiImageProviderRegistry;
   ownerUserId: string;
-  preferredProvider: AiImageProviderPreference;
   projectId: string;
   projectRepository: ContentProjectRepository;
   slideId: string;
@@ -45,7 +43,6 @@ export async function generateProjectImageForUser({
   idFactory = createImageElementId,
   imageProviderRegistry,
   ownerUserId,
-  preferredProvider,
   projectId,
   projectRepository,
   slideId,
@@ -85,7 +82,6 @@ export async function generateProjectImageForUser({
         memory,
         name: brand.name
       } satisfies AiGenerationBrandContext,
-      preferredProvider,
       projectTitle: project.title,
       theme: toThemeContext(theme),
       userRequest: userRequest.trim() || project.title

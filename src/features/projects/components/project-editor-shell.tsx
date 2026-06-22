@@ -317,6 +317,36 @@ export function ProjectEditorShell({
 
   }, [restoreState]);
 
+  useEffect(() => {
+    if (!activeSlide || !selectedElementId || editingElementId) {
+      return;
+    }
+
+    const activeSlideIdForShortcut = activeSlide.id;
+    const selectedElementIdForShortcut = selectedElementId;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Delete" && event.key !== "Backspace") {
+        return;
+      }
+
+      if (isEditableKeyboardTarget(event.target)) {
+        return;
+      }
+
+      event.preventDefault();
+      setDocument((currentDocument) =>
+        removeCanvasElement(currentDocument, activeSlideIdForShortcut, selectedElementIdForShortcut)
+      );
+      setSelectedElementId(null);
+      setElementContextMenu(null);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [activeSlide, editingElementId, selectedElementId]);
+
   function nextElementId(type: CanvasElement["type"]) {
     const randomId = globalThis.crypto?.randomUUID?.() ?? Math.random().toString(36).slice(2, 12);
 
@@ -861,6 +891,16 @@ function formatVersionTime(value: Date): string {
     hour: "numeric",
     minute: "2-digit"
   });
+}
+
+function isEditableKeyboardTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) {
+    return false;
+  }
+
+  const tagName = target.tagName.toLowerCase();
+
+  return target.isContentEditable || tagName === "input" || tagName === "select" || tagName === "textarea";
 }
 
 function SlideCanvas({

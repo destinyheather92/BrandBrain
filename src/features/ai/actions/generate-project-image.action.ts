@@ -15,9 +15,6 @@ import { createDefaultAiImageProviderRegistry } from "../providers/local-image-g
 import { createPrismaGenerationCostRepository } from "../repositories/prisma-generation-cost.repository";
 import { generateProjectImageForUser } from "../services/ai-image-generation.service";
 import type { AiImageGenerationActionState } from "../types/ai-image-generation-action-state";
-import type { AiImageProviderPreference } from "../types/ai-generation";
-
-const imageProviderPreferences = new Set<AiImageProviderPreference>(["auto", "flux", "ideogram", "imagen", "openai"]);
 
 export async function generateProjectImageAction(
   _previousState: AiImageGenerationActionState,
@@ -32,11 +29,6 @@ export async function generateProjectImageAction(
   const projectId = formData.get("projectId");
   const slideId = formData.get("slideId");
   const userRequest = formData.get("userRequest");
-  const preferredProviderValue = formData.get("preferredProvider");
-  const preferredProvider =
-    typeof preferredProviderValue === "string" && imageProviderPreferences.has(preferredProviderValue as AiImageProviderPreference)
-      ? (preferredProviderValue as AiImageProviderPreference)
-      : "auto";
 
   if (typeof projectId !== "string" || typeof slideId !== "string" || typeof userRequest !== "string") {
     return {
@@ -63,7 +55,6 @@ export async function generateProjectImageAction(
     generationCostRepository: createPrismaGenerationCostRepository(),
     imageProviderRegistry: createDefaultAiImageProviderRegistry(),
     ownerUserId: syncResult.user.id,
-    preferredProvider,
     projectId,
     projectRepository: createPrismaContentProjectRepository(),
     slideId,

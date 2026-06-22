@@ -16,25 +16,6 @@ type AiImageGenerationPanelProps = {
   projectId: string;
 };
 
-const providerOptions = [
-  {
-    label: "Auto",
-    value: "auto"
-  },
-  {
-    label: "Ideogram",
-    value: "ideogram"
-  },
-  {
-    label: "Flux",
-    value: "flux"
-  },
-  {
-    label: "Imagen",
-    value: "imagen"
-  }
-];
-
 export function AiImageGenerationPanel({
   activeSlideId,
   hasTheme,
@@ -87,23 +68,6 @@ export function AiImageGenerationPanel({
           name="userRequest"
           readOnly={!hasTheme || pending}
         />
-
-        <label className="text-sm text-[#CBD5E1]" htmlFor="ai-image-provider">
-          Image provider
-        </label>
-        <select
-          className="min-h-10 rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
-          disabled={!hasTheme || pending}
-          id="ai-image-provider"
-          name="preferredProvider"
-          defaultValue="auto"
-        >
-          {providerOptions.map((option) => (
-            <option key={option.value} value={option.value}>
-              {option.label}
-            </option>
-          ))}
-        </select>
 
         {!hasTheme ? (
           <p className="rounded-lg border border-[#263244] bg-[#141A26] p-3 text-sm text-[#CBD5E1]">

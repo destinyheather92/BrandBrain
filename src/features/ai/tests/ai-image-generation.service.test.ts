@@ -203,7 +203,6 @@ describe("generateProjectImageForUser", () => {
       ...repositories,
       idFactory: () => "image_generated_1",
       ownerUserId: "user_1",
-      preferredProvider: "auto",
       projectId: "project_1",
       slideId: "slide_1",
       userRequest: "Generate marketing photography of freshly graded land at sunrise."
@@ -261,7 +260,6 @@ describe("generateProjectImageForUser", () => {
     const result = await generateProjectImageForUser({
       ...repositories,
       ownerUserId: "user_1",
-      preferredProvider: "auto",
       projectId: "project_1",
       slideId: "slide_1",
       userRequest: "Generate image."

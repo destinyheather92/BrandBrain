@@ -46,10 +46,11 @@ describe("AiImageGenerationPanel", () => {
 
     expect(screen.getByRole("heading", { name: "AI Image" })).toBeInTheDocument();
     expect(screen.getByLabelText("Image prompt")).toBeInTheDocument();
-    expect(screen.getByLabelText("Image provider")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Image provider")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Generate Image" })).toBeInTheDocument();
     expect(container.querySelector('input[name="projectId"]')).toHaveValue("project_1");
     expect(container.querySelector('input[name="slideId"]')).toHaveValue("slide_1");
+    expect(container.querySelector('input[name="preferredProvider"]')).not.toBeInTheDocument();
   });
 
   it("blocks image generation until a project theme exists", () => {

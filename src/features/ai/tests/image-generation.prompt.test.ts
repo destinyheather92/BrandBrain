@@ -44,7 +44,6 @@ describe("buildImageGenerationPrompt", () => {
   it("builds a structured image prompt from brand memory and approved theme", () => {
     const prompt = buildImageGenerationPrompt({
       brand,
-      preferredProvider: "auto",
       projectTitle: "Spring Land Prep Carousel",
       theme,
       userRequest: "Generate marketing photography of freshly graded land at sunrise."
@@ -59,19 +58,41 @@ describe("buildImageGenerationPrompt", () => {
     expect(prompt.prompt).toContain("freshly graded land");
     expect(prompt.prompt).toContain("Crisp outdoor photography");
     expect(prompt.prompt).toContain("#14532D");
+    expect(prompt.prompt).toContain("specific, non-generic");
     expect(prompt.negativePrompt).toContain("off-brand");
     expect(prompt.system).toContain("Return image generation instructions");
   });
 
-  it("honors an explicit provider override", () => {
-    const prompt = buildImageGenerationPrompt({
-      brand,
-      preferredProvider: "ideogram",
-      projectTitle: "Spring Land Prep Carousel",
-      theme,
-      userRequest: "Create a text-forward carousel cover graphic."
-    });
+  it("routes text-heavy social graphics and carousel covers to Ideogram", () => {
+    expect(
+      buildImageGenerationPrompt({
+        brand,
+        projectTitle: "Spring Land Prep Carousel",
+        theme,
+        userRequest: "Create a text-forward carousel cover graphic."
+      }).provider
+    ).toBe("ideogram");
+  });
 
-    expect(prompt.provider).toBe("ideogram");
+  it("routes campaign-wide consistent brand imagery to Imagen", () => {
+    expect(
+      buildImageGenerationPrompt({
+        brand,
+        projectTitle: "Spring Land Prep Carousel",
+        theme,
+        userRequest: "Create consistent brand imagery for a seasonal campaign series."
+      }).provider
+    ).toBe("imagen");
+  });
+
+  it("routes marketing photography and product mockups to Flux", () => {
+    expect(
+      buildImageGenerationPrompt({
+        brand,
+        projectTitle: "Spring Land Prep Carousel",
+        theme,
+        userRequest: "Generate realistic marketing photography of a grading service truck and product mockup."
+      }).provider
+    ).toBe("flux");
   });
 });

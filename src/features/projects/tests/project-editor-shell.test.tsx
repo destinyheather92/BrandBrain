@@ -462,6 +462,29 @@ describe("ProjectEditorShell", () => {
     expect(canvasJson.slides[0].elements).toHaveLength(0);
   });
 
+  it("deletes the selected canvas object with the Delete keyboard shortcut", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Add Text" }));
+    expect(screen.getByRole("button", { name: "Editable headline" })).toBeInTheDocument();
+
+    fireEvent.keyDown(window, {
+      key: "Delete"
+    });
+
+    expect(screen.queryByRole("button", { name: "Editable headline" })).not.toBeInTheDocument();
+
+    const canvasJson = JSON.parse((screen.getByTestId("project-editor-canvas-json") as HTMLInputElement).value);
+
+    expect(canvasJson.slides[0].elements).toHaveLength(0);
+  });
+
   it("renders CTA layers without a browser border or focus outline", () => {
     render(
       <ProjectEditorShell

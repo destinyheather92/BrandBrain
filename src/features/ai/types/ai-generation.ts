@@ -6,7 +6,6 @@ export type AiCanvasWorkflow = "canvas-generation";
 export type AiImageWorkflow = "image-generation";
 export type AiWorkflow = AiCanvasWorkflow | AiImageWorkflow;
 export type AiImageProviderId = "flux" | "ideogram" | "imagen" | "openai";
-export type AiImageProviderPreference = "auto" | AiImageProviderId;
 
 export type AiGenerationBrandContext = {
   description: string | null;
