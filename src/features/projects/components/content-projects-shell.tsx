@@ -4,6 +4,7 @@ import { FileJson, FolderOpen, Plus, SquareDashedMousePointer, Trash2 } from "lu
 import Link from "next/link";
 import { useActionState } from "react";
 
+import { AppThemeToggle } from "@/features/app-theme/components/app-theme-toggle";
 import type { Brand } from "@/features/brands/types/brand";
 
 import type { ContentProject } from "../types/content-project";
@@ -55,13 +56,16 @@ export function ContentProjectsShell({
             </p>
           </div>
 
-          <Link
-            className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#263244] px-4 py-2 text-sm font-semibold text-[#F8FAFC] hover:border-[#00E5FF]"
-            href="/canvas"
-          >
-            <SquareDashedMousePointer aria-hidden="true" className="h-4 w-4" />
-            Canvas Model
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <AppThemeToggle />
+            <Link
+              className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#263244] px-4 py-2 text-sm font-semibold text-[#F8FAFC] hover:border-[#00E5FF]"
+              href="/canvas"
+            >
+              <SquareDashedMousePointer aria-hidden="true" className="h-4 w-4" />
+              Canvas Model
+            </Link>
+          </div>
         </header>
 
         {message ? (

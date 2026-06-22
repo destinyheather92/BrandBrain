@@ -18,6 +18,8 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
+import { AppThemeToggle } from "@/features/app-theme/components/app-theme-toggle";
+
 type DashboardShellProps = {
   accountControl: ReactNode;
   displayName: string;
@@ -151,6 +153,7 @@ export function DashboardShell({
             </div>
 
             <div className="flex items-center gap-3">
+              <AppThemeToggle />
               <Link
                 className="inline-flex min-h-11 items-center gap-2 rounded-lg border border-[#263244] px-4 py-2 text-sm font-semibold text-[#F8FAFC] hover:border-[#00E5FF]"
                 href="/brands/import"

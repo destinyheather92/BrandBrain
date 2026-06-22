@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 
+import { appThemeStorageKey } from "@/features/app-theme/app-theme.constants";
+import { AppThemeProvider } from "@/features/app-theme/components/app-theme-provider";
 import { isClerkConfigured } from "@/lib/env";
 
 import "./globals.css";
@@ -14,6 +16,23 @@ type RootLayoutProps = {
   children: ReactNode;
 };
 
+const themeInitScript = `
+(() => {
+  try {
+    const storedMode = window.localStorage.getItem("${appThemeStorageKey}");
+    const mode = storedMode === "light" ? "light" : "dark";
+    const root = document.documentElement;
+    root.dataset.theme = mode;
+    root.classList.toggle("bb-theme-light", mode === "light");
+    root.classList.toggle("bb-theme-dark", mode === "dark");
+    root.style.colorScheme = mode;
+  } catch {
+    document.documentElement.dataset.theme = "dark";
+    document.documentElement.classList.add("bb-theme-dark");
+  }
+})();
+`;
+
 export default async function RootLayout({ children }: RootLayoutProps) {
   let content = children;
 
@@ -23,8 +42,13 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   }
 
   return (
-    <html lang="en">
-      <body>{content}</body>
+    <html className="bb-theme-dark" data-theme="dark" lang="en" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
+      <body>
+        <AppThemeProvider>{content}</AppThemeProvider>
+      </body>
     </html>
   );
 }

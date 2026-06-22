@@ -1,10 +1,32 @@
 @import "tailwindcss";
 
 :root {
+  --bb-color-bg: #0B0F19;
+  --bb-color-surface: #141A26;
+  --bb-color-elevated: #1C2433;
+  --bb-color-primary: #00E5FF;
+  --bb-color-primary-hover: #4CF2FF;
+  --bb-color-text-primary: #F8FAFC;
+  --bb-color-text-secondary: #CBD5E1;
+  --bb-color-text-muted: #94A3B8;
+  --bb-color-border: #263244;
   color-scheme: dark;
-  background: #0B0F19;
-  color: #F8FAFC;
+  background: var(--bb-color-bg);
+  color: var(--bb-color-text-primary);
   font-family: Geist, Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+html[data-theme="light"] {
+  --bb-color-bg: #F8FAFC;
+  --bb-color-surface: #FFFFFF;
+  --bb-color-elevated: #F1F5F9;
+  --bb-color-primary: #00E5FF;
+  --bb-color-primary-hover: #4CF2FF;
+  --bb-color-text-primary: #0B0F19;
+  --bb-color-text-secondary: #334155;
+  --bb-color-text-muted: #64748B;
+  --bb-color-border: #CBD5E1;
+  color-scheme: light;
 }
 
 * {
@@ -13,14 +35,14 @@
 
 html {
   min-height: 100%;
-  background: #0B0F19;
+  background: var(--bb-color-bg);
 }
 
 body {
   min-height: 100%;
   margin: 0;
-  background: #0B0F19;
-  color: #F8FAFC;
+  background: var(--bb-color-bg);
+  color: var(--bb-color-text-primary);
 }
 
 a {
@@ -32,4 +54,42 @@ input,
 textarea,
 select {
   font: inherit;
+}
+
+html[data-theme="light"] .bg-\[\#0B0F19\] {
+  background-color: var(--bb-color-bg) !important;
+}
+
+html[data-theme="light"] .bg-\[\#141A26\] {
+  background-color: var(--bb-color-surface) !important;
+}
+
+html[data-theme="light"] .bg-\[\#1C2433\],
+html[data-theme="light"] .bg-\[\#263244\] {
+  background-color: var(--bb-color-elevated) !important;
+}
+
+html[data-theme="light"] .text-\[\#F8FAFC\] {
+  color: var(--bb-color-text-primary) !important;
+}
+
+html[data-theme="light"] .text-\[\#CBD5E1\] {
+  color: var(--bb-color-text-secondary) !important;
+}
+
+html[data-theme="light"] .text-\[\#94A3B8\] {
+  color: var(--bb-color-text-muted) !important;
+}
+
+html[data-theme="light"] .border-\[\#263244\] {
+  border-color: var(--bb-color-border) !important;
+}
+
+html[data-theme="light"] .hover\:bg-\[\#141A26\]:hover,
+html[data-theme="light"] .hover\:bg-\[\#1C2433\]:hover {
+  background-color: var(--bb-color-elevated) !important;
+}
+
+html[data-theme="light"] .hover\:text-\[\#F8FAFC\]:hover {
+  color: var(--bb-color-text-primary) !important;
 }

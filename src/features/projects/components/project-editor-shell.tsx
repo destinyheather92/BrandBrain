@@ -56,6 +56,7 @@ import type {
   CreativeBriefActionState
 } from "@/features/ai/types/creative-brief-action-state";
 import type { CreativeBrief } from "@/features/ai/types/creative-brief";
+import { AppThemeToggle } from "@/features/app-theme/components/app-theme-toggle";
 import { getCanvasElementsInPaintOrder } from "@/features/canvas/services/canvas-object-model.service";
 import type { CanvasDocument, CanvasElement, CanvasSlide } from "@/features/canvas/types/canvas";
 import { ExportPanel } from "@/features/exports/components/export-panel";
@@ -602,6 +603,7 @@ export function ProjectEditorShell({
             value={documentJson}
           />
           <AutosaveStatus state={autosaveState} />
+          <AppThemeToggle />
           {state.message ? (
             <span
               className={[
