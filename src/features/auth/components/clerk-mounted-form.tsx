@@ -1,7 +1,8 @@
-import { SignIn, SignUp } from "@clerk/nextjs";
+import { SignIn } from "@clerk/nextjs";
 
 import { getClerkAppearance } from "../services/clerk-appearance.service";
 import type { AuthMode, AuthRouteConfig } from "../types/auth-route";
+import { SignUpProfileCapture } from "./sign-up-profile-capture";
 
 type ClerkMountedFormProps = {
   mode: AuthMode;
@@ -23,13 +24,5 @@ export function ClerkMountedForm({ mode, routes }: ClerkMountedFormProps) {
     );
   }
 
-  return (
-    <SignUp
-      appearance={appearance}
-      fallbackRedirectUrl={routes.afterSignUp}
-      path={routes.signUp}
-      routing="path"
-      signInUrl={routes.signIn}
-    />
-  );
+  return <SignUpProfileCapture appearance={appearance} routes={routes} />;
 }

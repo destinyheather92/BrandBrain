@@ -7,8 +7,10 @@ const syncedUser: LocalUser = {
   clerkUserId: "user_123",
   createdAt: new Date("2026-06-17T20:00:00.000Z"),
   email: "john@example.com",
+  firstName: "John",
   id: "local_123",
   imageUrl: "https://img.clerk.com/avatar.png",
+  lastName: "Smith",
   name: "John Smith",
   updatedAt: new Date("2026-06-17T20:00:00.000Z")
 };
@@ -39,7 +41,9 @@ describe("syncClerkUserToLocalUser", () => {
     expect(repository.upsertFromClerk).toHaveBeenCalledWith({
       clerkUserId: "user_123",
       email: "john@example.com",
+      firstName: "John",
       imageUrl: "https://img.clerk.com/avatar.png",
+      lastName: "Smith",
       name: "John Smith"
     });
   });
@@ -62,8 +66,41 @@ describe("syncClerkUserToLocalUser", () => {
     expect(repository.upsertFromClerk).toHaveBeenCalledWith({
       clerkUserId: "user_456",
       email: "avery@example.com",
+      firstName: null,
       imageUrl: null,
+      lastName: null,
       name: "averycreates"
+    });
+  });
+
+  it("uses BrandBrain sign-up metadata when Clerk profile names are unavailable", async () => {
+    const repository = createRepository();
+
+    await syncClerkUserToLocalUser({
+      clerkUser: {
+        emailAddresses: [{ emailAddress: "avery@example.com" }],
+        firstName: null,
+        id: "user_789",
+        imageUrl: null,
+        lastName: null,
+        unsafeMetadata: {
+          brandbrainProfile: {
+            firstName: "Avery",
+            lastName: "Stone"
+          }
+        },
+        username: null
+      },
+      repository
+    });
+
+    expect(repository.upsertFromClerk).toHaveBeenCalledWith({
+      clerkUserId: "user_789",
+      email: "avery@example.com",
+      firstName: "Avery",
+      imageUrl: null,
+      lastName: "Stone",
+      name: "Avery Stone"
     });
   });
 

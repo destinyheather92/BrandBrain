@@ -11,13 +11,32 @@ type SyncClerkUserToLocalUserInput = {
   repository: UserRepository;
 };
 
-function normalizeName(clerkUser: ClerkUserSyncPayload): string | null {
-  const fullName = [clerkUser.firstName, clerkUser.lastName]
-    .filter((value): value is string => Boolean(value?.trim()))
-    .join(" ")
-    .trim();
+type NormalizedClerkIdentity = {
+  firstName: string | null;
+  lastName: string | null;
+  name: string | null;
+};
 
-  return fullName || clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress || null;
+function normalizeString(value: string | null | undefined): string | null {
+  const normalized = value?.trim();
+
+  return normalized ? normalized : null;
+}
+
+function normalizeIdentity(clerkUser: ClerkUserSyncPayload): NormalizedClerkIdentity {
+  const firstName =
+    normalizeString(clerkUser.firstName) ??
+    normalizeString(clerkUser.unsafeMetadata?.brandbrainProfile?.firstName);
+  const lastName =
+    normalizeString(clerkUser.lastName) ??
+    normalizeString(clerkUser.unsafeMetadata?.brandbrainProfile?.lastName);
+  const fullName = [firstName, lastName].filter(Boolean).join(" ").trim();
+
+  return {
+    firstName,
+    lastName,
+    name: fullName || clerkUser.username || clerkUser.emailAddresses[0]?.emailAddress || null
+  };
 }
 
 export async function syncClerkUserToLocalUser({
@@ -37,11 +56,14 @@ export async function syncClerkUserToLocalUser({
     };
   }
 
+  const identity = normalizeIdentity(parsed.data);
   const input: LocalUserUpsertInput = localUserUpsertInputSchema.parse({
     clerkUserId: parsed.data.id,
     email: parsed.data.emailAddresses[0]?.emailAddress ?? null,
+    firstName: identity.firstName,
     imageUrl: parsed.data.imageUrl ?? null,
-    name: normalizeName(parsed.data)
+    lastName: identity.lastName,
+    name: identity.name
   });
 
   try {

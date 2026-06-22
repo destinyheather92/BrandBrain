@@ -12,7 +12,9 @@ export class PrismaUserRepository implements UserRepository {
       create: input,
       update: {
         email: input.email,
+        firstName: input.firstName,
         imageUrl: input.imageUrl,
+        lastName: input.lastName,
         name: input.name
       },
       where: {
