@@ -54,14 +54,14 @@ export function AiGenerationPanel({
       <form action={formAction} className="mt-4 grid gap-3">
         <input name="projectId" type="hidden" value={projectId} />
         <label className="text-sm text-[#CBD5E1]" htmlFor="ai-generation-request">
-          Generation request
+          Idea or design instructions
         </label>
         <textarea
           aria-disabled={!hasTheme || pending}
-          className="min-h-24 resize-y rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
-          defaultValue="Create a 3-slide brand-consistent carousel for this project."
+          className="min-h-36 resize-y rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
+          defaultValue="Create a refined 3-slide brand-consistent carousel for this project."
           id="ai-generation-request"
-          maxLength={1000}
+          maxLength={12000}
           name="userRequest"
           readOnly={!hasTheme || pending}
         />

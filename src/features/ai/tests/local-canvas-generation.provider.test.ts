@@ -75,12 +75,87 @@ describe("LocalCanvasGenerationProvider", () => {
     expect(ctaLabels[0]).not.toContain("Learn more");
     expect(ctaLabels[0]).not.toContain("Download");
   });
+
+  it("refines vague prompts into brand-specific carousel copy instead of generic filler", async () => {
+    const document = await generateTestDocument({
+      projectTitle: "Land Clearing Education",
+      userRequest: "Make me something about land clearing."
+    });
+    const visibleCopy = document.slides
+      .flatMap((slide) => slide.elements)
+      .map((element) => (element.type === "text" ? element.content : element.type === "cta" ? element.label : ""))
+      .join(" ");
+
+    expect(visibleCopy).toContain("Land clearing");
+    expect(visibleCopy).toContain("rural homeowners");
+    expect(visibleCopy).toContain("Land clearing, grading, drainage");
+    expect(visibleCopy).toContain("Schedule a land assessment");
+    expect(visibleCopy).not.toContain("What to handle first");
+    expect(visibleCopy).not.toContain("Turn the message into action");
+  });
+
+  it("uses pasted Canva build instructions for slide flow, colors, fonts, and CTA copy", async () => {
+    const document = await generateTestDocument({
+      userRequest: [
+        "ChatGPT response:",
+        "Create a Canva project/carousel and walk me through it step by step like I am a beginner.",
+        "Primary color: #315B2C. Accent color: #C49A3A. Background: #F7F3E8.",
+        "Fonts: Montserrat ExtraBold for headlines, Lora for body copy.",
+        "Slide 1 - Hook",
+        "Headline: Stop guessing what your land needs",
+        "Body: Use a full-width hero photo of freshly graded land with a strong left-aligned headline.",
+        "Slide 2 - Checklist",
+        "Headline: Clear the access path first",
+        "Body: Use three stacked checklist cards with generous spacing and gold check icons.",
+        "Slide 3 - CTA",
+        "Headline: Ready before spring growth?",
+        "Body: Keep the bottom third open and place the CTA in the lower right.",
+        "CTA: Schedule a land assessment"
+      ].join("\n")
+    });
+    const slideOneText = document.slides[0]?.elements
+      .filter((element) => element.type === "text")
+      .map((element) => (element.type === "text" ? element.content : ""))
+      .join(" ");
+    const slideTwoText = document.slides[1]?.elements
+      .filter((element) => element.type === "text")
+      .map((element) => (element.type === "text" ? element.content : ""))
+      .join(" ");
+    const cta = document.slides[2]?.elements.find((element) => element.type === "cta");
+
+    expect(document.slides[0]?.background.color).toBe("#F7F3E8");
+    expect(slideOneText).toContain("Stop guessing what your land needs");
+    expect(slideTwoText).toContain("Clear the access path first");
+    expect(document.slides[0]?.elements).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          color: "#315B2C",
+          fontFamily: "Montserrat ExtraBold",
+          type: "text"
+        }),
+        expect.objectContaining({
+          fill: "#C49A3A",
+          type: "shape"
+        })
+      ])
+    );
+    expect(cta).toMatchObject({
+      backgroundColor: "#C49A3A",
+      label: "Schedule a land assessment",
+      textColor: "#0B0F19",
+      type: "cta"
+    });
+  });
 });
 
 async function generateTestDocument({
-  preferredCtas = "Schedule a land assessment"
+  preferredCtas = "Schedule a land assessment",
+  projectTitle = "Spring Land Prep",
+  userRequest = "Create a polished carousel about why property owners should prepare land before spring growth."
 }: {
   preferredCtas?: string;
+  projectTitle?: string;
+  userRequest?: string;
 } = {}): Promise<CanvasDocument> {
   const provider = new LocalCanvasGenerationProvider();
   const response = await provider.generateJson({
@@ -99,7 +174,7 @@ async function generateTestDocument({
       outputRules: {
         slideCount: 3
       },
-      projectTitle: "Spring Land Prep",
+      projectTitle,
       theme: {
         palette: {
           accent: "#D97706",
@@ -114,8 +189,7 @@ async function generateTestDocument({
           heading: "Geist"
         }
       },
-      userRequest:
-        "Create a polished carousel about why property owners should prepare land before spring growth."
+      userRequest
     }),
     workflow: "canvas-generation"
   });

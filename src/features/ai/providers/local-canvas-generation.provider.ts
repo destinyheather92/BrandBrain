@@ -13,6 +13,9 @@ type PromptPayload = {
     } | null;
     name?: string;
   };
+  creativeSource?: {
+    designInstructions?: string;
+  };
   outputRules?: {
     slideCount?: number;
   };
@@ -75,9 +78,16 @@ type SlideContent = {
   brandName: string;
   cta: string;
   services: string[];
+  slidePlans: LocalSlidePlan[];
   title: string;
   topic: string;
   voice: string;
+};
+
+type LocalSlidePlan = {
+  body: string;
+  cta?: string;
+  title: string;
 };
 
 type BuildSlideParams = {
@@ -88,6 +98,7 @@ type BuildSlideParams = {
   };
   order: number;
   palette: LocalPalette;
+  slidePlan: LocalSlidePlan;
   typography: LocalTypography;
 };
 
@@ -131,12 +142,13 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
   const slideCount = Math.min(10, Math.max(3, payload.outputRules?.slideCount ?? 3));
   const title = payload.projectTitle?.trim() || "Generated BrandBrain Carousel";
   const brandName = payload.brand?.name?.trim() || "Brand";
-  const cta = selectCtaLabel(payload.brand?.memory?.preferredCtas);
-  const topic = fitCanvasText(payload.userRequest, 160, title);
+  const instructionProfile = extractInstructionProfile(payload);
+  const cta = instructionProfile.cta ?? selectCtaLabel(payload.brand?.memory?.preferredCtas);
+  const topic = fitCanvasText(instructionProfile.summary ?? payload.userRequest, 160, title);
   const audience = fitCanvasText(payload.brand?.memory?.audience, 96, "your ideal customers");
   const services = getServices(payload.brand?.memory?.productsServices);
   const voice = fitCanvasText(payload.brand?.memory?.voice, 90, "clear, practical, on-brand");
-  const palette = {
+  const themePalette = {
     accent: payload.theme?.palette?.accent ?? "#00E5FF",
     background: payload.theme?.palette?.background ?? "#FFFFFF",
     ctaText: payload.theme?.palette?.ctaText ?? "#0B0F19",
@@ -145,10 +157,21 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
     surface: payload.theme?.palette?.surface ?? "#F8FAFC",
     text: payload.theme?.palette?.text ?? "#0B0F19"
   };
+  const palette = applyInstructionPalette(themePalette, instructionProfile);
   const typography = {
-    body: payload.theme?.typography?.body ?? "Inter",
-    heading: payload.theme?.typography?.heading ?? "Geist"
+    body: instructionProfile.bodyFont ?? payload.theme?.typography?.body ?? "Inter",
+    heading: instructionProfile.headingFont ?? payload.theme?.typography?.heading ?? "Geist"
   };
+  const slidePlans = createSlidePlans({
+    audience,
+    brandName,
+    cta,
+    requestedSlideCount: slideCount,
+    services,
+    title,
+    topic,
+    extractedPlans: instructionProfile.slides
+  });
   const slides = Array.from({ length: slideCount }, (_, index) =>
     buildSlide({
       content: {
@@ -156,6 +179,7 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
         brandName,
         cta,
         services,
+        slidePlans,
         title,
         topic,
         voice
@@ -163,6 +187,10 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
       dimensions,
       order: index + 1,
       palette,
+      slidePlan: slidePlans[index] ?? slidePlans[slidePlans.length - 1] ?? {
+        body: topic,
+        title
+      },
       typography
     })
   );
@@ -185,6 +213,7 @@ function buildSlide({
   dimensions,
   order,
   palette,
+  slidePlan,
   typography
 }: BuildSlideParams): CanvasSlide {
   const slideParams = {
@@ -202,20 +231,20 @@ function buildSlide({
   if (order % 3 === 1) {
     return {
       ...slideParams,
-      elements: buildCoverElements({ content, order, palette, typography })
+      elements: buildCoverElements({ content, order, palette, slidePlan, typography })
     };
   }
 
   if (order % 3 === 2) {
     return {
       ...slideParams,
-      elements: buildInsightElements({ content, order, palette, typography })
+      elements: buildInsightElements({ content, order, palette, slidePlan, typography })
     };
   }
 
   return {
     ...slideParams,
-    elements: buildActionElements({ content, order, palette, typography })
+    elements: buildActionElements({ content, order, palette, slidePlan, typography })
   };
 }
 
@@ -223,6 +252,7 @@ function buildCoverElements({
   content,
   order,
   palette,
+  slidePlan,
   typography
 }: Omit<BuildSlideParams, "dimensions">) {
   return [
@@ -230,11 +260,11 @@ function buildCoverElements({
     shape(`shape_${order}_corner_block`, 742, 0, 338, 338, palette.secondary, 42, 0),
     shape(`shape_${order}_kicker_pill`, 84, 84, 366, 54, palette.primary, 18, 1),
     text(`text_${order}_kicker`, content.brandName.toUpperCase(), 112, 101, 308, 26, 20, "bold", palette.ctaText, typography.body, 2),
-    text(`text_${order}_headline`, fitCanvasText(content.title, 86, "Brand-ready content"), 84, 218, 812, 240, 76, "bold", palette.primary, typography.heading, 2),
+    text(`text_${order}_headline`, fitCanvasText(slidePlan.title, 86, content.title), 84, 218, 812, 240, 76, "bold", palette.primary, typography.heading, 2),
     shape(`shape_${order}_accent_rule`, 84, 512, 118, 8, palette.accent, 4, 1),
-    text(`text_${order}_body`, content.topic, 84, 552, 746, 150, 34, "regular", palette.text, typography.body, 2),
+    text(`text_${order}_body`, slidePlan.body, 84, 552, 746, 150, 34, "regular", palette.text, typography.body, 2),
     text(`text_${order}_brand_note`, `Designed for ${content.audience}`, 84, 902, 430, 48, 24, "medium", palette.text, typography.body, 2),
-    cta(`cta_${order}`, content.cta, 578, 882, 418, 80, 28, palette.accent, palette.ctaText, typography.body, 2)
+    cta(`cta_${order}`, slidePlan.cta ?? content.cta, 578, 882, 418, 80, 28, palette.accent, palette.ctaText, typography.body, 2)
   ];
 }
 
@@ -242,6 +272,7 @@ function buildInsightElements({
   content,
   order,
   palette,
+  slidePlan,
   typography
 }: Omit<BuildSlideParams, "dimensions">) {
   const service = content.services[0] ?? "your core offer";
@@ -252,10 +283,10 @@ function buildInsightElements({
     text(`text_${order}_stat`, "01", 112, 132, 210, 110, 92, "bold", palette.ctaText, typography.heading, 1),
     text(`text_${order}_panel_note`, content.brandName, 112, 858, 230, 46, 26, "bold", palette.ctaText, typography.body, 1),
     text(`text_${order}_kicker`, "AUDIENCE SIGNAL", 532, 128, 160, 22, 18, "bold", palette.ctaText, typography.body, 2),
-    text(`text_${order}_headline`, `Built for ${content.audience}`, 510, 226, 482, 178, 58, "bold", palette.primary, typography.heading, 2),
+    text(`text_${order}_headline`, slidePlan.title, 510, 226, 482, 178, 58, "bold", palette.primary, typography.heading, 2),
     text(
       `text_${order}_body`,
-      fitCanvasText(`Use a ${content.voice} voice to connect ${service} with what your audience needs next.`, 160, service),
+      fitCanvasText(slidePlan.body || `Use a ${content.voice} voice to connect ${service} with what your audience needs next.`, 160, service),
       510,
       452,
       482,
@@ -267,8 +298,8 @@ function buildInsightElements({
       2
     ),
     shape(`shape_${order}_proof_line`, 510, 710, 482, 3, palette.accent, 2, 1),
-    text(`text_${order}_proof`, fitCanvasText(content.services.slice(0, 3).join(" | "), 105, service), 510, 744, 482, 54, 23, "medium", palette.text, typography.body, 2),
-    cta(`cta_${order}`, content.cta, 510, 872, 430, 76, 26, palette.accent, palette.ctaText, typography.body, 2)
+    text(`text_${order}_proof`, fitCanvasText(content.services.slice(0, 3).join(", "), 105, service), 510, 744, 482, 54, 23, "medium", palette.text, typography.body, 2),
+    cta(`cta_${order}`, slidePlan.cta ?? content.cta, 510, 872, 430, 76, 26, palette.accent, palette.ctaText, typography.body, 2)
   ];
 }
 
@@ -276,6 +307,7 @@ function buildActionElements({
   content,
   order,
   palette,
+  slidePlan,
   typography
 }: Omit<BuildSlideParams, "dimensions">) {
   const steps = [
@@ -286,8 +318,8 @@ function buildActionElements({
 
   return [
     shape(`shape_${order}_top_rule`, 84, 86, 190, 8, palette.accent, 4, 0),
-    text(`text_${order}_headline`, "Turn the message into action", 84, 136, 820, 150, 64, "bold", palette.primary, typography.heading, 1),
-    text(`text_${order}_body`, "A strong draft should give the editor structure, not lock the brand into a flat image.", 84, 304, 760, 82, 30, "regular", palette.text, typography.body, 1),
+    text(`text_${order}_headline`, slidePlan.title, 84, 136, 820, 150, 64, "bold", palette.primary, typography.heading, 1),
+    text(`text_${order}_body`, slidePlan.body, 84, 304, 760, 82, 30, "regular", palette.text, typography.body, 1),
     shape(`shape_${order}_step_1_marker`, 92, 444, 64, 64, palette.accent, 32, 1, "ellipse"),
     text(`text_${order}_step_1`, fitCanvasText(steps[0], 105, "Lead with the customer problem."), 184, 430, 740, 76, 30, "medium", palette.text, typography.body, 2),
     shape(`shape_${order}_step_2_marker`, 92, 560, 64, 64, palette.primary, 32, 1, "ellipse"),
@@ -296,7 +328,7 @@ function buildActionElements({
     text(`text_${order}_step_3`, steps[2], 184, 662, 740, 76, 30, "medium", palette.text, typography.body, 2),
     shape(`shape_${order}_footer`, 0, 920, 1080, 160, palette.primary, 0, 0),
     text(`text_${order}_brand`, content.brandName, 92, 974, 360, 42, 26, "bold", palette.ctaText, typography.body, 1),
-    cta(`cta_${order}`, content.cta, 578, 964, 410, 72, 25, palette.accent, palette.ctaText, typography.body, 1)
+    cta(`cta_${order}`, slidePlan.cta ?? content.cta, 578, 964, 410, 72, 25, palette.accent, palette.ctaText, typography.body, 1)
   ];
 }
 
@@ -446,6 +478,311 @@ function getServices(value: string | null | undefined): string[] {
     .slice(0, 4);
 
   return services.length > 0 ? services : ["brand strategy", "content planning", "creative production"];
+}
+
+type InstructionProfile = {
+  accentColor?: string;
+  backgroundColor?: string;
+  bodyFont?: string;
+  cta?: string;
+  headingFont?: string;
+  primaryColor?: string;
+  slides: LocalSlidePlan[];
+  summary?: string;
+};
+
+function extractInstructionProfile(payload: PromptPayload): InstructionProfile {
+  const instructionText = [payload.creativeSource?.designInstructions, payload.userRequest]
+    .filter(Boolean)
+    .join("\n")
+    .trim();
+  const colorHints = extractInstructionColors(instructionText);
+
+  return {
+    ...colorHints,
+    ...extractInstructionFonts(instructionText),
+    cta: extractInstructionCta(instructionText),
+    slides: extractInstructionSlides(instructionText),
+    summary: summarizeInstructionText(instructionText)
+  };
+}
+
+function applyInstructionPalette(palette: LocalPalette, profile: InstructionProfile): LocalPalette {
+  const primary = profile.primaryColor ?? palette.primary;
+  const accent = profile.accentColor ?? palette.accent;
+  const background = profile.backgroundColor ?? palette.background;
+
+  return {
+    ...palette,
+    accent,
+    background,
+    ctaText: profile.accentColor ? readableTextColor(accent) : palette.ctaText,
+    primary,
+    secondary: profile.accentColor ?? palette.secondary,
+    surface: profile.backgroundColor ?? palette.surface,
+    text: primary
+  };
+}
+
+function createSlidePlans({
+  audience,
+  brandName,
+  cta,
+  extractedPlans,
+  requestedSlideCount,
+  services,
+  title,
+  topic
+}: {
+  audience: string;
+  brandName: string;
+  cta: string;
+  extractedPlans: LocalSlidePlan[];
+  requestedSlideCount: number;
+  services: string[];
+  title: string;
+  topic: string;
+}): LocalSlidePlan[] {
+  const refinedPlans = extractedPlans.length > 0 ? extractedPlans : buildRefinedPlans({
+    audience,
+    brandName,
+    cta,
+    services,
+    title,
+    topic
+  });
+
+  return Array.from({ length: requestedSlideCount }, (_, index) => {
+    const plan = refinedPlans[index] ?? refinedPlans[refinedPlans.length - 1] ?? {
+      body: topic,
+      title
+    };
+
+    return {
+      body: fitCanvasText(plan.body, 180, topic),
+      cta: plan.cta ? fitCanvasText(plan.cta, previewCtaLabelMaxLength, cta) : cta,
+      title: fitCanvasText(plan.title, 120, title)
+    };
+  });
+}
+
+function buildRefinedPlans({
+  audience,
+  brandName,
+  cta,
+  services,
+  title,
+  topic
+}: {
+  audience: string;
+  brandName: string;
+  cta: string;
+  services: string[];
+  title: string;
+  topic: string;
+}): LocalSlidePlan[] {
+  const serviceList = services.slice(0, 3).join(", ");
+  const mainTopic = deriveMainTopic(topic, title, services);
+  const audiencePhrase = lowerFirst(audience);
+
+  return [
+    {
+      body: `For ${audiencePhrase}, ${serviceList} starts with access, water flow, and usable ground.`,
+      cta,
+      title: `${mainTopic} that protects your property`
+    },
+    {
+      body: `Clear access first so equipment, drainage, and grading decisions happen in the right order.`,
+      cta,
+      title: "Start with the path crews need"
+    },
+    {
+      body: `${brandName} helps prioritize ${serviceList.toLowerCase()} before the season creates bigger problems.`,
+      cta,
+      title: "Plan the next right step"
+    }
+  ];
+}
+
+function extractInstructionColors(value: string): Pick<
+  InstructionProfile,
+  "accentColor" | "backgroundColor" | "primaryColor"
+> {
+  const primaryColor = extractLabeledColor(value, "primary");
+  const accentColor = extractLabeledColor(value, "accent");
+  const backgroundColor = extractLabeledColor(value, "background");
+  const allColors = extractHexColors(value);
+
+  return {
+    accentColor: accentColor ?? allColors.find((color) => color !== primaryColor) ?? allColors[1],
+    backgroundColor,
+    primaryColor: primaryColor ?? allColors[0]
+  };
+}
+
+function extractInstructionFonts(value: string): Pick<InstructionProfile, "bodyFont" | "headingFont"> {
+  const fontLine = value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => /^fonts?\s*:/i.test(line));
+
+  if (!fontLine) {
+    return {};
+  }
+
+  const fontText = fontLine.replace(/^fonts?\s*:\s*/i, "");
+  const headingFont = fontText.match(/(.+?)\s+for\s+(?:headlines?|headings?)/i)?.[1]?.split(",").pop()?.trim();
+  const bodyFont = fontText.match(/,\s*(.+?)\s+for\s+body/i)?.[1]?.trim();
+
+  return {
+    bodyFont: bodyFont || undefined,
+    headingFont: headingFont || undefined
+  };
+}
+
+function extractInstructionCta(value: string): string | undefined {
+  const ctaLine = value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .find((line) => /^cta\s*:/i.test(line));
+  const cta = ctaLine?.replace(/^cta\s*:\s*/i, "").trim();
+
+  return cta ? fitCanvasText(cta, previewCtaLabelMaxLength, cta) : undefined;
+}
+
+function extractInstructionSlides(value: string): LocalSlidePlan[] {
+  const lines = value
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const slides: Array<LocalSlidePlan & { bodyParts: string[] }> = [];
+  let current: (LocalSlidePlan & { bodyParts: string[] }) | null = null;
+
+  for (const line of lines) {
+    const slideMatch = line.match(/^slide\s+(\d+)\s*(?:[-:]\s*)?(.*)$/i);
+
+    if (slideMatch) {
+      if (current) {
+        slides.push(current);
+      }
+
+      current = {
+        body: "",
+        bodyParts: [],
+        title: cleanInstructionText(slideMatch[2] || `Slide ${slideMatch[1]}`)
+      };
+      continue;
+    }
+
+    if (!current) {
+      continue;
+    }
+
+    if (/^headline\s*:/i.test(line)) {
+      current.title = cleanInstructionText(line.replace(/^headline\s*:\s*/i, ""));
+      continue;
+    }
+
+    if (/^body\s*:/i.test(line)) {
+      current.bodyParts.push(cleanInstructionText(line.replace(/^body\s*:\s*/i, "")));
+      continue;
+    }
+
+    if (/^cta\s*:/i.test(line)) {
+      current.cta = cleanInstructionText(line.replace(/^cta\s*:\s*/i, ""));
+      continue;
+    }
+
+    if (!/^(primary|accent|background|fonts?)\s*:/i.test(line)) {
+      current.bodyParts.push(cleanInstructionText(line));
+    }
+  }
+
+  if (current) {
+    slides.push(current);
+  }
+
+  return slides
+    .map(({ bodyParts, ...slide }) => ({
+      ...slide,
+      body: bodyParts.join(" ").trim() || slide.title
+    }))
+    .filter((slide) => slide.title || slide.body);
+}
+
+function extractLabeledColor(value: string, label: string): string | undefined {
+  const pattern = new RegExp(`\\b${label}\\s*(?:color)?\\s*:\\s*(#[0-9A-Fa-f]{6})\\b`, "i");
+  const color = value.match(pattern)?.[1];
+
+  return color ? normalizeHexColor(color) : undefined;
+}
+
+function extractHexColors(value: string): string[] {
+  const matches = value.match(/#[0-9A-Fa-f]{6}\b/g) ?? [];
+
+  return matches.reduce<string[]>((colors, color) => {
+    const normalized = normalizeHexColor(color);
+
+    if (!colors.includes(normalized)) {
+      colors.push(normalized);
+    }
+
+    return colors;
+  }, []);
+}
+
+function summarizeInstructionText(value: string): string | undefined {
+  const firstUsefulLine = value
+    .split(/\r?\n/)
+    .map(cleanInstructionText)
+    .find((line) => line && !/^(chatgpt response|create a canva|primary|accent|background|fonts?|slide \d+)/i.test(line));
+
+  return firstUsefulLine;
+}
+
+function deriveMainTopic(topic: string, title: string, services: string[]): string {
+  const normalizedTopic = topic.toLowerCase();
+  const matchingService = services.find((service) => normalizedTopic.includes(service.toLowerCase()));
+
+  if (matchingService) {
+    return capitalizeFirst(matchingService);
+  }
+
+  const topicMatch = normalizedTopic.match(/\b(?:about|for)\s+([a-z\s]{4,60})[.!?]?$/);
+
+  if (topicMatch?.[1]) {
+    return capitalizeFirst(topicMatch[1].trim());
+  }
+
+  return fitCanvasText(title, 64, "Brand message");
+}
+
+function cleanInstructionText(value: string): string {
+  return value
+    .replace(/^[-*\u2022\d.)\s]+/, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function normalizeHexColor(color: string): string {
+  return color.toUpperCase();
+}
+
+function readableTextColor(background: string): "#0B0F19" | "#FFFFFF" {
+  const red = parseInt(background.slice(1, 3), 16);
+  const green = parseInt(background.slice(3, 5), 16);
+  const blue = parseInt(background.slice(5, 7), 16);
+  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+
+  return luminance > 150 ? "#0B0F19" : "#FFFFFF";
+}
+
+function lowerFirst(value: string): string {
+  return value ? `${value.charAt(0).toLowerCase()}${value.slice(1)}` : value;
+}
+
+function capitalizeFirst(value: string): string {
+  return value ? `${value.charAt(0).toUpperCase()}${value.slice(1)}` : value;
 }
 
 function slugify(value: string): string {

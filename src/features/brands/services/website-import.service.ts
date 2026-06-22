@@ -103,12 +103,54 @@ export function extractWebsiteBrandProfile(html: string): WebsiteBrandProfile {
     getMetaContent(html, ["og:site_name", "application-name", "apple-mobile-web-app-title"]) ??
     cleanTitleForBrandName(getMetaContent(html, ["og:title", "twitter:title"]) ?? getTitle(html));
   const description = getMetaContent(html, ["description", "og:description", "twitter:description"]);
+  const palette = extractWebsitePaletteColors(html, name);
 
   return {
-    description,
+    description: appendPaletteHints(description, palette),
     name
   };
 }
+
+function appendPaletteHints(description: string | null, palette: string[]) {
+  if (palette.length === 0) {
+    return description;
+  }
+
+  const paletteSentence = `Detected website colors: ${palette.join(", ")}.`;
+
+  return description ? `${description} ${paletteSentence}` : paletteSentence;
+}
+
+function extractWebsitePaletteColors(html: string, brandName: string | null): string[] {
+  const colors = html.match(/#[0-9A-Fa-f]{6}\b/g) ?? [];
+  const allowBrandBrainColors = /\bbrandbrain\b/i.test(brandName ?? "");
+
+  return colors.reduce<string[]>((palette, color) => {
+    const normalized = color.toUpperCase();
+
+    if (!allowBrandBrainColors && brandBrainPaletteColors.has(normalized)) {
+      return palette;
+    }
+
+    if (!palette.includes(normalized)) {
+      palette.push(normalized);
+    }
+
+    return palette;
+  }, []).slice(0, 5);
+}
+
+const brandBrainPaletteColors = new Set([
+  "#00E5FF",
+  "#4CF2FF",
+  "#0B0F19",
+  "#141A26",
+  "#1C2433",
+  "#263244",
+  "#F8FAFC",
+  "#CBD5E1",
+  "#94A3B8"
+]);
 
 export async function importBrandFromWebsite({
   fetcher,

@@ -58,6 +58,31 @@ describe("extractWebsiteBrandProfile", () => {
       name: "Summit Solar"
     });
   });
+
+  it("adds detected website palette colors to the imported brand profile", () => {
+    const profile = extractWebsiteBrandProfile(`
+      <html>
+        <head>
+          <meta property="og:site_name" content="Land Strong" />
+          <meta name="description" content="Premium land clearing, grading, and drainage." />
+          <style>
+            :root {
+              --brand-green: #315B2C;
+              --brand-gold: #C49A3A;
+              --brandbrain-cyan: #00E5FF;
+            }
+            .hero { background: #F7F3E8; color: #315B2C; }
+          </style>
+        </head>
+      </html>
+    `);
+
+    expect(profile).toEqual({
+      description:
+        "Premium land clearing, grading, and drainage. Detected website colors: #315B2C, #C49A3A, #F7F3E8.",
+      name: "Land Strong"
+    });
+  });
 });
 
 describe("importBrandFromWebsite", () => {
@@ -98,6 +123,42 @@ describe("importBrandFromWebsite", () => {
       ok: true,
       status: "imported"
     });
+  });
+
+  it("passes detected website palette hints into the created brand description", async () => {
+    const repository = createRepository();
+    const fetcher: WebsiteImportFetcher = vi.fn().mockResolvedValue({
+      finalUrl: "https://landstrong.example/",
+      html: `
+        <html>
+          <head>
+            <meta property="og:site_name" content="Land Strong" />
+            <meta property="og:description" content="Premium land management for rural properties." />
+            <style>
+              :root { --green: #315B2C; --gold: #C49A3A; }
+            </style>
+          </head>
+        </html>
+      `,
+      ok: true
+    });
+
+    await importBrandFromWebsite({
+      fetcher,
+      input: {
+        websiteUrl: "landstrong.example"
+      },
+      ownerUserId: "user_local_123",
+      repository
+    });
+
+    expect(repository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        description:
+          "Premium land management for rural properties. Detected website colors: #315B2C, #C49A3A.",
+        name: "Land Strong"
+      })
+    );
   });
 
   it("returns a typed validation failure for invalid URLs", async () => {

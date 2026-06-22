@@ -44,7 +44,7 @@ describe("AiGenerationPanel", () => {
     );
 
     expect(screen.getByRole("heading", { name: "AI Generation" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Generation request")).toBeInTheDocument();
+    expect(screen.getByLabelText("Idea or design instructions")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Generate Draft Slides" })).toBeInTheDocument();
     expect(container.querySelector('input[name="projectId"]')).toHaveValue("project_1");
   });
@@ -75,14 +75,14 @@ describe("AiGenerationPanel", () => {
       />
     );
 
-    const requestField = screen.getByLabelText("Generation request");
+    const requestField = screen.getByLabelText("Idea or design instructions");
     const form = requestField.closest("form");
 
     expect(requestField).not.toBeDisabled();
     expect(requestField).toHaveAttribute("readonly");
     expect(form).not.toBeNull();
     expect(new FormData(form as HTMLFormElement).get("userRequest")).toBe(
-      "Create a 3-slide brand-consistent carousel for this project."
+      "Create a refined 3-slide brand-consistent carousel for this project."
     );
   });
 

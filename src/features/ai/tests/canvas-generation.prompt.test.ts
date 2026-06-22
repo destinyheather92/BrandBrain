@@ -51,7 +51,7 @@ describe("buildCanvasGenerationPrompt", () => {
       userRequest: "Explain why early spring is the best time to prepare land."
     });
 
-    expect(CANVAS_GENERATION_PROMPT_VERSION).toBe("1.0.0");
+    expect(CANVAS_GENERATION_PROMPT_VERSION).toBe("1.1.0");
     expect(prompt.system).toContain("Return valid JSON only");
     expect(prompt.system).toContain("Canvas Object Model");
     expect(prompt.user).toContain("Land Strong");
@@ -61,5 +61,52 @@ describe("buildCanvasGenerationPrompt", () => {
     expect(prompt.user).toContain("3 slides");
     expect(prompt.temperature).toBe(0.3);
     expect(prompt.workflow).toBe("canvas-generation");
+  });
+
+  it("treats pasted ChatGPT Canva instructions as the source of truth for the editable draft", () => {
+    const designInstructions = [
+      "ChatGPT response:",
+      "Create a Canva carousel and walk me through every detail.",
+      "Slide 1 - Hook: Stop guessing what your land needs.",
+      "Use forest green #315B2C as the primary color and harvest gold #C49A3A as the accent.",
+      "Font direction: Montserrat ExtraBold headlines and Lora body copy.",
+      "Slide 2 - Checklist: Clear the access path first.",
+      "Slide 3 - CTA: Schedule a land assessment."
+    ].join("\n");
+
+    const prompt = buildCanvasGenerationPrompt({
+      brand,
+      projectTitle: "Land Strong Canva Build",
+      slideCount: 3,
+      theme,
+      userRequest: designInstructions
+    });
+    const payload = JSON.parse(prompt.user) as {
+      creativeSource: {
+        designInstructions: string;
+        sourcePriority: string[];
+      };
+      userRequest: string;
+    };
+
+    expect(prompt.system).toContain("Treat detailed ChatGPT or Canva build instructions as the primary source of truth");
+    expect(prompt.system).toContain("Extract slide flow, layout, positioning, colors, fonts, spacing, design elements, visual references, and CTA choices");
+    expect(payload.creativeSource.designInstructions).toBe(designInstructions);
+    expect(payload.creativeSource.sourcePriority[0]).toBe("pasted design instructions");
+    expect(payload.userRequest).toBe(designInstructions);
+  });
+
+  it("requires vague user prompts to be internally refined before slide generation", () => {
+    const prompt = buildCanvasGenerationPrompt({
+      brand,
+      projectTitle: "Land Strong Content",
+      slideCount: 3,
+      theme,
+      userRequest: "Make me something about land clearing."
+    });
+
+    expect(prompt.system).toContain("If the user request is vague, internally refine it into a strategic creative brief");
+    expect(prompt.system).toContain("Never mirror a vague prompt as generic slide copy");
+    expect(prompt.user).toContain("Make me something about land clearing.");
   });
 });
