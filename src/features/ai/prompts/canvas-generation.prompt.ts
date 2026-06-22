@@ -4,7 +4,7 @@ import type {
   AiGenerationThemeContext
 } from "../types/ai-generation";
 
-export const CANVAS_GENERATION_PROMPT_VERSION = "1.1.0";
+export const CANVAS_GENERATION_PROMPT_VERSION = "1.2.0";
 
 type BuildCanvasGenerationPromptParams = {
   brand: AiGenerationBrandContext;
@@ -32,7 +32,8 @@ export function buildCanvasGenerationPrompt({
       "Treat detailed ChatGPT or Canva build instructions as the primary source of truth when they are present.",
       "Extract slide flow, layout, positioning, colors, fonts, spacing, design elements, visual references, and CTA choices from those instructions.",
       "If the user request is vague, internally refine it into a strategic creative brief, content outline, and theme-aware design direction before producing canvas JSON.",
-      "Never mirror a vague prompt as generic slide copy."
+      "Never mirror a vague prompt as generic slide copy.",
+      "Never introduce unrelated industry language, examples, services, or metaphors; current brand memory, audience, services, and voice always win over prior examples."
     ].join(" "),
     temperature: 0.3,
     user: JSON.stringify(

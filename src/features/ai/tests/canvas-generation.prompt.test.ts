@@ -51,7 +51,7 @@ describe("buildCanvasGenerationPrompt", () => {
       userRequest: "Explain why early spring is the best time to prepare land."
     });
 
-    expect(CANVAS_GENERATION_PROMPT_VERSION).toBe("1.1.0");
+    expect(CANVAS_GENERATION_PROMPT_VERSION).toBe("1.2.0");
     expect(prompt.system).toContain("Return valid JSON only");
     expect(prompt.system).toContain("Canvas Object Model");
     expect(prompt.user).toContain("Land Strong");
@@ -107,6 +107,7 @@ describe("buildCanvasGenerationPrompt", () => {
 
     expect(prompt.system).toContain("If the user request is vague, internally refine it into a strategic creative brief");
     expect(prompt.system).toContain("Never mirror a vague prompt as generic slide copy");
+    expect(prompt.system).toContain("Never introduce unrelated industry language, examples, services, or metaphors");
     expect(prompt.user).toContain("Make me something about land clearing.");
   });
 });

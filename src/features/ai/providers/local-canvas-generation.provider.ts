@@ -170,6 +170,7 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
     services,
     title,
     topic,
+    voice,
     extractedPlans: instructionProfile.slides
   });
   const slides = Array.from({ length: slideCount }, (_, index) =>
@@ -532,7 +533,8 @@ function createSlidePlans({
   requestedSlideCount,
   services,
   title,
-  topic
+  topic,
+  voice
 }: {
   audience: string;
   brandName: string;
@@ -542,6 +544,7 @@ function createSlidePlans({
   services: string[];
   title: string;
   topic: string;
+  voice: string;
 }): LocalSlidePlan[] {
   const refinedPlans = extractedPlans.length > 0 ? extractedPlans : buildRefinedPlans({
     audience,
@@ -549,7 +552,8 @@ function createSlidePlans({
     cta,
     services,
     title,
-    topic
+    topic,
+    voice
   });
 
   return Array.from({ length: requestedSlideCount }, (_, index) => {
@@ -572,7 +576,8 @@ function buildRefinedPlans({
   cta,
   services,
   title,
-  topic
+  topic,
+  voice
 }: {
   audience: string;
   brandName: string;
@@ -580,28 +585,111 @@ function buildRefinedPlans({
   services: string[];
   title: string;
   topic: string;
+  voice: string;
 }): LocalSlidePlan[] {
   const serviceList = services.slice(0, 3).join(", ");
   const mainTopic = deriveMainTopic(topic, title, services);
   const audiencePhrase = lowerFirst(audience);
+  const domain = inferBrandDomain({
+    audience,
+    brandName,
+    services,
+    title,
+    topic,
+    voice
+  });
+
+  if (domain === "mental-health") {
+    return [
+      {
+        body: `For ${audiencePhrase}, ${serviceList} should feel warm, calm, and manageable.`,
+        cta,
+        title: `${mainTopic} with steady support`
+      },
+      {
+        body: `Name what your body is signaling, then offer one practical grounding step people can try gently.`,
+        cta,
+        title: "Make the next moment feel safer"
+      },
+      {
+        body: `${brandName} supports ${serviceList.toLowerCase()} with ${lowerFirst(voice)} guidance.`,
+        cta,
+        title: "Take the next gentle step"
+      }
+    ];
+  }
+
+  if (domain === "land-management") {
+    return [
+      {
+        body: `For ${audiencePhrase}, ${serviceList} starts with access, water flow, and usable ground.`,
+        cta,
+        title: `${mainTopic} that protects your property`
+      },
+      {
+        body: `Clear access first so equipment, drainage, and grading decisions happen in the right order.`,
+        cta,
+        title: "Start with the path crews need"
+      },
+      {
+        body: `${brandName} helps prioritize ${serviceList.toLowerCase()} before the season creates bigger problems.`,
+        cta,
+        title: "Plan the next right step"
+      }
+    ];
+  }
 
   return [
     {
-      body: `For ${audiencePhrase}, ${serviceList} starts with access, water flow, and usable ground.`,
+      body: `For ${audiencePhrase}, connect ${serviceList} to one clear problem and one useful next step.`,
       cta,
-      title: `${mainTopic} that protects your property`
+      title: `${mainTopic} with a clear next step`
     },
     {
-      body: `Clear access first so equipment, drainage, and grading decisions happen in the right order.`,
+      body: `Lead with the practical insight, then explain why it matters in a ${lowerFirst(voice)} voice.`,
       cta,
-      title: "Start with the path crews need"
+      title: "Show what matters first"
     },
     {
-      body: `${brandName} helps prioritize ${serviceList.toLowerCase()} before the season creates bigger problems.`,
+      body: `${brandName} helps people understand the choice in front of them without guessing.`,
       cta,
-      title: "Plan the next right step"
+      title: "Make action feel simple"
     }
   ];
+}
+
+type BrandDomain = "generic" | "land-management" | "mental-health";
+
+function inferBrandDomain({
+  audience,
+  brandName,
+  services,
+  title,
+  topic,
+  voice
+}: {
+  audience: string;
+  brandName: string;
+  services: string[];
+  title: string;
+  topic: string;
+  voice: string;
+}): BrandDomain {
+  const context = [audience, brandName, services.join(" "), title, topic, voice].join(" ").toLowerCase();
+
+  if (
+    /\b(counseling|counselling|therapy|therapist|mental health|anxiety|trauma|nervous system|burnout|grounding|somatic|emotional|wellness|psychotherapy)\b/.test(
+      context
+    )
+  ) {
+    return "mental-health";
+  }
+
+  if (/\b(land clearing|land management|grading|drainage|acreage|brush|forestry|rural|storm cleanup)\b/.test(context)) {
+    return "land-management";
+  }
+
+  return "generic";
 }
 
 function extractInstructionColors(value: string): Pick<

@@ -94,6 +94,29 @@ describe("LocalCanvasGenerationProvider", () => {
     expect(visibleCopy).not.toContain("Turn the message into action");
   });
 
+  it("keeps counseling service drafts in a warm mental-health voice without land-management leakage", async () => {
+    const document = await generateTestDocument({
+      audience: "Adults navigating anxiety, burnout, and nervous system overwhelm",
+      brandName: "Steady Path Counseling",
+      preferredCtas: "Schedule a consultation",
+      productsServices: "Individual counseling, anxiety therapy, trauma-informed care, grounding skills",
+      projectTitle: "Nervous System Regulation",
+      userRequest: "Make me something about nervous system regulation.",
+      voice: "Warm, calm, validating, and practical"
+    });
+    const visibleCopy = document.slides
+      .flatMap((slide) => slide.elements)
+      .map((element) => (element.type === "text" ? element.content : element.type === "cta" ? element.label : ""))
+      .join(" ");
+
+    expect(visibleCopy).toContain("nervous system");
+    expect(visibleCopy).toContain("anxiety therapy");
+    expect(visibleCopy).toContain("Schedule a consultation");
+    expect(visibleCopy).toContain("warm");
+    expect(visibleCopy).not.toMatch(/land clearing|grading|drainage|rural homeowners|property managers/i);
+    expect(visibleCopy).not.toMatch(/access path|water flow|equipment|usable ground|spring growth|soil texture/i);
+  });
+
   it("uses pasted Canva build instructions for slide flow, colors, fonts, and CTA copy", async () => {
     const document = await generateTestDocument({
       userRequest: [
@@ -149,13 +172,21 @@ describe("LocalCanvasGenerationProvider", () => {
 });
 
 async function generateTestDocument({
+  audience = "Rural homeowners and property managers",
+  brandName = "Land Strong",
   preferredCtas = "Schedule a land assessment",
+  productsServices = "Land clearing, grading, drainage, storm cleanup",
   projectTitle = "Spring Land Prep",
-  userRequest = "Create a polished carousel about why property owners should prepare land before spring growth."
+  userRequest = "Create a polished carousel about why property owners should prepare land before spring growth.",
+  voice = "Confident, practical, premium"
 }: {
+  audience?: string;
+  brandName?: string;
   preferredCtas?: string;
+  productsServices?: string;
   projectTitle?: string;
   userRequest?: string;
+  voice?: string;
 } = {}): Promise<CanvasDocument> {
   const provider = new LocalCanvasGenerationProvider();
   const response = await provider.generateJson({
@@ -164,12 +195,12 @@ async function generateTestDocument({
     user: JSON.stringify({
       brand: {
         memory: {
-          audience: "Rural homeowners and property managers",
+          audience,
           preferredCtas,
-          productsServices: "Land clearing, grading, drainage, storm cleanup",
-          voice: "Confident, practical, premium"
+          productsServices,
+          voice
         },
-        name: "Land Strong"
+        name: brandName
       },
       outputRules: {
         slideCount: 3
