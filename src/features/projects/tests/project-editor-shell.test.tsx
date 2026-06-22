@@ -152,6 +152,27 @@ describe("ProjectEditorShell", () => {
     );
   });
 
+  it("places the creative brief builder before theme and draft generation", () => {
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    const creativeBriefHeading = screen.getByRole("heading", { name: "Creative Brief" });
+    const themeEngineHeading = screen.getByRole("heading", { name: "Theme Engine" });
+    const aiGenerationHeading = screen.getByRole("heading", { name: "AI Generation" });
+
+    expect(
+      Boolean(creativeBriefHeading.compareDocumentPosition(themeEngineHeading) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ).toBe(true);
+    expect(
+      Boolean(creativeBriefHeading.compareDocumentPosition(aiGenerationHeading) & Node.DOCUMENT_POSITION_FOLLOWING)
+    ).toBe(true);
+  });
+
   it("keeps the right inspector within the viewport with internal scrolling", () => {
     render(
       <ProjectEditorShell

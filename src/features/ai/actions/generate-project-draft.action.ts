@@ -14,6 +14,7 @@ import { createPrismaGenerationCostRepository } from "../repositories/prisma-gen
 import { createDefaultAiProviderRegistry } from "../providers/local-canvas-generation.provider";
 import { generateProjectDraftForUser } from "../services/ai-generation-pipeline.service";
 import type { AiGenerationActionState } from "../types/ai-generation-action-state";
+import type { CreativeBrief } from "../types/creative-brief";
 
 export async function generateProjectDraftAction(
   _previousState: AiGenerationActionState,
@@ -27,6 +28,7 @@ export async function generateProjectDraftAction(
 
   const projectId = formData.get("projectId");
   const userRequest = formData.get("userRequest");
+  const creativeBrief = parseCreativeBrief(formData.get("creativeBrief"));
 
   if (typeof projectId !== "string" || typeof userRequest !== "string") {
     return {
@@ -49,6 +51,7 @@ export async function generateProjectDraftAction(
   const result = await generateProjectDraftForUser({
     brandMemoryRepository: createPrismaBrandMemoryRepository(),
     brandRepository: createPrismaBrandRepository(),
+    creativeBrief,
     generationCostRepository: createPrismaGenerationCostRepository(),
     ownerUserId: syncResult.user.id,
     projectId,
@@ -74,4 +77,34 @@ export async function generateProjectDraftAction(
     message: "AI draft generated.",
     status: "generated"
   };
+}
+
+function parseCreativeBrief(value: FormDataEntryValue | null): CreativeBrief | null {
+  if (typeof value !== "string" || !value.trim()) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as Partial<CreativeBrief>;
+
+    if (
+      typeof parsed.angle !== "string" ||
+      typeof parsed.audience !== "string" ||
+      typeof parsed.cta !== "string" ||
+      typeof parsed.goal !== "string" ||
+      typeof parsed.hook !== "string"
+    ) {
+      return null;
+    }
+
+    return {
+      angle: parsed.angle,
+      audience: parsed.audience,
+      cta: parsed.cta,
+      goal: parsed.goal,
+      hook: parsed.hook
+    };
+  } catch {
+    return null;
+  }
 }

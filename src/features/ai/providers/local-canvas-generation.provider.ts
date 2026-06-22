@@ -2,6 +2,7 @@ import { canvasDocumentSchema } from "@/features/canvas/schemas/canvas-object.sc
 import type { CanvasDocument, CanvasDocumentFormat, CanvasSlide } from "@/features/canvas/types/canvas";
 
 import type { AiCanvasGenerationProvider, AiGenerationPrompt, AiProviderRegistry } from "../types/ai-generation";
+import type { CreativeBrief } from "../types/creative-brief";
 
 type PromptPayload = {
   brand?: {
@@ -14,6 +15,7 @@ type PromptPayload = {
     name?: string;
   };
   creativeSource?: {
+    creativeBrief?: CreativeBrief | null;
     designInstructions?: string;
   };
   outputRules?: {
@@ -143,9 +145,10 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
   const title = payload.projectTitle?.trim() || "Generated BrandBrain Carousel";
   const brandName = payload.brand?.name?.trim() || "Brand";
   const instructionProfile = extractInstructionProfile(payload);
-  const cta = instructionProfile.cta ?? selectCtaLabel(payload.brand?.memory?.preferredCtas);
-  const topic = fitCanvasText(instructionProfile.summary ?? payload.userRequest, 160, title);
-  const audience = fitCanvasText(payload.brand?.memory?.audience, 96, "your ideal customers");
+  const creativeBrief = payload.creativeSource?.creativeBrief ?? null;
+  const cta = creativeBrief?.cta ?? instructionProfile.cta ?? selectCtaLabel(payload.brand?.memory?.preferredCtas);
+  const topic = fitCanvasText(creativeBrief?.hook ?? instructionProfile.summary ?? payload.userRequest, 160, title);
+  const audience = fitCanvasText(creativeBrief?.audience ?? payload.brand?.memory?.audience, 96, "your ideal customers");
   const services = getServices(payload.brand?.memory?.productsServices);
   const voice = fitCanvasText(payload.brand?.memory?.voice, 90, "clear, practical, on-brand");
   const themePalette = {
@@ -171,6 +174,7 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
     title,
     topic,
     voice,
+    creativeBrief,
     extractedPlans: instructionProfile.slides
   });
   const slides = Array.from({ length: slideCount }, (_, index) =>
@@ -530,6 +534,7 @@ function createSlidePlans({
   brandName,
   cta,
   extractedPlans,
+  creativeBrief,
   requestedSlideCount,
   services,
   title,
@@ -540,13 +545,17 @@ function createSlidePlans({
   brandName: string;
   cta: string;
   extractedPlans: LocalSlidePlan[];
+  creativeBrief: CreativeBrief | null;
   requestedSlideCount: number;
   services: string[];
   title: string;
   topic: string;
   voice: string;
 }): LocalSlidePlan[] {
-  const refinedPlans = extractedPlans.length > 0 ? extractedPlans : buildRefinedPlans({
+  const refinedPlans = extractedPlans.length > 0 ? extractedPlans : creativeBrief ? buildBriefSlidePlans({
+    brandName,
+    brief: creativeBrief
+  }) : buildRefinedPlans({
     audience,
     brandName,
     cta,
@@ -568,6 +577,32 @@ function createSlidePlans({
       title: fitCanvasText(plan.title, 120, title)
     };
   });
+}
+
+function buildBriefSlidePlans({
+  brandName,
+  brief
+}: {
+  brandName: string;
+  brief: CreativeBrief;
+}): LocalSlidePlan[] {
+  return [
+    {
+      body: brief.angle,
+      cta: brief.cta,
+      title: brief.hook
+    },
+    {
+      body: brief.goal,
+      cta: brief.cta,
+      title: `For ${brief.audience}`
+    },
+    {
+      body: `${brandName} can help turn this into one calm, clear next step.`,
+      cta: brief.cta,
+      title: brief.cta
+    }
+  ];
 }
 
 function buildRefinedPlans({

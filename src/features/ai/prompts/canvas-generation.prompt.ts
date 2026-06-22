@@ -3,11 +3,13 @@ import type {
   AiGenerationPrompt,
   AiGenerationThemeContext
 } from "../types/ai-generation";
+import type { CreativeBrief } from "../types/creative-brief";
 
-export const CANVAS_GENERATION_PROMPT_VERSION = "1.2.0";
+export const CANVAS_GENERATION_PROMPT_VERSION = "1.3.0";
 
 type BuildCanvasGenerationPromptParams = {
   brand: AiGenerationBrandContext;
+  creativeBrief?: CreativeBrief | null;
   projectTitle: string;
   slideCount: number;
   theme: AiGenerationThemeContext;
@@ -16,6 +18,7 @@ type BuildCanvasGenerationPromptParams = {
 
 export function buildCanvasGenerationPrompt({
   brand,
+  creativeBrief = null,
   projectTitle,
   slideCount,
   theme,
@@ -31,6 +34,7 @@ export function buildCanvasGenerationPrompt({
       "Every generated slide must contain editable canvas elements.",
       "Treat detailed ChatGPT or Canva build instructions as the primary source of truth when they are present.",
       "Extract slide flow, layout, positioning, colors, fonts, spacing, design elements, visual references, and CTA choices from those instructions.",
+      "Use the visible creative brief as the strategy source before slides when provided.",
       "If the user request is vague, internally refine it into a strategic creative brief, content outline, and theme-aware design direction before producing canvas JSON.",
       "Never mirror a vague prompt as generic slide copy.",
       "Never introduce unrelated industry language, examples, services, or metaphors; current brand memory, audience, services, and voice always win over prior examples."
@@ -47,10 +51,12 @@ export function buildCanvasGenerationPrompt({
           sourceOfTruth: "Canvas Object Model"
         },
         creativeSource: {
+          creativeBrief,
           designInstructions: userRequest,
           refinementRule:
             "Use pasted instructions directly when detailed; otherwise expand the vague request into a high-quality creative brief, slide outline, layout plan, and brand-specific copy before building editable canvas JSON.",
           sourcePriority: [
+            ...(creativeBrief ? ["visible creative brief"] : []),
             "pasted design instructions",
             "approved project theme",
             "brand memory",

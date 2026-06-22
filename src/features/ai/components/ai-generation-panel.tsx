@@ -6,8 +6,10 @@ import { useActionState, useEffect, useRef } from "react";
 import type { CanvasDocument } from "@/features/canvas/types/canvas";
 
 import type { AiGenerationAction, AiGenerationActionState } from "../types/ai-generation-action-state";
+import type { CreativeBrief } from "../types/creative-brief";
 
 type AiGenerationPanelProps = {
+  creativeBrief?: CreativeBrief | null;
   generationAction: AiGenerationAction;
   hasTheme: boolean;
   initialState: AiGenerationActionState;
@@ -16,6 +18,7 @@ type AiGenerationPanelProps = {
 };
 
 export function AiGenerationPanel({
+  creativeBrief = null,
   generationAction,
   hasTheme,
   initialState,
@@ -53,6 +56,7 @@ export function AiGenerationPanel({
 
       <form action={formAction} className="mt-4 grid gap-3">
         <input name="projectId" type="hidden" value={projectId} />
+        <input name="creativeBrief" type="hidden" value={creativeBrief ? JSON.stringify(creativeBrief) : ""} />
         <label className="text-sm text-[#CBD5E1]" htmlFor="ai-generation-request">
           Idea or design instructions
         </label>

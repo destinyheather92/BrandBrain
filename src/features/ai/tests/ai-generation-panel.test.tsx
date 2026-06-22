@@ -49,6 +49,29 @@ describe("AiGenerationPanel", () => {
     expect(container.querySelector('input[name="projectId"]')).toHaveValue("project_1");
   });
 
+  it("includes the generated creative brief in draft form data", () => {
+    const { container } = render(
+      <AiGenerationPanel
+        creativeBrief={{
+          angle: "Normalize anxiety signals and offer one grounded next step.",
+          audience: "Adults navigating anxiety and burnout",
+          cta: "Schedule a consultation",
+          goal: "Help adults understand anxiety spikes without shame.",
+          hook: "An anxiety spike is a signal, not a personal failure."
+        }}
+        generationAction={vi.fn()}
+        hasTheme={true}
+        initialState={initialAiGenerationActionState}
+        onGenerated={vi.fn()}
+        projectId="project_1"
+      />
+    );
+
+    const creativeBriefInput = container.querySelector('input[name="creativeBrief"]') as HTMLInputElement | null;
+
+    expect(creativeBriefInput?.value).toContain("Schedule a consultation");
+  });
+
   it("blocks generation until a project theme exists", () => {
     render(
       <AiGenerationPanel

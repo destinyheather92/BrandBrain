@@ -2,10 +2,12 @@ import { UserButton } from "@clerk/nextjs";
 import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 
+import { generateCreativeBriefAction } from "@/features/ai/actions/generate-creative-brief.action";
 import { generateProjectDraftAction } from "@/features/ai/actions/generate-project-draft.action";
 import { generateProjectImageAction } from "@/features/ai/actions/generate-project-image.action";
 import { initialAiGenerationActionState } from "@/features/ai/types/ai-generation-action-state";
 import { initialAiImageGenerationActionState } from "@/features/ai/types/ai-image-generation-action-state";
+import { initialCreativeBriefActionState } from "@/features/ai/types/creative-brief-action-state";
 import {
   autosaveProjectCanvasAction,
   restoreProjectVersionAction,
@@ -77,9 +79,11 @@ export default async function ProjectEditorPage({ params }: ProjectEditorPagePro
       accountControl={<UserButton />}
       aiGenerationAction={generateProjectDraftAction}
       autosaveAction={autosaveProjectCanvasAction}
+      creativeBriefAction={generateCreativeBriefAction}
       imageGenerationAction={generateProjectImageAction}
       initialAiGenerationState={initialAiGenerationActionState}
       initialAiImageGenerationState={initialAiImageGenerationActionState}
+      initialCreativeBriefState={initialCreativeBriefActionState}
       initialState={initialProjectEditorSaveState}
       initialTheme={themeResult.ok ? themeResult.theme : null}
       initialThemeState={initialProjectThemeActionState}

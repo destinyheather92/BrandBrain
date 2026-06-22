@@ -51,7 +51,7 @@ describe("buildCanvasGenerationPrompt", () => {
       userRequest: "Explain why early spring is the best time to prepare land."
     });
 
-    expect(CANVAS_GENERATION_PROMPT_VERSION).toBe("1.2.0");
+    expect(CANVAS_GENERATION_PROMPT_VERSION).toBe("1.3.0");
     expect(prompt.system).toContain("Return valid JSON only");
     expect(prompt.system).toContain("Canvas Object Model");
     expect(prompt.user).toContain("Land Strong");
@@ -109,5 +109,34 @@ describe("buildCanvasGenerationPrompt", () => {
     expect(prompt.system).toContain("Never mirror a vague prompt as generic slide copy");
     expect(prompt.system).toContain("Never introduce unrelated industry language, examples, services, or metaphors");
     expect(prompt.user).toContain("Make me something about land clearing.");
+  });
+
+  it("passes the visible creative brief into the canvas generation context", () => {
+    const creativeBrief = {
+      angle: "Show why land clearing should start with access planning before equipment arrives.",
+      audience: "Rural land owners preparing property for spring work",
+      cta: "Schedule a land assessment",
+      goal: "Help land owners understand the right first step before land clearing.",
+      hook: "Stop guessing what your land needs first."
+    };
+
+    const prompt = buildCanvasGenerationPrompt({
+      brand,
+      creativeBrief,
+      projectTitle: "Land Strong Briefed Draft",
+      slideCount: 3,
+      theme,
+      userRequest: "make me something about land clearing"
+    });
+    const payload = JSON.parse(prompt.user) as {
+      creativeSource: {
+        creativeBrief: typeof creativeBrief;
+        sourcePriority: string[];
+      };
+    };
+
+    expect(prompt.system).toContain("Use the visible creative brief as the strategy source before slides");
+    expect(payload.creativeSource.creativeBrief).toEqual(creativeBrief);
+    expect(payload.creativeSource.sourcePriority[0]).toBe("visible creative brief");
   });
 });

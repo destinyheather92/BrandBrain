@@ -266,6 +266,30 @@ describe("generateProjectDraftForUser", () => {
     );
   });
 
+  it("passes the visible creative brief to the canvas provider", async () => {
+    const repositories = createRepositories();
+
+    await generateProjectDraftForUser({
+      ...repositories,
+      creativeBrief: {
+        angle: "Normalize anxiety signals and offer one grounded next step.",
+        audience: "Adults navigating anxiety and burnout",
+        cta: "Schedule a consultation",
+        goal: "Help adults understand anxiety spikes without shame.",
+        hook: "An anxiety spike is a signal, not a personal failure."
+      },
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      userRequest: "make a carousel about anxiety spikes"
+    });
+
+    const prompt = vi.mocked(repositories.provider.generateJson).mock.calls[0]?.[0];
+
+    expect(prompt?.system).toContain("Use the visible creative brief as the strategy source before slides");
+    expect(prompt?.user).toContain("An anxiety spike is a signal");
+    expect(prompt?.user).toContain("Schedule a consultation");
+  });
+
   it("requires a saved theme before generating slides", async () => {
     const repositories = createRepositories();
     repositories.themeRepository.findByProjectIdForOwner.mockResolvedValue(null);

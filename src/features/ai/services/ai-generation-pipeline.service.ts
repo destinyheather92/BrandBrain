@@ -15,10 +15,12 @@ import type {
   GenerationCostCreateInput,
   GenerationCostRepository
 } from "../types/ai-generation";
+import type { CreativeBrief } from "../types/creative-brief";
 
 type GenerateProjectDraftForUserParams = {
   brandMemoryRepository: BrandMemoryRepository;
   brandRepository: BrandRepository;
+  creativeBrief?: CreativeBrief | null;
   generationCostRepository: GenerationCostRepository;
   ownerUserId: string;
   projectId: string;
@@ -42,6 +44,7 @@ const maxProviderAttempts = 2;
 export async function generateProjectDraftForUser({
   brandMemoryRepository,
   brandRepository,
+  creativeBrief = null,
   generationCostRepository,
   ownerUserId,
   projectId,
@@ -77,6 +80,7 @@ export async function generateProjectDraftForUser({
         memory,
         name: brand.name
       } satisfies AiGenerationBrandContext,
+      creativeBrief,
       projectTitle: project.title,
       slideCount: project.canvasJson.slides.length,
       theme: toThemeContext(theme),

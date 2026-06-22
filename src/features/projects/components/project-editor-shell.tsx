@@ -38,6 +38,7 @@ import {
 
 import { AiGenerationPanel } from "@/features/ai/components/ai-generation-panel";
 import { AiImageGenerationPanel } from "@/features/ai/components/ai-image-generation-panel";
+import { CreativeBriefPanel } from "@/features/ai/components/creative-brief-panel";
 import { initialAiGenerationActionState } from "@/features/ai/types/ai-generation-action-state";
 import type {
   AiGenerationAction,
@@ -48,6 +49,12 @@ import type {
   AiImageGenerationAction,
   AiImageGenerationActionState
 } from "@/features/ai/types/ai-image-generation-action-state";
+import { initialCreativeBriefActionState } from "@/features/ai/types/creative-brief-action-state";
+import type {
+  CreativeBriefAction,
+  CreativeBriefActionState
+} from "@/features/ai/types/creative-brief-action-state";
+import type { CreativeBrief } from "@/features/ai/types/creative-brief";
 import { getCanvasElementsInPaintOrder } from "@/features/canvas/services/canvas-object-model.service";
 import type { CanvasDocument, CanvasElement, CanvasSlide } from "@/features/canvas/types/canvas";
 import { ExportPanel } from "@/features/exports/components/export-panel";
@@ -88,9 +95,11 @@ type ProjectEditorShellProps = {
   aiGenerationAction?: AiGenerationAction;
   autosaveAction?: ProjectEditorAutosaveAction;
   autosaveDelayMs?: number;
+  creativeBriefAction?: CreativeBriefAction;
   imageGenerationAction?: AiImageGenerationAction;
   initialAiGenerationState?: AiGenerationActionState;
   initialAiImageGenerationState?: AiImageGenerationActionState;
+  initialCreativeBriefState?: CreativeBriefActionState;
   initialState: ProjectEditorSaveState;
   initialTheme?: ProjectTheme | null;
   initialThemeState?: ProjectThemeActionState;
@@ -191,6 +200,7 @@ const propertySectionOptions = [
 const fallbackAiGenerationAction: AiGenerationAction = async () => initialAiGenerationActionState;
 const fallbackAiImageGenerationAction: AiImageGenerationAction = async () => initialAiImageGenerationActionState;
 const fallbackAutosaveAction: ProjectEditorAutosaveAction = async () => initialProjectEditorSaveState;
+const fallbackCreativeBriefAction: CreativeBriefAction = async () => initialCreativeBriefActionState;
 const fallbackRestoreVersionAction: ProjectEditorRestoreAction = async () => initialProjectEditorRestoreState;
 const fallbackThemeAction: ProjectThemeAction = async () => initialProjectThemeActionState;
 
@@ -199,9 +209,11 @@ export function ProjectEditorShell({
   aiGenerationAction = fallbackAiGenerationAction,
   autosaveAction = fallbackAutosaveAction,
   autosaveDelayMs = 1200,
+  creativeBriefAction = fallbackCreativeBriefAction,
   imageGenerationAction = fallbackAiImageGenerationAction,
   initialAiGenerationState = initialAiGenerationActionState,
   initialAiImageGenerationState = initialAiImageGenerationActionState,
+  initialCreativeBriefState = initialCreativeBriefActionState,
   initialState,
   initialTheme = null,
   initialThemeState = initialProjectThemeActionState,
@@ -219,6 +231,9 @@ export function ProjectEditorShell({
   const initialDocument = useMemo(() => normalizeEditorCanvas(project.canvasJson), [project.canvasJson]);
   const [document, setDocument] = useState<CanvasDocument>(initialDocument);
   const [activeTheme, setActiveTheme] = useState<ProjectTheme | null>(initialTheme);
+  const [activeCreativeBrief, setActiveCreativeBrief] = useState<CreativeBrief | null>(
+    initialCreativeBriefState.brief
+  );
   const [autosaveState, setAutosaveState] = useState<ProjectEditorSaveState>(initialProjectEditorSaveState);
   const [versionHistory, setVersionHistory] = useState<ProjectVersion[]>(initialVersions);
   const [, startAutosaveTransition] = useTransition();
@@ -705,6 +720,12 @@ export function ProjectEditorShell({
             )}
           </div>
 
+          <CreativeBriefPanel
+            briefAction={creativeBriefAction}
+            initialState={initialCreativeBriefState}
+            onGenerated={setActiveCreativeBrief}
+            projectId={project.id}
+          />
           <ThemeEnginePanel
             initialState={initialThemeState}
             initialTheme={activeTheme}
@@ -714,6 +735,7 @@ export function ProjectEditorShell({
             themeAction={themeAction}
           />
           <AiGenerationPanel
+            creativeBrief={activeCreativeBrief}
             generationAction={aiGenerationAction}
             hasTheme={Boolean(activeTheme)}
             initialState={initialAiGenerationState}
