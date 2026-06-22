@@ -108,6 +108,42 @@ describe("generateCreativeBriefForUser", () => {
     expect(serializedBrief).not.toMatch(/land clearing|grading|drainage|property|acreage/i);
   });
 
+  it("refines an unspecific counseling idea instead of falling back to the project title", async () => {
+    const repositories = createRepositories();
+
+    repositories.brandRepository.findByIdForOwner.mockResolvedValue({
+      ...counselingBrand,
+      description: "Trauma-informed counseling for adults who feel overwhelmed.",
+      industry: "Counseling",
+      name: "Land Strong Counseling"
+    });
+    repositories.projectRepository.findByIdForOwner.mockResolvedValue({
+      ...project,
+      title: "Social Post"
+    });
+
+    const result = await generateCreativeBriefForUser({
+      ...repositories,
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      userRequest: "I need something for people who feel overwhelmed and do not know where to start"
+    });
+
+    expect(result).toMatchObject({
+      brief: {
+        angle: expect.stringMatching(/ground|regulat|support|nervous system/i),
+        cta: "Schedule a consultation",
+        goal: expect.stringMatching(/overwhelm|ground|support|nervous system/i),
+        hook: expect.stringMatching(/overwhelm|ground|support|nervous system/i)
+      },
+      ok: true
+    });
+
+    const serializedBrief = JSON.stringify(result.ok ? result.brief : {});
+
+    expect(serializedBrief).not.toMatch(/social post|land clearing|grading|drainage|property managers/i);
+  });
+
   it("returns a project not found error before building a brief", async () => {
     const repositories = createRepositories();
 

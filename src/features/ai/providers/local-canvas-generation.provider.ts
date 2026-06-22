@@ -592,6 +592,33 @@ function buildBriefSlidePlans({
   brandName: string;
   brief: CreativeBrief;
 }): LocalSlidePlan[] {
+  const domain = inferBrandDomain({
+    audience: brief.audience,
+    brandName,
+    services: [brief.goal, brief.angle, brief.cta],
+    title: brief.hook,
+    topic: brief.goal,
+    voice: brief.angle
+  });
+  const closingPlan =
+    domain === "mental-health"
+      ? {
+          body: buildMentalHealthActionBody(brief),
+          cta: brief.cta,
+          title: "Start with one grounded minute"
+        }
+      : domain === "land-management"
+        ? {
+            body: `${brandName} can help prioritize the site conditions, service sequence, and next action before small issues become bigger work.`,
+            cta: brief.cta,
+            title: "Prioritize the next site step"
+          }
+        : {
+            body: buildBriefActionBody(brief, brandName),
+            cta: brief.cta,
+            title: "Make the next action clear"
+          };
+
   return [
     {
       body: brief.angle,
@@ -603,12 +630,47 @@ function buildBriefSlidePlans({
       cta: brief.cta,
       title: `For ${brief.audience}`
     },
-    {
-      body: `${brandName} can help turn this into one calm, clear next step.`,
-      cta: brief.cta,
-      title: brief.cta
-    }
+    closingPlan
   ];
+}
+
+function buildMentalHealthActionBody(brief: CreativeBrief): string {
+  const topic = extractBriefTopic(brief);
+
+  return `When ${topic} feels intense, pause, name what your nervous system is signaling, take one slow breath, and choose support without shame.`;
+}
+
+function buildBriefActionBody(brief: CreativeBrief, brandName: string): string {
+  const topic = extractBriefTopic(brief);
+
+  return `${brandName} can help your audience connect ${topic} to one useful decision, one clear next step, and one CTA: ${brief.cta}.`;
+}
+
+function extractBriefTopic(brief: CreativeBrief): string {
+  const source = `${brief.hook} ${brief.goal} ${brief.angle}`.toLowerCase();
+
+  if (/\banxiety\b/.test(source)) {
+    return "anxiety";
+  }
+
+  if (/\boverwhelm|overwhelmed\b/.test(source)) {
+    return "overwhelm";
+  }
+
+  if (/\bburnout\b/.test(source)) {
+    return "burnout";
+  }
+
+  if (/\btrauma\b/.test(source)) {
+    return "trauma responses";
+  }
+
+  const cleanedGoal = brief.goal
+    .replace(/^help\s+.+?\s+understand\s+/i, "")
+    .replace(/\s+and\s+.+$/i, "")
+    .trim();
+
+  return cleanedGoal || "the moment";
 }
 
 function buildRefinedPlans({

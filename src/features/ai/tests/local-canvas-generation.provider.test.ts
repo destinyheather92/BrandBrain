@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { CanvasDocument } from "@/features/canvas/types/canvas";
 
 import { LocalCanvasGenerationProvider } from "../providers/local-canvas-generation.provider";
+import type { CreativeBrief } from "../types/creative-brief";
 
 describe("LocalCanvasGenerationProvider", () => {
   it("generates distinct polished slide layouts with bounded editable objects", async () => {
@@ -187,11 +188,40 @@ describe("LocalCanvasGenerationProvider", () => {
       type: "cta"
     });
   });
+
+  it("turns a counseling creative brief into practical slide copy instead of fallback filler", async () => {
+    const document = await generateTestDocument({
+      audience: "Adults navigating anxiety, burnout, and nervous system overwhelm",
+      brandName: "Land Strong Counseling",
+      creativeBrief: {
+        angle:
+          "Normalize overwhelm as a nervous system signal, then offer one gentle grounding step before inviting support.",
+        audience: "Adults navigating anxiety, burnout, and nervous system overwhelm",
+        cta: "Schedule a consultation",
+        goal: "Help overwhelmed adults understand what to do in the first minute of an anxiety spike.",
+        hook: "When anxiety spikes, start by making the next minute feel safer."
+      },
+      preferredCtas: "Schedule a consultation",
+      productsServices: "Anxiety counseling, burnout therapy, nervous system regulation",
+      projectTitle: "Anxiety Support",
+      userRequest: "make a post about anxiety",
+      voice: "Warm, validating, grounded, and practical"
+    });
+    const visibleCopy = document.slides
+      .flatMap((slide) => slide.elements)
+      .map((element) => (element.type === "text" ? element.content : element.type === "cta" ? element.label : ""))
+      .join(" ");
+
+    expect(visibleCopy).toMatch(/anxiety spikes|first minute|grounding|safer/i);
+    expect(visibleCopy).toContain("Schedule a consultation");
+    expect(visibleCopy).not.toMatch(/turn this into one calm, clear next step|what to handle first|land clearing|grading|drainage/i);
+  });
 });
 
 async function generateTestDocument({
   audience = "Rural homeowners and property managers",
   brandName = "Land Strong",
+  creativeBrief = null,
   contentFormat = "instagram-carousel",
   preferredCtas = "Schedule a land assessment",
   productsServices = "Land clearing, grading, drainage, storm cleanup",
@@ -202,6 +232,7 @@ async function generateTestDocument({
 }: {
   audience?: string;
   brandName?: string;
+  creativeBrief?: CreativeBrief | null;
   contentFormat?: CanvasDocument["format"];
   preferredCtas?: string;
   productsServices?: string;
@@ -223,6 +254,9 @@ async function generateTestDocument({
           voice
         },
         name: brandName
+      },
+      creativeSource: {
+        creativeBrief
       },
       outputRules: {
         contentFormat,

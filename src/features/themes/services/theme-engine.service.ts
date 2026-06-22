@@ -313,11 +313,27 @@ function buildProjectTheme({
   const normalizedContext = context.toLowerCase();
   const isRoofing = /roof|storm|inspection|exterior|claim/.test(normalizedContext);
   const isSolar = /solar|energy|panel|renewable/.test(normalizedContext);
-  const isLandManagement = /land|clearing|grading|drainage|rural|acreage|brush|forestry/.test(
-    normalizedContext
-  );
+  const isMentalHealth =
+    /\b(counseling|counselling|therapy|therapist|mental health|anxiety|trauma|nervous system|burnout|grounding|somatic|psychotherapy|wellness)\b/.test(
+      normalizedContext
+    );
+  const isLandManagement =
+    !isMentalHealth &&
+    /\b(land clearing|land management|clearing|grading|drainage|rural|acreage|brush|forestry)\b/.test(
+      normalizedContext
+    );
   const isTechnical = /technical|professional|premium|precise|practical/.test(normalizedContext);
-  const fallbackPalette: ThemePalette = isSolar
+  const fallbackPalette: ThemePalette = isMentalHealth
+    ? {
+        accent: "#C49A6C",
+        background: "#FFFFFF",
+        ctaText: "#0B0F19",
+        primary: "#2F5D62",
+        secondary: "#E8F1EF",
+        surface: "#F8FAFC",
+        text: "#0B0F19"
+      }
+    : isSolar
     ? {
         accent: "#F59E0B",
         background: "#FFFFFF",
@@ -366,7 +382,9 @@ function buildProjectTheme({
   return projectThemeUpsertInputSchema.parse({
     brandId: brand.id,
     id: idFactory(),
-    imageStyle: isLandManagement
+    imageStyle: isMentalHealth
+      ? "Calm human-centered counseling imagery with warm natural light, grounded details, quiet interiors, and supportive non-clinical composition."
+      : isLandManagement
       ? "Grounded outdoor photography with cleared land, equipment paths, soil texture, and natural light."
       : isRoofing
         ? "Crisp exterior photography with storm-ready contrast and professional lighting."

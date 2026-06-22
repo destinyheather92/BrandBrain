@@ -87,14 +87,11 @@ function buildCreativeBrief({
   });
 
   if (domain === "mental-health") {
-    return {
-      angle:
-        "Normalize the nervous system response, name what is happening in plain language, and offer one grounded next step without shame or pressure.",
+    return buildMentalHealthBrief({
       audience,
       cta,
-      goal: `Help ${lowerFirst(audience)} understand ${topic.toLowerCase()} and feel clear about one supportive next step.`,
-      hook: `${capitalizeFirst(topic)} is a nervous system signal, not a personal failure.`
-    };
+      topic
+    });
   }
 
   if (domain === "land-management") {
@@ -115,6 +112,49 @@ function buildCreativeBrief({
     cta,
     goal: `Help ${lowerFirst(audience)} understand ${topic.toLowerCase()} and know what action to take next.`,
     hook: `${capitalizeFirst(topic)} gets easier when the next step is clear.`
+  };
+}
+
+function buildMentalHealthBrief({
+  audience,
+  cta,
+  topic
+}: {
+  audience: string;
+  cta: string;
+  topic: string;
+}): CreativeBrief {
+  const normalizedTopic = topic.toLowerCase();
+
+  if (/anxiety/.test(normalizedTopic)) {
+    return {
+      angle:
+        "Normalize anxiety as a nervous system signal, then give one grounding step people can use before they decide what support they need.",
+      audience,
+      cta,
+      goal: `Help ${lowerFirst(audience)} know what to do in the first minute of ${normalizedTopic}.`,
+      hook: "When anxiety spikes, start by making the next minute feel safer."
+    };
+  }
+
+  if (/overwhelm|overwhelmed/.test(normalizedTopic)) {
+    return {
+      angle:
+        "Reframe overwhelm as a signal to slow the moment down, reduce shame, and choose one supportive next action.",
+      audience,
+      cta,
+      goal: `Help ${lowerFirst(audience)} move from overwhelm into one grounded next step.`,
+      hook: "Overwhelm is not proof you are failing. It is a cue to pause."
+    };
+  }
+
+  return {
+    angle:
+      "Normalize the nervous system response, name what is happening in plain language, and offer one grounded next step without shame or pressure.",
+    audience,
+    cta,
+    goal: `Help ${lowerFirst(audience)} understand ${normalizedTopic} and feel clear about one supportive next step.`,
+    hook: `${capitalizeFirst(topic)} is a nervous system signal, not a personal failure.`
   };
 }
 

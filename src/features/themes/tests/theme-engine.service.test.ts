@@ -442,6 +442,45 @@ describe("ThemeEngineService", () => {
     });
   });
 
+  it("uses mental-health theme direction when a counseling brand name contains land", async () => {
+    const repositories = createRepositories();
+
+    repositories.brandRepository.findByIdForOwner.mockResolvedValue({
+      ...brand,
+      description: "Counseling and nervous system support for anxious adults.",
+      industry: "Mental health counseling",
+      name: "Land Strong Counseling"
+    });
+    repositories.brandMemoryRepository.getByBrandId.mockResolvedValue({
+      ...memory,
+      audience: "Adults navigating anxiety, burnout, and nervous system overwhelm",
+      brandRules: "Use calm, supportive language and avoid scare tactics.",
+      notes: "Create a grounded counseling brand feel.",
+      preferredCtas: "Schedule a consultation",
+      productsServices: "Anxiety counseling, burnout therapy, nervous system regulation",
+      voice: "Warm, validating, grounded, and practical"
+    });
+
+    const result = await generateProjectThemeForUser({
+      ...repositories,
+      idFactory: () => "theme_counseling_quality",
+      ownerUserId: "user_1",
+      projectId: "project_1"
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      theme: {
+        imageStyle: expect.stringMatching(/calm|counseling|warm|grounded/i),
+        palette: {
+          background: "#FFFFFF",
+          text: "#0B0F19"
+        }
+      }
+    });
+    expect(result.ok ? result.theme.imageStyle : "").not.toMatch(/outdoor|cleared land|equipment|soil|product photography/i);
+  });
+
   it("applies a theme to canvas styling while preserving user edits", () => {
     const themedDocument = applyProjectThemeToCanvas(canvasJson, theme);
 
