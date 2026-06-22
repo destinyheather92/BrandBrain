@@ -112,7 +112,7 @@ export async function createContentProjectForUser({
     const canvasJson = createBlankCanvasDocument({
       format: parsed.data.format,
       idFactory,
-      slideCount: 3,
+      slideCount: parsed.data.slideCount,
       title: parsed.data.title
     });
 

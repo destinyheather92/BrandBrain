@@ -13,6 +13,7 @@ type AiGenerationPanelProps = {
   generationAction: AiGenerationAction;
   hasTheme: boolean;
   initialState: AiGenerationActionState;
+  initialSlideCount?: number;
   onGenerated: (document: CanvasDocument) => void;
   projectId: string;
 };
@@ -22,6 +23,7 @@ export function AiGenerationPanel({
   generationAction,
   hasTheme,
   initialState,
+  initialSlideCount = 3,
   onGenerated,
   projectId
 }: AiGenerationPanelProps) {
@@ -63,11 +65,26 @@ export function AiGenerationPanel({
         <textarea
           aria-disabled={!hasTheme || pending}
           className="min-h-36 resize-y rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
-          defaultValue="Create a refined 3-slide brand-consistent carousel for this project."
+          defaultValue="Create a refined brand-consistent draft for this project."
           id="ai-generation-request"
           maxLength={12000}
           name="userRequest"
           readOnly={!hasTheme || pending}
+        />
+
+        <label className="text-sm text-[#CBD5E1]" htmlFor="ai-generation-slide-count">
+          Slides
+        </label>
+        <input
+          aria-disabled={!hasTheme || pending}
+          className="min-h-10 rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
+          defaultValue={initialSlideCount}
+          id="ai-generation-slide-count"
+          max={10}
+          min={1}
+          name="slideCount"
+          readOnly={!hasTheme || pending}
+          type="number"
         />
 
         {!hasTheme ? (

@@ -16,7 +16,7 @@ const assetSourceUrlSchema = z
   .string()
   .trim()
   .min(1, "Asset source is required.")
-  .max(50000)
+  .max(10000000)
   .refine(
     (value) =>
       value.startsWith("data:image/") ||
@@ -28,7 +28,7 @@ const assetSourceUrlSchema = z
 
 export const assetKindSchema = z.enum(["generated-image", "uploaded-image", "logo", "document"]);
 
-export const assetProviderSchema = z.enum(["flux", "ideogram", "imagen", "openai", "uploadthing"]).nullable();
+export const assetProviderSchema = z.enum(["flux", "ideogram", "imagen", "local-image", "openai", "uploadthing"]).nullable();
 
 export const assetCreateInputSchema = z.object({
   brandId: nullableTrimmedStringSchema,
@@ -47,8 +47,8 @@ export const assetCreateInputSchema = z.object({
 
 export const generatedImageAssetCreateInputSchema = assetCreateInputSchema.extend({
   kind: z.literal("generated-image"),
-  mimeType: z.literal("image/svg+xml"),
-  provider: z.enum(["flux", "ideogram", "imagen", "openai"])
+  mimeType: z.enum(["image/jpeg", "image/png", "image/svg+xml", "image/webp"]),
+  provider: z.enum(["flux", "ideogram", "imagen", "local-image", "openai"])
 });
 
 export const assetSchema = z.object({

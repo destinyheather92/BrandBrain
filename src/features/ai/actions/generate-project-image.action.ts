@@ -11,7 +11,7 @@ import { createPrismaContentProjectRepository } from "@/features/projects/reposi
 import { createPrismaProjectThemeRepository } from "@/features/themes/repositories/prisma-project-theme.repository";
 import { syncCurrentClerkUserToLocalUser } from "@/features/users/services/current-user-sync.service";
 
-import { createDefaultAiImageProviderRegistry } from "../providers/local-image-generation.provider";
+import { createDefaultAiImageProviderRegistry } from "../providers/ai-provider-registry";
 import { createPrismaGenerationCostRepository } from "../repositories/prisma-generation-cost.repository";
 import { generateProjectImageForUser } from "../services/ai-image-generation.service";
 import type { AiImageGenerationActionState } from "../types/ai-image-generation-action-state";

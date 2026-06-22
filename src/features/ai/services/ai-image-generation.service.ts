@@ -7,12 +7,13 @@ import type { CanvasDocument, CanvasElement, CanvasSlide } from "@/features/canv
 import type { ContentProjectRepository } from "@/features/projects/types/content-project";
 import type { ProjectTheme, ProjectThemeRepository } from "@/features/themes/types/project-theme";
 
+import { AiProviderConfigurationError } from "../providers/ai-provider-registry";
 import { buildImageGenerationPrompt } from "../prompts/image-generation.prompt";
 import type {
   AiGenerationBrandContext,
   AiGenerationThemeContext,
+  AiImageElementProviderId,
   AiImageGenerationResult,
-  AiImageProviderId,
   AiImageProviderRegistry,
   GenerationCostCreateInput,
   GenerationCostRepository
@@ -133,6 +134,10 @@ export async function generateProjectImageForUser({
       status: "generated"
     };
   } catch (error) {
+    if (error instanceof AiProviderConfigurationError) {
+      return failure("ai_provider_not_configured", error.message);
+    }
+
     console.error("AI image generation failed.", error);
 
     return failure("project_repository_error", "AI image could not be generated.");
@@ -152,13 +157,14 @@ async function recordGeneratedImageAsset({
   imageElement: Extract<CanvasElement, { type: "image" }>;
   ownerUserId: string;
   projectId: string;
-  provider: AiImageProviderId;
+  provider: AiImageElementProviderId;
 }): Promise<void> {
   const result = await createGeneratedImageAssetForUser({
     assetRepository,
     input: {
       brandId,
       height: Math.round(imageElement.height),
+      mimeType: detectImageMimeType(imageElement.src),
       name: toAssetName(imageElement.alt),
       ownerUserId,
       projectId,
@@ -172,6 +178,22 @@ async function recordGeneratedImageAsset({
   if (!result.ok) {
     console.warn("Generated image asset could not be recorded.", result.error);
   }
+}
+
+function detectImageMimeType(sourceUrl: string): "image/jpeg" | "image/png" | "image/svg+xml" | "image/webp" {
+  if (sourceUrl.startsWith("data:image/jpeg") || sourceUrl.match(/\.jpe?g(?:\?|$)/i)) {
+    return "image/jpeg";
+  }
+
+  if (sourceUrl.startsWith("data:image/webp") || sourceUrl.match(/\.webp(?:\?|$)/i)) {
+    return "image/webp";
+  }
+
+  if (sourceUrl.startsWith("data:image/svg+xml") || sourceUrl.match(/\.svg(?:\?|$)/i)) {
+    return "image/svg+xml";
+  }
+
+  return "image/png";
 }
 
 function toAssetName(altText: string): string {
@@ -208,7 +230,7 @@ function createGeneratedImageElement({
   id: string;
   imageUrl: string;
   prompt: string;
-  provider: AiImageProviderId;
+  provider: AiImageElementProviderId;
   slide: CanvasSlide;
 }): Extract<CanvasElement, { type: "image" }> {
   const width = Math.min(888, slide.width - 128);

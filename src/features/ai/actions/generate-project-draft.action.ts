@@ -10,8 +10,8 @@ import { createPrismaContentProjectRepository } from "@/features/projects/reposi
 import { createPrismaProjectThemeRepository } from "@/features/themes/repositories/prisma-project-theme.repository";
 import { syncCurrentClerkUserToLocalUser } from "@/features/users/services/current-user-sync.service";
 
+import { createDefaultAiProviderRegistry } from "../providers/ai-provider-registry";
 import { createPrismaGenerationCostRepository } from "../repositories/prisma-generation-cost.repository";
-import { createDefaultAiProviderRegistry } from "../providers/local-canvas-generation.provider";
 import { generateProjectDraftForUser } from "../services/ai-generation-pipeline.service";
 import type { AiGenerationActionState } from "../types/ai-generation-action-state";
 import type { CreativeBrief } from "../types/creative-brief";
@@ -28,6 +28,7 @@ export async function generateProjectDraftAction(
 
   const projectId = formData.get("projectId");
   const userRequest = formData.get("userRequest");
+  const requestedSlideCount = parseRequestedSlideCount(formData.get("slideCount"));
   const creativeBrief = parseCreativeBrief(formData.get("creativeBrief"));
 
   if (typeof projectId !== "string" || typeof userRequest !== "string") {
@@ -57,6 +58,7 @@ export async function generateProjectDraftAction(
     projectId,
     projectRepository: createPrismaContentProjectRepository(),
     providerRegistry: createDefaultAiProviderRegistry(),
+    requestedSlideCount,
     themeRepository: createPrismaProjectThemeRepository(),
     userRequest
   });
@@ -77,6 +79,16 @@ export async function generateProjectDraftAction(
     message: "AI draft generated.",
     status: "generated"
   };
+}
+
+function parseRequestedSlideCount(value: FormDataEntryValue | null): number | undefined {
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const parsed = Number.parseInt(value, 10);
+
+  return Number.isInteger(parsed) && parsed >= 1 && parsed <= 10 ? parsed : undefined;
 }
 
 function parseCreativeBrief(value: FormDataEntryValue | null): CreativeBrief | null {

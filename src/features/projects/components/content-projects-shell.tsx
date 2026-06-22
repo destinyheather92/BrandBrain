@@ -103,6 +103,34 @@ export function ContentProjectsShell({
                   {fieldError(state.fieldErrors.brandId)}
                 </label>
 
+                <label className="block">
+                  <span className="text-sm font-medium text-[#F8FAFC]">Content type</span>
+                  <select
+                    className="mt-2 min-h-11 w-full rounded-lg border border-[#263244] bg-[#0B0F19] px-3 py-2 text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
+                    defaultValue="instagram-carousel"
+                    name="format"
+                  >
+                    <option value="instagram-carousel">Instagram carousel</option>
+                    <option value="square-post">Square post</option>
+                    <option value="story">Story</option>
+                    <option value="presentation">Presentation</option>
+                  </select>
+                  {fieldError(state.fieldErrors.format)}
+                </label>
+
+                <label className="block">
+                  <span className="text-sm font-medium text-[#F8FAFC]">Slides</span>
+                  <input
+                    className="mt-2 min-h-11 w-full rounded-lg border border-[#263244] bg-[#0B0F19] px-3 py-2 text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
+                    defaultValue={5}
+                    max={10}
+                    min={1}
+                    name="slideCount"
+                    type="number"
+                  />
+                  {fieldError(state.fieldErrors.slideCount)}
+                </label>
+
                 <button
                   className="inline-flex min-h-11 items-center justify-center rounded-lg bg-[#00E5FF] px-5 py-2 text-sm font-semibold text-[#0B0F19] hover:bg-[#4CF2FF] disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={pending}

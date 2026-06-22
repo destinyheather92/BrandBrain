@@ -19,6 +19,7 @@ type PromptPayload = {
     designInstructions?: string;
   };
   outputRules?: {
+    contentFormat?: CanvasDocumentFormat;
     slideCount?: number;
   };
   projectTitle?: string;
@@ -105,7 +106,7 @@ type BuildSlideParams = {
 };
 
 export class LocalCanvasGenerationProvider implements AiCanvasGenerationProvider {
-  readonly id = "openai";
+  readonly id = "local-canvas";
 
   async generateJson(prompt: AiGenerationPrompt) {
     const payload = parsePromptPayload(prompt.user);
@@ -140,8 +141,9 @@ function parsePromptPayload(userPrompt: string): PromptPayload {
 }
 
 function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
-  const dimensions = formatDimensions["instagram-carousel"];
-  const slideCount = Math.min(10, Math.max(3, payload.outputRules?.slideCount ?? 3));
+  const contentFormat = getContentFormat(payload.outputRules?.contentFormat);
+  const dimensions = formatDimensions[contentFormat];
+  const slideCount = Math.min(10, Math.max(1, payload.outputRules?.slideCount ?? 3));
   const title = payload.projectTitle?.trim() || "Generated BrandBrain Carousel";
   const brandName = payload.brand?.name?.trim() || "Brand";
   const instructionProfile = extractInstructionProfile(payload);
@@ -202,7 +204,7 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
 
   return canvasDocumentSchema.parse({
     documentId: `document_generated_${slugify(title)}`,
-    format: "instagram-carousel",
+    format: contentFormat,
     height: dimensions.height,
     schemaVersion: "1.0.0",
     slides,
@@ -211,6 +213,10 @@ function buildLocalCanvasDocument(payload: PromptPayload): CanvasDocument {
     unit: "px",
     width: dimensions.width
   });
+}
+
+function getContentFormat(value: CanvasDocumentFormat | undefined): CanvasDocumentFormat {
+  return value && value in formatDimensions ? value : "instagram-carousel";
 }
 
 function buildSlide({

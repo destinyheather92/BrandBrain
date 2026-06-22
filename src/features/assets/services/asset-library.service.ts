@@ -16,7 +16,9 @@ type ListAssetsForUserParams = {
 
 type CreateGeneratedImageAssetForUserParams = {
   assetRepository: AssetRepository;
-  input: Omit<GeneratedImageAssetCreateInput, "kind" | "mimeType">;
+  input: Omit<GeneratedImageAssetCreateInput, "kind" | "mimeType"> & {
+    mimeType?: GeneratedImageAssetCreateInput["mimeType"];
+  };
 };
 
 function isMissingPrismaDelegateError(error: unknown): boolean {
@@ -47,7 +49,7 @@ export async function createGeneratedImageAssetForUser({
   const parsed = generatedImageAssetCreateInputSchema.safeParse({
     ...input,
     kind: "generated-image",
-    mimeType: "image/svg+xml"
+    mimeType: input.mimeType ?? "image/svg+xml"
   });
 
   if (!parsed.success) {

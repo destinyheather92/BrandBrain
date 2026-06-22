@@ -79,6 +79,7 @@ export async function createProjectFromTemplateForUser({
       canvasJson,
       format: canvasJson.format,
       ownerUserId,
+      slideCount: canvasJson.slides.length,
       status: "draft",
       title: parsed.data.title
     });

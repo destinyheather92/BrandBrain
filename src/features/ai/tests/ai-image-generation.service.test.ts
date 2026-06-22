@@ -8,6 +8,7 @@ import type { ProjectThemeRepository } from "@/features/themes/types/project-the
 import type { AssetRepository } from "@/features/assets/types/asset";
 
 import { generateProjectImageForUser } from "../services/ai-image-generation.service";
+import { AiProviderConfigurationError } from "../providers/ai-provider-registry";
 import type {
   AiImageGenerationProvider,
   AiImageProviderRegistry,
@@ -273,6 +274,31 @@ describe("generateProjectImageForUser", () => {
       status: "failed"
     });
     expect(repositories.provider.generateImage).not.toHaveBeenCalled();
+  });
+
+  it("surfaces missing OpenAI configuration as a setup error", async () => {
+    const repositories = createRepositories();
+
+    repositories.provider.generateImage = vi.fn().mockRejectedValue(
+      new AiProviderConfigurationError("OPENAI_API_KEY is missing. Add it to .env.local and restart the local server.")
+    );
+
+    const result = await generateProjectImageForUser({
+      ...repositories,
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      slideId: "slide_1",
+      userRequest: "Generate image."
+    });
+
+    expect(result).toMatchObject({
+      error: {
+        code: "ai_provider_not_configured",
+        message: "OPENAI_API_KEY is missing. Add it to .env.local and restart the local server."
+      },
+      ok: false,
+      status: "failed"
+    });
   });
 
   it("passes active slide copy into the image prompt for vague image requests", async () => {

@@ -85,6 +85,8 @@ describe("createContentProjectForUser", () => {
       idFactory,
       input: {
         brandId: "brand_123",
+        format: "instagram-carousel",
+        slideCount: 3,
         title: "  Storm Damage Carousel  "
       },
       ownerUserId: "user_local_123",
@@ -110,9 +112,52 @@ describe("createContentProjectForUser", () => {
       }),
       format: "instagram-carousel",
       ownerUserId: "user_local_123",
+      slideCount: 3,
       status: "draft",
       title: "Storm Damage Carousel"
     });
+  });
+
+  it("creates the selected content format with the requested slide count", async () => {
+    const projectRepository = createProjectRepository();
+    const brandRepository = createBrandRepository();
+    const idFactory = createIdFactory(["document_story", "slide_1", "slide_2", "slide_3", "slide_4"]);
+
+    await createContentProjectForUser({
+      brandRepository,
+      idFactory,
+      input: {
+        brandId: "brand_123",
+        format: "story",
+        slideCount: 4,
+        title: "  Anxiety Story Series  "
+      },
+      ownerUserId: "user_local_123",
+      projectRepository
+    });
+
+    expect(projectRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        canvasJson: expect.objectContaining({
+          format: "story",
+          height: 1920,
+          slides: expect.arrayContaining([
+            expect.objectContaining({
+              height: 1920,
+              id: "slide_4",
+              name: "Slide 4",
+              order: 4,
+              width: 1080
+            })
+          ]),
+          width: 1080
+        }),
+        format: "story"
+      })
+    );
+    const createdInput = vi.mocked(projectRepository.create).mock.calls[0]?.[0];
+
+    expect(createdInput?.canvasJson.slides).toHaveLength(4);
   });
 
   it("does not create a project for a brand outside the current user", async () => {
@@ -125,6 +170,8 @@ describe("createContentProjectForUser", () => {
       brandRepository,
       input: {
         brandId: "brand_other",
+        format: "instagram-carousel",
+        slideCount: 3,
         title: "Competitor Project"
       },
       ownerUserId: "user_local_123",
@@ -150,6 +197,8 @@ describe("createContentProjectForUser", () => {
       brandRepository,
       input: {
         brandId: "",
+        format: "instagram-carousel",
+        slideCount: 3,
         title: ""
       },
       ownerUserId: "user_local_123",

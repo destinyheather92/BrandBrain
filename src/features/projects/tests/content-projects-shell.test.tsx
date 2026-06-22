@@ -84,6 +84,8 @@ describe("ContentProjectsShell", () => {
     expect(screen.getByRole("heading", { name: "Projects" })).toBeInTheDocument();
     expect(screen.getByLabelText("Project title")).toBeInTheDocument();
     expect(screen.getByLabelText("Brand")).toHaveValue("brand_123");
+    expect(screen.getByLabelText("Content type")).toHaveValue("instagram-carousel");
+    expect(screen.getByLabelText("Slides")).toHaveValue(5);
     expect(screen.getByRole("button", { name: "Create Starter Project" })).toBeInTheDocument();
     expect(screen.getByText("Storm Damage Carousel")).toBeInTheDocument();
     expect(screen.getAllByText("ABC Roofing")).toHaveLength(2);

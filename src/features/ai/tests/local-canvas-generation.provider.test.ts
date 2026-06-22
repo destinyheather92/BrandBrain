@@ -32,6 +32,24 @@ describe("LocalCanvasGenerationProvider", () => {
     }
   });
 
+  it("honors requested content format and editable slide count", async () => {
+    const document = await generateTestDocument({
+      contentFormat: "story",
+      slideCount: 1
+    });
+
+    expect(document).toMatchObject({
+      format: "story",
+      height: 1920,
+      width: 1080
+    });
+    expect(document.slides).toHaveLength(1);
+    expect(document.slides[0]).toMatchObject({
+      height: 1920,
+      width: 1080
+    });
+  });
+
   it("keeps generated visible copy concise enough for the preview canvas", async () => {
     const document = await generateTestDocument();
 
@@ -174,17 +192,21 @@ describe("LocalCanvasGenerationProvider", () => {
 async function generateTestDocument({
   audience = "Rural homeowners and property managers",
   brandName = "Land Strong",
+  contentFormat = "instagram-carousel",
   preferredCtas = "Schedule a land assessment",
   productsServices = "Land clearing, grading, drainage, storm cleanup",
   projectTitle = "Spring Land Prep",
+  slideCount = 3,
   userRequest = "Create a polished carousel about why property owners should prepare land before spring growth.",
   voice = "Confident, practical, premium"
 }: {
   audience?: string;
   brandName?: string;
+  contentFormat?: CanvasDocument["format"];
   preferredCtas?: string;
   productsServices?: string;
   projectTitle?: string;
+  slideCount?: number;
   userRequest?: string;
   voice?: string;
 } = {}): Promise<CanvasDocument> {
@@ -203,7 +225,8 @@ async function generateTestDocument({
         name: brandName
       },
       outputRules: {
-        slideCount: 3
+        contentFormat,
+        slideCount
       },
       projectTitle,
       theme: {

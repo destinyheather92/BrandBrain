@@ -1,3 +1,5 @@
+import type { CanvasDocumentFormat } from "@/features/canvas/types/canvas";
+
 import type {
   AiGenerationBrandContext,
   AiGenerationPrompt,
@@ -10,6 +12,7 @@ export const CANVAS_GENERATION_PROMPT_VERSION = "1.3.0";
 type BuildCanvasGenerationPromptParams = {
   brand: AiGenerationBrandContext;
   creativeBrief?: CreativeBrief | null;
+  format?: CanvasDocumentFormat;
   projectTitle: string;
   slideCount: number;
   theme: AiGenerationThemeContext;
@@ -19,6 +22,7 @@ type BuildCanvasGenerationPromptParams = {
 export function buildCanvasGenerationPrompt({
   brand,
   creativeBrief = null,
+  format = "instagram-carousel",
   projectTitle,
   slideCount,
   theme,
@@ -44,8 +48,9 @@ export function buildCanvasGenerationPrompt({
       {
         brand,
         outputRules: {
+          contentFormat: format,
           maxSlides: 10,
-          minSlides: 3,
+          minSlides: 1,
           requestedSlideCountLabel: `${slideCount} slides`,
           slideCount,
           sourceOfTruth: "Canvas Object Model"

@@ -11,10 +11,20 @@ import { createContentProjectForUser } from "../services/content-project.service
 import type { ContentProjectCreateFormInput } from "../types/content-project";
 import type { ContentProjectFormState } from "../types/content-project-form-state";
 
+const contentProjectFormats = ["instagram-carousel", "square-post", "story", "presentation"] as const;
+
 function getFormString(formData: FormData, key: keyof ContentProjectCreateFormInput) {
   const value = formData.get(key);
 
   return typeof value === "string" ? value : "";
+}
+
+function getFormFormat(formData: FormData): ContentProjectCreateFormInput["format"] {
+  const value = formData.get("format");
+
+  return typeof value === "string" && contentProjectFormats.includes(value as (typeof contentProjectFormats)[number])
+    ? (value as ContentProjectCreateFormInput["format"])
+    : undefined;
 }
 
 export async function createContentProjectAction(
@@ -41,6 +51,8 @@ export async function createContentProjectAction(
     brandRepository: createPrismaBrandRepository(),
     input: {
       brandId: getFormString(formData, "brandId"),
+      format: getFormFormat(formData),
+      slideCount: getFormString(formData, "slideCount"),
       title: getFormString(formData, "title")
     },
     ownerUserId: syncResult.user.id,

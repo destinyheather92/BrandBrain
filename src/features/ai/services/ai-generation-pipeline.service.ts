@@ -5,6 +5,7 @@ import type { CanvasDocument, CanvasSlide } from "@/features/canvas/types/canvas
 import type { ContentProjectRepository } from "@/features/projects/types/content-project";
 import type { ProjectTheme, ProjectThemeRepository } from "@/features/themes/types/project-theme";
 
+import { AiProviderConfigurationError } from "../providers/ai-provider-registry";
 import { buildCanvasGenerationPrompt } from "../prompts/canvas-generation.prompt";
 import type {
   AiGenerationBrandContext,
@@ -26,6 +27,7 @@ type GenerateProjectDraftForUserParams = {
   projectId: string;
   projectRepository: ContentProjectRepository;
   providerRegistry: AiProviderRegistry;
+  requestedSlideCount?: number;
   themeRepository: ProjectThemeRepository;
   userRequest: string;
 };
@@ -50,6 +52,7 @@ export async function generateProjectDraftForUser({
   projectId,
   projectRepository,
   providerRegistry,
+  requestedSlideCount,
   themeRepository,
   userRequest
 }: GenerateProjectDraftForUserParams): Promise<AiGenerationResult> {
@@ -73,6 +76,7 @@ export async function generateProjectDraftForUser({
     }
 
     const memory = await brandMemoryRepository.getByBrandId(brand.id);
+    const targetSlideCount = normalizeRequestedSlideCount(requestedSlideCount) ?? project.canvasJson.slides.length;
     const prompt = buildCanvasGenerationPrompt({
       brand: {
         description: brand.description,
@@ -81,8 +85,9 @@ export async function generateProjectDraftForUser({
         name: brand.name
       } satisfies AiGenerationBrandContext,
       creativeBrief,
+      format: project.canvasJson.format,
       projectTitle: project.title,
-      slideCount: project.canvasJson.slides.length,
+      slideCount: targetSlideCount,
       theme: toThemeContext(theme),
       userRequest: userRequest.trim() || project.title
     });
@@ -121,6 +126,10 @@ export async function generateProjectDraftForUser({
       status: "generated"
     };
   } catch (error) {
+    if (error instanceof AiProviderConfigurationError) {
+      return failure("ai_provider_not_configured", error.message);
+    }
+
     console.error("AI generation pipeline failed.", error);
 
     return failure("project_repository_error", "AI draft could not be generated.");
@@ -144,12 +153,21 @@ export function mergeGeneratedCanvasPreservingEdits(
   theme: ProjectTheme
 ): CanvasMergeResult {
   const generatedSlidesByOrder = new Map(generatedDocument.slides.map((slide) => [slide.order, slide]));
-  const mergedSlides = currentDocument.slides.map((slide) => {
-    if (hasUserEdits(slide)) {
-      return slide;
+  const currentSlidesByOrder = new Map(currentDocument.slides.map((slide) => [slide.order, slide]));
+  const slideOrders = Array.from(new Set([...currentSlidesByOrder.keys(), ...generatedSlidesByOrder.keys()])).sort(
+    (first, second) => first - second
+  );
+  const mergedSlides = slideOrders.flatMap((order) => {
+    const currentSlide = currentSlidesByOrder.get(order);
+    const generatedSlide = generatedSlidesByOrder.get(order);
+
+    if (currentSlide && hasUserEdits(currentSlide)) {
+      return [currentSlide];
     }
 
-    return generatedSlidesByOrder.get(slide.order) ?? slide;
+    const mergedSlide = generatedSlide ?? currentSlide;
+
+    return mergedSlide ? [mergedSlide] : [];
   });
 
   if (mergedSlides.every((slide) => slide.elements.length === 0)) {
@@ -209,6 +227,14 @@ function hasUserEdits(slide: CanvasSlide): boolean {
 
 function isGeneratedElementId(elementId: string): boolean {
   return /^(cta|icon|image|logo|shape|text)_\d+(?:_|$)/.test(elementId);
+}
+
+function normalizeRequestedSlideCount(value: number | undefined): number | undefined {
+  if (typeof value !== "number" || !Number.isInteger(value)) {
+    return undefined;
+  }
+
+  return Math.min(10, Math.max(1, value));
 }
 
 function toThemeContext(theme: ProjectTheme): AiGenerationThemeContext {

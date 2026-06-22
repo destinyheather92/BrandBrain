@@ -7,6 +7,7 @@ import type { ContentProjectRepository } from "@/features/projects/types/content
 import type { ProjectThemeRepository } from "@/features/themes/types/project-theme";
 
 import { generateProjectDraftForUser } from "../services/ai-generation-pipeline.service";
+import { AiProviderConfigurationError } from "../providers/ai-provider-registry";
 import type {
   AiCanvasGenerationProvider,
   AiProviderRegistry,
@@ -141,6 +142,49 @@ function generatedCanvas(): CanvasDocument {
         }
       ]
     }))
+  };
+}
+
+function generatedCanvasWithSlideCount(slideCount: number): CanvasDocument {
+  return {
+    ...blankCanvas(),
+    slides: Array.from({ length: slideCount }, (_, index) => {
+      const order = index + 1;
+
+      return {
+        background: {
+          color: "#FFFFFF",
+          type: "solid" as const
+        },
+        elements: [
+          {
+            color: "#0B0F19",
+            content: `Generated slide ${order}`,
+            fontFamily: "Geist",
+            fontSize: 64,
+            fontWeight: "bold" as const,
+            height: 160,
+            id: `text_${order}`,
+            letterSpacing: 0,
+            lineHeight: 1.1,
+            locked: false,
+            opacity: 1,
+            rotation: 0,
+            textAlign: "left" as const,
+            type: "text" as const,
+            width: 760,
+            x: 96,
+            y: 150,
+            zIndex: 1
+          }
+        ],
+        height: 1080,
+        id: `slide_generated_${order}`,
+        name: `Slide ${order}`,
+        order,
+        width: 1080
+      };
+    })
   };
 }
 
@@ -290,6 +334,32 @@ describe("generateProjectDraftForUser", () => {
     expect(prompt?.user).toContain("Schedule a consultation");
   });
 
+  it("uses the requested slide count for the prompt and unedited generated canvas", async () => {
+    const repositories = createRepositories();
+
+    repositories.provider.generateJson = vi.fn().mockResolvedValue({
+      data: generatedCanvasWithSlideCount(5),
+      usage: {
+        cost: 0.04,
+        tokens: 1500
+      }
+    });
+
+    await generateProjectDraftForUser({
+      ...repositories,
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      requestedSlideCount: 5,
+      userRequest: "Create a five-part carousel."
+    });
+
+    const prompt = vi.mocked(repositories.provider.generateJson).mock.calls[0]?.[0];
+    const savedCanvas = vi.mocked(repositories.projectRepository.updateCanvasForOwner).mock.calls[0]?.[2];
+
+    expect(prompt?.user).toContain("5 slides");
+    expect(savedCanvas?.slides).toHaveLength(5);
+  });
+
   it("requires a saved theme before generating slides", async () => {
     const repositories = createRepositories();
     repositories.themeRepository.findByProjectIdForOwner.mockResolvedValue(null);
@@ -310,6 +380,30 @@ describe("generateProjectDraftForUser", () => {
     });
     expect(repositories.provider.generateJson).not.toHaveBeenCalled();
     expect(repositories.projectRepository.updateCanvasForOwner).not.toHaveBeenCalled();
+  });
+
+  it("surfaces missing OpenAI configuration as a setup error", async () => {
+    const repositories = createRepositories();
+
+    repositories.provider.generateJson = vi.fn().mockRejectedValue(
+      new AiProviderConfigurationError("OPENAI_API_KEY is missing. Add it to .env.local and restart the local server.")
+    );
+
+    const result = await generateProjectDraftForUser({
+      ...repositories,
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      userRequest: "Generate a carousel."
+    });
+
+    expect(result).toMatchObject({
+      error: {
+        code: "ai_provider_not_configured",
+        message: "OPENAI_API_KEY is missing. Add it to .env.local and restart the local server."
+      },
+      ok: false,
+      status: "failed"
+    });
   });
 
   it("retries once when provider output fails canvas validation", async () => {

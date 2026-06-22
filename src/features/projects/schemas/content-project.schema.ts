@@ -10,6 +10,7 @@ export const contentProjectStatusSchema = z.enum(["draft", "ready", "archived"])
 export const contentProjectCreateInputSchema = z.object({
   brandId: z.string().trim().min(1, "Choose a brand."),
   format: canvasDocumentFormatSchema.default("instagram-carousel"),
+  slideCount: z.coerce.number().int().min(1, "Choose at least 1 slide.").max(10, "Choose 10 slides or fewer."),
   title: z.string().trim().min(1, "Project title is required.").max(160)
 });
 

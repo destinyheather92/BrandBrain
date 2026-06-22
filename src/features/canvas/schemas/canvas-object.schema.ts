@@ -10,7 +10,7 @@ const canvasImageSourceSchema = z
   .string()
   .trim()
   .min(1)
-  .max(50000)
+  .max(10000000)
   .refine(
     (value) =>
       value.startsWith("data:image/") ||
@@ -62,7 +62,7 @@ export const canvasImageElementSchema = baseCanvasElementSchema
       .strict()
       .nullable(),
     prompt: z.string().max(2000).nullable(),
-    provider: z.enum(["flux", "ideogram", "imagen", "openai"]),
+    provider: z.enum(["flux", "ideogram", "imagen", "local-image", "openai"]),
     src: canvasImageSourceSchema,
     type: z.literal("image")
   })

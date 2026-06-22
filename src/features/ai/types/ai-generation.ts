@@ -6,6 +6,7 @@ export type AiCanvasWorkflow = "canvas-generation";
 export type AiImageWorkflow = "image-generation";
 export type AiWorkflow = AiCanvasWorkflow | AiImageWorkflow;
 export type AiImageProviderId = "flux" | "ideogram" | "imagen" | "openai";
+export type AiImageElementProviderId = AiImageProviderId | "local-image";
 
 export type AiGenerationBrandContext = {
   description: string | null;
@@ -76,7 +77,7 @@ export type AiImageGenerationProvider = {
     imageUrl: string;
     usage: AiProviderUsage;
   }>;
-  id: AiImageProviderId;
+  id: AiImageElementProviderId;
 };
 
 export type AiProviderRegistry = {
@@ -111,6 +112,7 @@ export type AiGenerationResult =
       error: {
         code:
           | "ai_generation_failed"
+          | "ai_provider_not_configured"
           | "brand_not_found"
           | "invalid_ai_canvas"
           | "project_not_found"
@@ -133,6 +135,7 @@ export type AiImageGenerationResult =
       error: {
         code:
           | "ai_image_generation_failed"
+          | "ai_provider_not_configured"
           | "brand_not_found"
           | "invalid_ai_image_canvas"
           | "project_not_found"

@@ -38,6 +38,7 @@ describe("AiGenerationPanel", () => {
         generationAction={vi.fn()}
         hasTheme={true}
         initialState={initialAiGenerationActionState}
+        initialSlideCount={5}
         onGenerated={vi.fn()}
         projectId="project_1"
       />
@@ -45,6 +46,7 @@ describe("AiGenerationPanel", () => {
 
     expect(screen.getByRole("heading", { name: "AI Generation" })).toBeInTheDocument();
     expect(screen.getByLabelText("Idea or design instructions")).toBeInTheDocument();
+    expect(screen.getByLabelText("Slides")).toHaveValue(5);
     expect(screen.getByRole("button", { name: "Generate Draft Slides" })).toBeInTheDocument();
     expect(container.querySelector('input[name="projectId"]')).toHaveValue("project_1");
   });
@@ -105,8 +107,9 @@ describe("AiGenerationPanel", () => {
     expect(requestField).toHaveAttribute("readonly");
     expect(form).not.toBeNull();
     expect(new FormData(form as HTMLFormElement).get("userRequest")).toBe(
-      "Create a refined 3-slide brand-consistent carousel for this project."
+      "Create a refined brand-consistent draft for this project."
     );
+    expect(new FormData(form as HTMLFormElement).get("slideCount")).toBe("3");
   });
 
   it("applies a generated canvas only once when the parent callback identity changes", () => {

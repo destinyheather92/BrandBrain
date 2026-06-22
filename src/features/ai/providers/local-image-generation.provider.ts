@@ -1,12 +1,13 @@
 import type {
   AiImageGenerationPrompt,
   AiImageGenerationProvider,
+  AiImageElementProviderId,
   AiImageProviderId,
   AiImageProviderRegistry
 } from "../types/ai-generation";
 
 export class LocalImageGenerationProvider implements AiImageGenerationProvider {
-  constructor(readonly id: AiImageProviderId = "flux") {}
+  constructor(readonly id: AiImageElementProviderId = "local-image") {}
 
   async generateImage(prompt: AiImageGenerationPrompt) {
     return {

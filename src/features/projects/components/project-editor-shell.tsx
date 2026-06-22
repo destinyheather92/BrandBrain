@@ -739,6 +739,7 @@ export function ProjectEditorShell({
             generationAction={aiGenerationAction}
             hasTheme={Boolean(activeTheme)}
             initialState={initialAiGenerationState}
+            initialSlideCount={document.slides.length}
             onGenerated={applyGeneratedDocument}
             projectId={project.id}
           />
