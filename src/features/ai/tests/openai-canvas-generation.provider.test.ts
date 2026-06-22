@@ -1,6 +1,9 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { OpenAiCanvasGenerationProvider } from "../providers/openai-canvas-generation.provider";
+import {
+  OpenAiCanvasGenerationProvider,
+  OpenAiCanvasGenerationTimeoutError
+} from "../providers/openai-canvas-generation.provider";
 import type { AiGenerationPrompt } from "../types/ai-generation";
 
 const prompt: AiGenerationPrompt = {
@@ -11,6 +14,10 @@ const prompt: AiGenerationPrompt = {
   }),
   workflow: "canvas-generation"
 };
+
+afterEach(() => {
+  vi.useRealTimers();
+});
 
 describe("OpenAiCanvasGenerationProvider", () => {
   it("calls OpenAI chat completions with JSON mode and parses the result", async () => {
@@ -134,5 +141,26 @@ describe("OpenAiCanvasGenerationProvider", () => {
         temperature: expect.any(Number)
       })
     );
+  });
+
+  it("rejects with a timeout error when OpenAI takes too long", async () => {
+    vi.useFakeTimers();
+
+    const provider = new OpenAiCanvasGenerationProvider({
+      client: {
+        chat: {
+          completions: {
+            create: vi.fn(() => new Promise<never>(() => undefined))
+          }
+        }
+      },
+      model: "gpt-test",
+      timeoutMs: 1000
+    });
+    const generation = provider.generateJson(prompt);
+    const expectation = expect(generation).rejects.toBeInstanceOf(OpenAiCanvasGenerationTimeoutError);
+
+    await vi.advanceTimersByTimeAsync(1000);
+    await expectation;
   });
 });

@@ -32,7 +32,17 @@ export type OpenAiCanvasClient = {
 type OpenAiCanvasGenerationProviderParams = {
   client: OpenAiCanvasClient;
   model: string;
+  timeoutMs?: number;
 };
+
+const defaultOpenAiCanvasGenerationTimeoutMs = 45000;
+
+export class OpenAiCanvasGenerationTimeoutError extends Error {
+  constructor(timeoutMs: number) {
+    super(`OpenAI canvas generation timed out after ${timeoutMs}ms.`);
+    this.name = "OpenAiCanvasGenerationTimeoutError";
+  }
+}
 
 export class OpenAiCanvasGenerationProvider implements AiCanvasGenerationProvider {
   readonly id = "openai";
@@ -40,23 +50,26 @@ export class OpenAiCanvasGenerationProvider implements AiCanvasGenerationProvide
   constructor(private readonly params: OpenAiCanvasGenerationProviderParams) {}
 
   async generateJson(prompt: AiGenerationPrompt) {
-    const completion = await this.params.client.chat.completions.create({
-      messages: [
-        {
-          content: prompt.system,
-          role: "developer"
+    const completion = await withTimeout(
+      this.params.client.chat.completions.create({
+        messages: [
+          {
+            content: prompt.system,
+            role: "developer"
+          },
+          {
+            content: prompt.user,
+            role: "user"
+          }
+        ],
+        model: this.params.model,
+        response_format: {
+          type: "json_object"
         },
-        {
-          content: prompt.user,
-          role: "user"
-        }
-      ],
-      model: this.params.model,
-      response_format: {
-        type: "json_object"
-      },
-      ...getTemperatureRequestOptions(this.params.model, prompt.temperature)
-    });
+        ...getTemperatureRequestOptions(this.params.model, prompt.temperature)
+      }),
+      this.params.timeoutMs ?? defaultOpenAiCanvasGenerationTimeoutMs
+    );
     const content = completion.choices?.[0]?.message?.content?.trim();
 
     if (!content) {
@@ -71,6 +84,29 @@ export class OpenAiCanvasGenerationProvider implements AiCanvasGenerationProvide
       }
     };
   }
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  if (!Number.isFinite(timeoutMs) || timeoutMs <= 0) {
+    return promise;
+  }
+
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new OpenAiCanvasGenerationTimeoutError(timeoutMs));
+    }, timeoutMs);
+
+    promise.then(
+      (value) => {
+        clearTimeout(timeout);
+        resolve(value);
+      },
+      (error: unknown) => {
+        clearTimeout(timeout);
+        reject(error);
+      }
+    );
+  });
 }
 
 function getTemperatureRequestOptions(model: string, temperature: number): { temperature?: number } {

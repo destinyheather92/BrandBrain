@@ -6,6 +6,7 @@ import type { ContentProjectRepository } from "@/features/projects/types/content
 import type { ProjectTheme, ProjectThemeRepository } from "@/features/themes/types/project-theme";
 
 import { AiProviderConfigurationError } from "../providers/ai-provider-registry";
+import { OpenAiCanvasGenerationTimeoutError } from "../providers/openai-canvas-generation.provider";
 import { buildCanvasGenerationPrompt } from "../prompts/canvas-generation.prompt";
 import type {
   AiGenerationBrandContext,
@@ -128,6 +129,13 @@ export async function generateProjectDraftForUser({
   } catch (error) {
     if (error instanceof AiProviderConfigurationError) {
       return failure("ai_provider_not_configured", error.message);
+    }
+
+    if (error instanceof OpenAiCanvasGenerationTimeoutError) {
+      return failure(
+        "ai_provider_timeout",
+        "AI draft generation is taking too long. Try fewer slides, simplify the request, or enable local demo mode."
+      );
     }
 
     console.error("AI generation pipeline failed.", error);

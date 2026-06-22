@@ -113,6 +113,7 @@ export type AiGenerationResult =
         code:
           | "ai_generation_failed"
           | "ai_provider_not_configured"
+          | "ai_provider_timeout"
           | "brand_not_found"
           | "invalid_ai_canvas"
           | "project_not_found"

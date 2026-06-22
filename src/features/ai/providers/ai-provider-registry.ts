@@ -21,6 +21,7 @@ import {
 const missingOpenAiKeyMessage = "OPENAI_API_KEY is missing. Add it to .env.local and restart the local server.";
 const defaultTextModel = "gpt-5.5";
 const defaultImageModel = "gpt-image-1.5";
+const defaultTextTimeoutMs = 45000;
 
 type AiProviderRegistryOptions = {
   client?: OpenAiCanvasClient;
@@ -60,7 +61,8 @@ export function createDefaultAiProviderRegistry(options: AiProviderRegistryOptio
 
   const canvasProvider = new OpenAiCanvasGenerationProvider({
     client: client as OpenAiCanvasClient,
-    model: process.env.OPENAI_TEXT_MODEL?.trim() || defaultTextModel
+    model: process.env.OPENAI_TEXT_MODEL?.trim() || defaultTextModel,
+    timeoutMs: getOptionalPositiveInteger(process.env.OPENAI_TEXT_TIMEOUT_MS) ?? defaultTextTimeoutMs
   });
 
   return {
@@ -119,6 +121,12 @@ function createOpenAiClient(): OpenAI | null {
 
 function isLocalAiEnabled(): boolean {
   return process.env.BRANDBRAIN_USE_LOCAL_AI === "true";
+}
+
+function getOptionalPositiveInteger(value: string | undefined): number | undefined {
+  const parsed = Number.parseInt(value ?? "", 10);
+
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
 }
 
 class MissingCanvasGenerationProvider implements AiCanvasGenerationProvider {

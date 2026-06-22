@@ -8,6 +8,7 @@ import type { ProjectThemeRepository } from "@/features/themes/types/project-the
 
 import { generateProjectDraftForUser } from "../services/ai-generation-pipeline.service";
 import { AiProviderConfigurationError } from "../providers/ai-provider-registry";
+import { OpenAiCanvasGenerationTimeoutError } from "../providers/openai-canvas-generation.provider";
 import type {
   AiCanvasGenerationProvider,
   AiProviderRegistry,
@@ -404,6 +405,29 @@ describe("generateProjectDraftForUser", () => {
       ok: false,
       status: "failed"
     });
+  });
+
+  it("surfaces slow AI generation as a timeout error", async () => {
+    const repositories = createRepositories();
+
+    repositories.provider.generateJson = vi.fn().mockRejectedValue(new OpenAiCanvasGenerationTimeoutError(45000));
+
+    const result = await generateProjectDraftForUser({
+      ...repositories,
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      userRequest: "Generate a carousel."
+    });
+
+    expect(result).toMatchObject({
+      error: {
+        code: "ai_provider_timeout",
+        message: "AI draft generation is taking too long. Try fewer slides, simplify the request, or enable local demo mode."
+      },
+      ok: false,
+      status: "failed"
+    });
+    expect(repositories.projectRepository.updateCanvasForOwner).not.toHaveBeenCalled();
   });
 
   it("retries once when provider output fails canvas validation", async () => {
