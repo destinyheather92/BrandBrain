@@ -84,6 +84,35 @@ export function createCanvasCtaElement(id: string): CanvasElement {
   });
 }
 
+export function createCanvasImageElement({
+  alt,
+  id,
+  src
+}: {
+  alt: string;
+  id: string;
+  src: string;
+}): CanvasElement {
+  return canvasElementSchema.parse({
+    alt,
+    assetId: `asset_${id}`,
+    crop: null,
+    height: 420,
+    id,
+    locked: false,
+    opacity: 1,
+    prompt: null,
+    provider: "local-image",
+    rotation: 0,
+    src,
+    type: "image",
+    width: 620,
+    x: 230,
+    y: 330,
+    zIndex: 1
+  });
+}
+
 export function addCanvasElementToSlide(
   document: CanvasDocument,
   slideId: string,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import type { BrandMemory } from "../types/brand-memory";
 import type { BrandMemoryFormState } from "../types/brand-memory-form-state";
@@ -51,6 +51,29 @@ const fields = [
   }
 ] as const;
 
+const colorFields = [
+  {
+    helper: "The main brand color used for anchors, strong sections, and visual identity.",
+    label: "Primary color",
+    name: "primaryColor"
+  },
+  {
+    helper: "The action or emphasis color used for CTAs and selected highlights.",
+    label: "Accent color",
+    name: "accentColor"
+  },
+  {
+    helper: "The default canvas background color for generated work.",
+    label: "Background color",
+    name: "backgroundColor"
+  },
+  {
+    helper: "The preferred text color. BrandBrain will repair it if contrast is unreadable.",
+    label: "Text color",
+    name: "textColor"
+  }
+] as const;
+
 function fieldError(errors: string[] | undefined) {
   return errors?.[0] ? <p className="mt-2 text-sm text-[#EF4444]">{errors[0]}</p> : null;
 }
@@ -87,6 +110,27 @@ export function BrandMemoryForm({
         </div>
       ) : null}
 
+      <section className="mt-6 rounded-lg border border-[#263244] bg-[#0B0F19] p-4" aria-label="Brand color palette">
+        <div>
+          <h2 className="text-base font-semibold text-[#F8FAFC]">Brand color palette</h2>
+          <p className="mt-1 text-sm text-[#94A3B8]">
+            Add the colors this brand should use before BrandBrain generates themes or slides.
+          </p>
+        </div>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {colorFields.map(({ helper, label, name }) => (
+            <PaletteColorField
+              error={state.fieldErrors[name]?.[0]}
+              helper={helper}
+              key={name}
+              label={label}
+              name={name}
+              value={memory[name]}
+            />
+          ))}
+        </div>
+      </section>
+
       <div className="mt-6 grid gap-5">
         {fields.map(({ helper, label, name, placeholder }) => (
           <div className="block" key={name}>
@@ -119,5 +163,48 @@ export function BrandMemoryForm({
         </a>
       </div>
     </form>
+  );
+}
+
+function PaletteColorField({
+  error,
+  helper,
+  label,
+  name,
+  value
+}: {
+  error?: string;
+  helper: string;
+  label: string;
+  name: (typeof colorFields)[number]["name"];
+  value: string | null;
+}) {
+  const [color, setColor] = useState(value ?? "");
+  const swatchColor = /^#[0-9A-Fa-f]{6}$/.test(color) ? color : "#0B0F19";
+
+  return (
+    <label className="block">
+      <span className="text-sm font-medium text-[#F8FAFC]">{label}</span>
+      <span className="mt-1 block text-sm text-[#94A3B8]">{helper}</span>
+      <span className="mt-2 flex min-h-11 items-center gap-2 rounded-lg border border-[#263244] bg-[#141A26] p-2 focus-within:border-[#00E5FF]">
+        <input
+          aria-label={`${label} swatch`}
+          className="h-8 w-10 shrink-0 cursor-pointer rounded border border-[#263244] bg-transparent"
+          onChange={(event) => setColor(event.target.value.toUpperCase())}
+          type="color"
+          value={swatchColor}
+        />
+        <input
+          aria-label={label}
+          className="min-w-0 flex-1 bg-transparent text-sm text-[#F8FAFC] outline-none"
+          name={name}
+          onChange={(event) => setColor(event.target.value.toUpperCase())}
+          placeholder="#315B2C"
+          type="text"
+          value={color}
+        />
+      </span>
+      {error ? <p className="mt-2 text-sm text-[#EF4444]">{error}</p> : null}
+    </label>
   );
 }

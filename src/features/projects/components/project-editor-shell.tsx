@@ -11,6 +11,7 @@ import {
   ChevronRight,
   Clock3,
   History,
+  ImagePlus,
   MousePointer2,
   Move,
   Palette,
@@ -70,6 +71,7 @@ import type {
 import {
   addCanvasElementToSlide,
   createCanvasCtaElement,
+  createCanvasImageElement,
   createCanvasShapeElement,
   createCanvasTextElement,
   moveCanvasElementInSlide,
@@ -387,6 +389,35 @@ export function ProjectEditorShell({
     setElementContextMenu(null);
   }
 
+  function addUploadedImage(file: File) {
+    if (!activeSlide) {
+      return;
+    }
+
+    const activeSlideIdForUpload = activeSlide.id;
+    const imageId = nextElementId("image");
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      if (typeof reader.result !== "string" || !reader.result.startsWith("data:image/")) {
+        return;
+      }
+
+      const imageElement = createCanvasImageElement({
+        alt: file.name,
+        id: imageId,
+        src: reader.result
+      });
+
+      setDocument((currentDocument) => addCanvasElementToSlide(currentDocument, activeSlideIdForUpload, imageElement));
+      setSelectedElementId(imageElement.id);
+      setEditingElementId(null);
+      setElementContextMenu(null);
+    };
+
+    reader.readAsDataURL(file);
+  }
+
   function updateSelectedElement(changes: Partial<CanvasElement>) {
     if (!activeSlide || !selectedElement) {
       return;
@@ -663,6 +694,25 @@ export function ProjectEditorShell({
               <Badge aria-hidden="true" className="h-4 w-4" />
               Add CTA
             </button>
+            <label className="inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-lg border border-[#263244] px-3 py-2 text-sm font-semibold text-[#F8FAFC] hover:border-[#00E5FF]">
+              <ImagePlus aria-hidden="true" className="h-4 w-4" />
+              Upload Image
+              <input
+                accept="image/*"
+                aria-label="Upload image to canvas"
+                className="sr-only"
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+
+                  if (file) {
+                    addUploadedImage(file);
+                  }
+
+                  event.target.value = "";
+                }}
+                type="file"
+              />
+            </label>
           </div>
 
           <div

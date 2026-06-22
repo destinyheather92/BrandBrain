@@ -20,12 +20,16 @@ type UpdateBrandMemoryForBrandParams = {
 
 function buildInitialMemoryInput(brand: Brand): BrandMemoryCreateInput {
   return brandMemoryCreateInputSchema.parse({
+    accentColor: null,
     audience: null,
+    backgroundColor: null,
     brandId: brand.id,
     brandRules: brand.industry ? `Stay relevant to ${brand.industry}.` : null,
     notes: brand.websiteUrl ? `Website: ${brand.websiteUrl}` : null,
     preferredCtas: null,
+    primaryColor: null,
     productsServices: brand.description,
+    textColor: null,
     voice: null
   });
 }

@@ -114,6 +114,10 @@ export const BrandMemoryScalarFieldEnum = {
   productsServices: 'productsServices',
   brandRules: 'brandRules',
   preferredCtas: 'preferredCtas',
+  primaryColor: 'primaryColor',
+  accentColor: 'accentColor',
+  backgroundColor: 'backgroundColor',
+  textColor: 'textColor',
   notes: 'notes',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

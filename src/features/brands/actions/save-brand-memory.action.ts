@@ -51,11 +51,15 @@ export async function saveBrandMemoryAction(
   const result = await updateBrandMemoryForBrand({
     brandId: brand.id,
     input: {
+      accentColor: getFormString(formData, "accentColor"),
       audience: getFormString(formData, "audience"),
+      backgroundColor: getFormString(formData, "backgroundColor"),
       brandRules: getFormString(formData, "brandRules"),
       notes: getFormString(formData, "notes"),
       preferredCtas: getFormString(formData, "preferredCtas"),
+      primaryColor: getFormString(formData, "primaryColor"),
       productsServices: getFormString(formData, "productsServices"),
+      textColor: getFormString(formData, "textColor"),
       voice: getFormString(formData, "voice")
     },
     repository: createPrismaBrandMemoryRepository()

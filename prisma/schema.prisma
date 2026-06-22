@@ -57,6 +57,10 @@ model BrandMemory {
   productsServices String?  @map("products_services")
   brandRules       String?  @map("brand_rules")
   preferredCtas    String?  @map("preferred_ctas")
+  primaryColor     String?  @map("primary_color")
+  accentColor      String?  @map("accent_color")
+  backgroundColor  String?  @map("background_color")
+  textColor        String?  @map("text_color")
   notes            String?
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")

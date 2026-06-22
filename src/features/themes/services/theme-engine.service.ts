@@ -295,6 +295,10 @@ function buildProjectTheme({
   const context = [
     brand.name,
     brand.industry,
+    memory?.primaryColor,
+    memory?.accentColor,
+    memory?.backgroundColor,
+    memory?.textColor,
     memory?.voice,
     memory?.audience,
     memory?.productsServices,
@@ -352,7 +356,12 @@ function buildProjectTheme({
           surface: "#F8FAFC",
           text: "#111827"
         };
-  const palette = applyExplicitBrandColors(fallbackPalette, extractBrandColors(context));
+  const palette = enforceReadablePalette(
+    applySavedBrandPalette(
+      applyExplicitBrandColors(fallbackPalette, extractBrandColors(context)),
+      memory
+    )
+  );
 
   return projectThemeUpsertInputSchema.parse({
     brandId: brand.id,
@@ -469,6 +478,35 @@ function applyExplicitBrandColors(fallbackPalette: ThemePalette, explicitColors:
   };
 }
 
+function applySavedBrandPalette(palette: ThemePalette, memory: BrandMemory | null): ThemePalette {
+  if (!memory) {
+    return palette;
+  }
+
+  return {
+    ...palette,
+    accent: memory.accentColor ?? palette.accent,
+    background: memory.backgroundColor ?? palette.background,
+    primary: memory.primaryColor ?? palette.primary,
+    text: memory.textColor ?? palette.text
+  };
+}
+
+function enforceReadablePalette(palette: ThemePalette): ThemePalette {
+  const text = hasReadableContrast(palette.text, palette.background)
+    ? palette.text
+    : readableTextColor(palette.background);
+  const ctaText = hasReadableContrast(palette.ctaText, palette.accent)
+    ? palette.ctaText
+    : readableTextColor(palette.accent);
+
+  return {
+    ...palette,
+    ctaText,
+    text
+  };
+}
+
 function normalizeHexColor(color: string): string {
   return color.toUpperCase();
 }
@@ -504,12 +542,36 @@ function supportingColor(primary: string): string | null {
 }
 
 function readableTextColor(background: string): "#0B0F19" | "#FFFFFF" {
-  const red = parseInt(background.slice(1, 3), 16);
-  const green = parseInt(background.slice(3, 5), 16);
-  const blue = parseInt(background.slice(5, 7), 16);
-  const luminance = (red * 299 + green * 587 + blue * 114) / 1000;
+  const blackContrast = contrastRatio("#0B0F19", background);
+  const whiteContrast = contrastRatio("#FFFFFF", background);
 
-  return luminance > 150 ? "#0B0F19" : "#FFFFFF";
+  return blackContrast >= whiteContrast ? "#0B0F19" : "#FFFFFF";
+}
+
+function hasReadableContrast(foreground: string, background: string): boolean {
+  return contrastRatio(foreground, background) >= 4.5;
+}
+
+function contrastRatio(foreground: string, background: string): number {
+  const foregroundLuminance = relativeLuminance(foreground);
+  const backgroundLuminance = relativeLuminance(background);
+  const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+  const darker = Math.min(foregroundLuminance, backgroundLuminance);
+
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function relativeLuminance(color: string): number {
+  const red = parseInt(color.slice(1, 3), 16);
+  const green = parseInt(color.slice(3, 5), 16);
+  const blue = parseInt(color.slice(5, 7), 16);
+  const [linearRed, linearGreen, linearBlue] = [red, green, blue].map((channel) => {
+    const normalized = channel / 255;
+
+    return normalized <= 0.03928 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+  });
+
+  return 0.2126 * linearRed + 0.7152 * linearGreen + 0.0722 * linearBlue;
 }
 
 function escapeRegExp(value: string): string {

@@ -382,6 +382,54 @@ describe("ProjectEditorShell", () => {
     expect(screen.getByRole("button", { name: "Generate Image" })).toBeEnabled();
   });
 
+  it("uploads a user image and inserts it as an editable canvas image", async () => {
+    class MockFileReader {
+      onerror: null | (() => void) = null;
+      onload: null | (() => void) = null;
+      result: string | ArrayBuffer | null = null;
+
+      readAsDataURL() {
+        this.result = "data:image/png;base64,brandphoto";
+        this.onload?.();
+      }
+    }
+
+    vi.stubGlobal("FileReader", MockFileReader);
+
+    render(
+      <ProjectEditorShell
+        initialState={initialProjectEditorSaveState}
+        project={project}
+        saveAction={vi.fn()}
+      />
+    );
+
+    const uploadInput = screen.getByLabelText("Upload image to canvas");
+    const file = new File(["brand-photo"], "therapy-room.png", {
+      type: "image/png"
+    });
+
+    fireEvent.change(uploadInput, {
+      target: {
+        files: [file]
+      }
+    });
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "therapy-room.png" })).toBeInTheDocument()
+    );
+
+    const canvasJson = JSON.parse((screen.getByTestId("project-editor-canvas-json") as HTMLInputElement).value);
+    const imageElement = canvasJson.slides[0].elements.find((element: { type: string }) => element.type === "image");
+
+    expect(imageElement).toMatchObject({
+      alt: "therapy-room.png",
+      provider: "local-image",
+      src: "data:image/png;base64,brandphoto",
+      type: "image"
+    });
+  });
+
   it("moves a canvas object by dragging it directly on the canvas", () => {
     render(
       <ProjectEditorShell

@@ -23,13 +23,17 @@ const brand = {
 
 const memory = {
   audience: "Homeowners worried about leaks and insurance claims.",
+  accentColor: null,
+  backgroundColor: null,
   brandId: "brand_1",
   brandRules: "Sound practical, reassuring, and never gimmicky.",
   createdAt,
   id: "memory_1",
   notes: "Use storm clouds, roof details, and clear service offers.",
   preferredCtas: "Book an inspection",
+  primaryColor: null,
   productsServices: "Roof inspections, storm damage repair, roof replacement",
+  textColor: null,
   updatedAt: createdAt,
   voice: "Premium, calm, technical"
 };
@@ -395,6 +399,44 @@ describe("ThemeEngineService", () => {
         palette: {
           accent: "#D97706",
           primary: "#14532D"
+        }
+      }
+    });
+  });
+
+  it("prioritizes the saved brand palette and repairs unreadable text contrast", async () => {
+    const repositories = createRepositories();
+
+    repositories.brandRepository.findByIdForOwner.mockResolvedValue({
+      ...brand,
+      description: "Counseling service with grounded, calm support.",
+      industry: "Mental health",
+      name: "Land Strong"
+    });
+    repositories.brandMemoryRepository.getByBrandId.mockResolvedValue({
+      ...memory,
+      accentColor: "#F59E0B",
+      backgroundColor: "#F7F3E8",
+      primaryColor: "#315B2C",
+      textColor: "#F7F3E8"
+    });
+
+    const result = await generateProjectThemeForUser({
+      ...repositories,
+      idFactory: () => "theme_palette_readability",
+      ownerUserId: "user_1",
+      projectId: "project_1"
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      theme: {
+        palette: {
+          accent: "#F59E0B",
+          background: "#F7F3E8",
+          ctaText: "#0B0F19",
+          primary: "#315B2C",
+          text: "#0B0F19"
         }
       }
     });

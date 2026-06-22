@@ -7,13 +7,17 @@ import { initialBrandMemoryFormState } from "../types/brand-memory-form-state";
 
 const memory: BrandMemory = {
   audience: "Homeowners with storm damage",
+  accentColor: "#C49A3A",
+  backgroundColor: "#FFFFFF",
   brandId: "brand_123",
   brandRules: "Stay practical and reassuring.",
   createdAt: new Date("2026-06-18T12:00:00.000Z"),
   id: "memory_123",
   notes: "Use local proof when possible.",
   preferredCtas: "Schedule an inspection",
+  primaryColor: "#315B2C",
   productsServices: "Storm restoration",
+  textColor: "#0B0F19",
   updatedAt: new Date("2026-06-18T12:00:00.000Z"),
   voice: "Professional and calm"
 };
@@ -36,6 +40,10 @@ describe("BrandMemoryForm", () => {
     expect(screen.getByLabelText("Brand rules")).toHaveValue("Stay practical and reassuring.");
     expect(screen.getByLabelText("Preferred CTAs")).toHaveValue("Schedule an inspection");
     expect(screen.getByLabelText("Notes")).toHaveValue("Use local proof when possible.");
+    expect(screen.getByLabelText("Primary color")).toHaveValue("#315B2C");
+    expect(screen.getByLabelText("Accent color")).toHaveValue("#C49A3A");
+    expect(screen.getByLabelText("Background color")).toHaveValue("#FFFFFF");
+    expect(screen.getByLabelText("Text color")).toHaveValue("#0B0F19");
     expect(screen.getByRole("button", { name: "Save Memory" })).toBeInTheDocument();
   });
 

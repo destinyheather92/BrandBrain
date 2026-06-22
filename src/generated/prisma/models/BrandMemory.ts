@@ -32,6 +32,10 @@ export type BrandMemoryMinAggregateOutputType = {
   productsServices: string | null
   brandRules: string | null
   preferredCtas: string | null
+  primaryColor: string | null
+  accentColor: string | null
+  backgroundColor: string | null
+  textColor: string | null
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -45,6 +49,10 @@ export type BrandMemoryMaxAggregateOutputType = {
   productsServices: string | null
   brandRules: string | null
   preferredCtas: string | null
+  primaryColor: string | null
+  accentColor: string | null
+  backgroundColor: string | null
+  textColor: string | null
   notes: string | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -58,6 +66,10 @@ export type BrandMemoryCountAggregateOutputType = {
   productsServices: number
   brandRules: number
   preferredCtas: number
+  primaryColor: number
+  accentColor: number
+  backgroundColor: number
+  textColor: number
   notes: number
   createdAt: number
   updatedAt: number
@@ -73,6 +85,10 @@ export type BrandMemoryMinAggregateInputType = {
   productsServices?: true
   brandRules?: true
   preferredCtas?: true
+  primaryColor?: true
+  accentColor?: true
+  backgroundColor?: true
+  textColor?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -86,6 +102,10 @@ export type BrandMemoryMaxAggregateInputType = {
   productsServices?: true
   brandRules?: true
   preferredCtas?: true
+  primaryColor?: true
+  accentColor?: true
+  backgroundColor?: true
+  textColor?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -99,6 +119,10 @@ export type BrandMemoryCountAggregateInputType = {
   productsServices?: true
   brandRules?: true
   preferredCtas?: true
+  primaryColor?: true
+  accentColor?: true
+  backgroundColor?: true
+  textColor?: true
   notes?: true
   createdAt?: true
   updatedAt?: true
@@ -185,6 +209,10 @@ export type BrandMemoryGroupByOutputType = {
   productsServices: string | null
   brandRules: string | null
   preferredCtas: string | null
+  primaryColor: string | null
+  accentColor: string | null
+  backgroundColor: string | null
+  textColor: string | null
   notes: string | null
   createdAt: Date
   updatedAt: Date
@@ -219,6 +247,10 @@ export type BrandMemoryWhereInput = {
   productsServices?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
   brandRules?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
   preferredCtas?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
+  primaryColor?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
+  accentColor?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
+  backgroundColor?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
+  textColor?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
   notes?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BrandMemory"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BrandMemory"> | Date | string
@@ -233,6 +265,10 @@ export type BrandMemoryOrderByWithRelationInput = {
   productsServices?: Prisma.SortOrderInput | Prisma.SortOrder
   brandRules?: Prisma.SortOrderInput | Prisma.SortOrder
   preferredCtas?: Prisma.SortOrderInput | Prisma.SortOrder
+  primaryColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  accentColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  backgroundColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  textColor?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -250,6 +286,10 @@ export type BrandMemoryWhereUniqueInput = Prisma.AtLeast<{
   productsServices?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
   brandRules?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
   preferredCtas?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
+  primaryColor?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
+  accentColor?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
+  backgroundColor?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
+  textColor?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
   notes?: Prisma.StringNullableFilter<"BrandMemory"> | string | null
   createdAt?: Prisma.DateTimeFilter<"BrandMemory"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"BrandMemory"> | Date | string
@@ -264,6 +304,10 @@ export type BrandMemoryOrderByWithAggregationInput = {
   productsServices?: Prisma.SortOrderInput | Prisma.SortOrder
   brandRules?: Prisma.SortOrderInput | Prisma.SortOrder
   preferredCtas?: Prisma.SortOrderInput | Prisma.SortOrder
+  primaryColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  accentColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  backgroundColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  textColor?: Prisma.SortOrderInput | Prisma.SortOrder
   notes?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -283,6 +327,10 @@ export type BrandMemoryScalarWhereWithAggregatesInput = {
   productsServices?: Prisma.StringNullableWithAggregatesFilter<"BrandMemory"> | string | null
   brandRules?: Prisma.StringNullableWithAggregatesFilter<"BrandMemory"> | string | null
   preferredCtas?: Prisma.StringNullableWithAggregatesFilter<"BrandMemory"> | string | null
+  primaryColor?: Prisma.StringNullableWithAggregatesFilter<"BrandMemory"> | string | null
+  accentColor?: Prisma.StringNullableWithAggregatesFilter<"BrandMemory"> | string | null
+  backgroundColor?: Prisma.StringNullableWithAggregatesFilter<"BrandMemory"> | string | null
+  textColor?: Prisma.StringNullableWithAggregatesFilter<"BrandMemory"> | string | null
   notes?: Prisma.StringNullableWithAggregatesFilter<"BrandMemory"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"BrandMemory"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"BrandMemory"> | Date | string
@@ -295,6 +343,10 @@ export type BrandMemoryCreateInput = {
   productsServices?: string | null
   brandRules?: string | null
   preferredCtas?: string | null
+  primaryColor?: string | null
+  accentColor?: string | null
+  backgroundColor?: string | null
+  textColor?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -309,6 +361,10 @@ export type BrandMemoryUncheckedCreateInput = {
   productsServices?: string | null
   brandRules?: string | null
   preferredCtas?: string | null
+  primaryColor?: string | null
+  accentColor?: string | null
+  backgroundColor?: string | null
+  textColor?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -321,6 +377,10 @@ export type BrandMemoryUpdateInput = {
   productsServices?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brandRules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredCtas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  backgroundColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -335,6 +395,10 @@ export type BrandMemoryUncheckedUpdateInput = {
   productsServices?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brandRules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredCtas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  backgroundColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -348,6 +412,10 @@ export type BrandMemoryCreateManyInput = {
   productsServices?: string | null
   brandRules?: string | null
   preferredCtas?: string | null
+  primaryColor?: string | null
+  accentColor?: string | null
+  backgroundColor?: string | null
+  textColor?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -360,6 +428,10 @@ export type BrandMemoryUpdateManyMutationInput = {
   productsServices?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brandRules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredCtas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  backgroundColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -373,6 +445,10 @@ export type BrandMemoryUncheckedUpdateManyInput = {
   productsServices?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brandRules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredCtas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  backgroundColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -391,6 +467,10 @@ export type BrandMemoryCountOrderByAggregateInput = {
   productsServices?: Prisma.SortOrder
   brandRules?: Prisma.SortOrder
   preferredCtas?: Prisma.SortOrder
+  primaryColor?: Prisma.SortOrder
+  accentColor?: Prisma.SortOrder
+  backgroundColor?: Prisma.SortOrder
+  textColor?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -404,6 +484,10 @@ export type BrandMemoryMaxOrderByAggregateInput = {
   productsServices?: Prisma.SortOrder
   brandRules?: Prisma.SortOrder
   preferredCtas?: Prisma.SortOrder
+  primaryColor?: Prisma.SortOrder
+  accentColor?: Prisma.SortOrder
+  backgroundColor?: Prisma.SortOrder
+  textColor?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -417,6 +501,10 @@ export type BrandMemoryMinOrderByAggregateInput = {
   productsServices?: Prisma.SortOrder
   brandRules?: Prisma.SortOrder
   preferredCtas?: Prisma.SortOrder
+  primaryColor?: Prisma.SortOrder
+  accentColor?: Prisma.SortOrder
+  backgroundColor?: Prisma.SortOrder
+  textColor?: Prisma.SortOrder
   notes?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -461,6 +549,10 @@ export type BrandMemoryCreateWithoutBrandInput = {
   productsServices?: string | null
   brandRules?: string | null
   preferredCtas?: string | null
+  primaryColor?: string | null
+  accentColor?: string | null
+  backgroundColor?: string | null
+  textColor?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -473,6 +565,10 @@ export type BrandMemoryUncheckedCreateWithoutBrandInput = {
   productsServices?: string | null
   brandRules?: string | null
   preferredCtas?: string | null
+  primaryColor?: string | null
+  accentColor?: string | null
+  backgroundColor?: string | null
+  textColor?: string | null
   notes?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -501,6 +597,10 @@ export type BrandMemoryUpdateWithoutBrandInput = {
   productsServices?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brandRules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredCtas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  backgroundColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -513,6 +613,10 @@ export type BrandMemoryUncheckedUpdateWithoutBrandInput = {
   productsServices?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   brandRules?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   preferredCtas?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  primaryColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  accentColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  backgroundColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  textColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -528,6 +632,10 @@ export type BrandMemorySelect<ExtArgs extends runtime.Types.Extensions.InternalA
   productsServices?: boolean
   brandRules?: boolean
   preferredCtas?: boolean
+  primaryColor?: boolean
+  accentColor?: boolean
+  backgroundColor?: boolean
+  textColor?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -542,6 +650,10 @@ export type BrandMemorySelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   productsServices?: boolean
   brandRules?: boolean
   preferredCtas?: boolean
+  primaryColor?: boolean
+  accentColor?: boolean
+  backgroundColor?: boolean
+  textColor?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -556,6 +668,10 @@ export type BrandMemorySelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   productsServices?: boolean
   brandRules?: boolean
   preferredCtas?: boolean
+  primaryColor?: boolean
+  accentColor?: boolean
+  backgroundColor?: boolean
+  textColor?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -570,12 +686,16 @@ export type BrandMemorySelectScalar = {
   productsServices?: boolean
   brandRules?: boolean
   preferredCtas?: boolean
+  primaryColor?: boolean
+  accentColor?: boolean
+  backgroundColor?: boolean
+  textColor?: boolean
   notes?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type BrandMemoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "brandId" | "voice" | "audience" | "productsServices" | "brandRules" | "preferredCtas" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["brandMemory"]>
+export type BrandMemoryOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "brandId" | "voice" | "audience" | "productsServices" | "brandRules" | "preferredCtas" | "primaryColor" | "accentColor" | "backgroundColor" | "textColor" | "notes" | "createdAt" | "updatedAt", ExtArgs["result"]["brandMemory"]>
 export type BrandMemoryInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   brand?: boolean | Prisma.BrandDefaultArgs<ExtArgs>
 }
@@ -599,6 +719,10 @@ export type $BrandMemoryPayload<ExtArgs extends runtime.Types.Extensions.Interna
     productsServices: string | null
     brandRules: string | null
     preferredCtas: string | null
+    primaryColor: string | null
+    accentColor: string | null
+    backgroundColor: string | null
+    textColor: string | null
     notes: string | null
     createdAt: Date
     updatedAt: Date
@@ -1033,6 +1157,10 @@ export interface BrandMemoryFieldRefs {
   readonly productsServices: Prisma.FieldRef<"BrandMemory", 'String'>
   readonly brandRules: Prisma.FieldRef<"BrandMemory", 'String'>
   readonly preferredCtas: Prisma.FieldRef<"BrandMemory", 'String'>
+  readonly primaryColor: Prisma.FieldRef<"BrandMemory", 'String'>
+  readonly accentColor: Prisma.FieldRef<"BrandMemory", 'String'>
+  readonly backgroundColor: Prisma.FieldRef<"BrandMemory", 'String'>
+  readonly textColor: Prisma.FieldRef<"BrandMemory", 'String'>
   readonly notes: Prisma.FieldRef<"BrandMemory", 'String'>
   readonly createdAt: Prisma.FieldRef<"BrandMemory", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"BrandMemory", 'DateTime'>

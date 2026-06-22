@@ -19,14 +19,18 @@ const brand: Brand = {
 };
 
 const memory: BrandMemory = {
+  accentColor: null,
   audience: "Homeowners with storm damage",
+  backgroundColor: null,
   brandId: "brand_123",
   brandRules: "Stay practical and reassuring.",
   createdAt: new Date("2026-06-18T12:00:00.000Z"),
   id: "memory_123",
   notes: "Use local proof when possible.",
   preferredCtas: "Schedule an inspection",
+  primaryColor: null,
   productsServices: "Storm restoration, inspections, and roof replacements.",
+  textColor: null,
   updatedAt: new Date("2026-06-18T12:00:00.000Z"),
   voice: "Professional and calm"
 };
@@ -55,12 +59,16 @@ describe("getOrCreateBrandMemoryForBrand", () => {
       status: "ready"
     });
     expect(repository.create).toHaveBeenCalledWith({
+      accentColor: null,
       audience: null,
+      backgroundColor: null,
       brandId: "brand_123",
       brandRules: "Stay relevant to Roofing.",
       notes: "Website: https://abcroofing.com/",
       preferredCtas: null,
+      primaryColor: null,
       productsServices: "Storm restoration, inspections, and roof replacements.",
+      textColor: null,
       voice: null
     });
   });
@@ -131,11 +139,15 @@ describe("updateBrandMemoryForBrand", () => {
 
     const result = await updateBrandMemoryForBrand({
       input: {
+        accentColor: "#c49a3a",
         audience: "  Homeowners with storm damage  ",
+        backgroundColor: "#ffffff",
         brandRules: "  Stay practical and reassuring. ",
         notes: "",
         preferredCtas: "  Schedule an inspection ",
+        primaryColor: "#315b2c",
         productsServices: " Storm restoration ",
+        textColor: "#0b0f19",
         voice: " Professional and calm "
       },
       brandId: "brand_123",
@@ -148,11 +160,15 @@ describe("updateBrandMemoryForBrand", () => {
       status: "saved"
     });
     expect(repository.update).toHaveBeenCalledWith("brand_123", {
+      accentColor: "#C49A3A",
       audience: "Homeowners with storm damage",
+      backgroundColor: "#FFFFFF",
       brandRules: "Stay practical and reassuring.",
       notes: null,
       preferredCtas: "Schedule an inspection",
+      primaryColor: "#315B2C",
       productsServices: "Storm restoration",
+      textColor: "#0B0F19",
       voice: "Professional and calm"
     });
   });
@@ -162,11 +178,15 @@ describe("updateBrandMemoryForBrand", () => {
 
     const result = await updateBrandMemoryForBrand({
       input: {
+        accentColor: "",
         audience: "x".repeat(2001),
+        backgroundColor: "",
         brandRules: "",
         notes: "",
         preferredCtas: "",
+        primaryColor: "",
         productsServices: "",
+        textColor: "",
         voice: ""
       },
       brandId: "brand_123",
