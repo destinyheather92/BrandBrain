@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import type { Brand } from "@/features/brands/types/brand";
@@ -95,6 +95,37 @@ describe("ContentProjectsShell", () => {
       "href",
       "/projects/project_123/editor"
     );
+    expect(screen.getByRole("button", { name: "Delete Storm Damage Carousel" })).toBeInTheDocument();
+  });
+
+  it("confirms before deleting a saved project", async () => {
+    const deleteAction = vi.fn();
+    const confirmSpy = vi.spyOn(window, "confirm").mockReturnValueOnce(false).mockReturnValueOnce(true);
+
+    render(
+      <ContentProjectsShell
+        action={vi.fn()}
+        brands={brands}
+        deleteAction={deleteAction}
+        initialState={initialContentProjectFormState}
+        projects={projects}
+      />
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete Storm Damage Carousel" }));
+
+    expect(confirmSpy).toHaveBeenCalledWith(
+      'Delete "Storm Damage Carousel"? This cannot be undone.'
+    );
+    expect(deleteAction).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Delete Storm Damage Carousel" }));
+
+    await waitFor(() => expect(deleteAction).toHaveBeenCalled());
+
+    const formData = deleteAction.mock.calls[0]?.[0] as FormData;
+
+    expect(formData.get("projectId")).toBe("project_123");
   });
 
   it("guides users to create a brand before creating projects", () => {

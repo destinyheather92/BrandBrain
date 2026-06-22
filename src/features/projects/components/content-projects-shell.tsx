@@ -1,6 +1,6 @@
 "use client";
 
-import { FileJson, FolderOpen, Plus, SquareDashedMousePointer } from "lucide-react";
+import { FileJson, FolderOpen, Plus, SquareDashedMousePointer, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useActionState } from "react";
 
@@ -12,8 +12,10 @@ import type { ContentProjectFormState } from "../types/content-project-form-stat
 type ContentProjectsShellProps = {
   action: (state: ContentProjectFormState, formData: FormData) => Promise<ContentProjectFormState>;
   brands: Brand[];
+  deleteAction?: (formData: FormData) => Promise<void>;
   initialState: ContentProjectFormState;
   message?: string;
+  messageTone?: "error" | "success";
   projects: ContentProject[];
 };
 
@@ -21,15 +23,23 @@ function fieldError(errors: string[] | undefined) {
   return errors?.[0] ? <p className="mt-2 text-sm text-[#EF4444]">{errors[0]}</p> : null;
 }
 
+const fallbackDeleteAction = async () => {};
+
 export function ContentProjectsShell({
   action,
   brands,
+  deleteAction = fallbackDeleteAction,
   initialState,
   message,
+  messageTone = "success",
   projects
 }: ContentProjectsShellProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
   const hasBrands = brands.length > 0;
+  const messageClassName =
+    messageTone === "error"
+      ? "border-[#EF4444] text-[#F8FAFC]"
+      : "border-[#22C55E] text-[#22C55E]";
 
   return (
     <main className="min-h-screen bg-[#0B0F19] px-6 py-8 text-[#F8FAFC]">
@@ -55,7 +65,7 @@ export function ContentProjectsShell({
         </header>
 
         {message ? (
-          <div className="mt-6 rounded-lg border border-[#22C55E] bg-[#141A26] p-4 text-sm text-[#22C55E]">
+          <div className={`mt-6 rounded-lg border bg-[#141A26] p-4 text-sm ${messageClassName}`}>
             {message}
           </div>
         ) : null}
@@ -194,12 +204,36 @@ export function ContentProjectsShell({
                       <span>{project.format}</span>
                     </div>
 
-                    <Link
-                      className="mt-5 inline-flex min-h-10 items-center justify-center rounded-lg bg-[#00E5FF] px-4 py-2 text-sm font-semibold text-[#0B0F19] hover:bg-[#4CF2FF]"
-                      href={`/projects/${project.id}/editor`}
-                    >
-                      Open Editor
-                    </Link>
+                    <div className="mt-5 flex flex-wrap items-center gap-3">
+                      <Link
+                        className="inline-flex min-h-10 items-center justify-center rounded-lg bg-[#00E5FF] px-4 py-2 text-sm font-semibold text-[#0B0F19] hover:bg-[#4CF2FF]"
+                        href={`/projects/${project.id}/editor`}
+                      >
+                        Open Editor
+                      </Link>
+                      <form
+                        action={deleteAction}
+                        onSubmit={(event) => {
+                          const confirmed = window.confirm(
+                            `Delete "${project.title}"? This cannot be undone.`
+                          );
+
+                          if (!confirmed) {
+                            event.preventDefault();
+                          }
+                        }}
+                      >
+                        <input name="projectId" type="hidden" value={project.id} />
+                        <button
+                          aria-label={`Delete ${project.title}`}
+                          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-[#EF4444] px-4 py-2 text-sm font-semibold text-[#EF4444] hover:bg-[#1C2433]"
+                          type="submit"
+                        >
+                          <Trash2 aria-hidden="true" className="h-4 w-4" />
+                          Delete
+                        </button>
+                      </form>
+                    </div>
                   </article>
                 ))}
               </div>

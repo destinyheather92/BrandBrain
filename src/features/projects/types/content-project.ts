@@ -48,6 +48,24 @@ export type ContentProjectListResult =
       status: "failed";
     };
 
+export type ContentProjectDeleteResult =
+  | {
+      ok: true;
+      status: "deleted";
+    }
+  | {
+      error: {
+        code:
+          | "invalid_project_input"
+          | "project_not_found"
+          | "project_repository_error"
+          | "project_repository_unavailable";
+        message: string;
+      };
+      ok: false;
+      status: "failed";
+    };
+
 export type ContentProjectEditorResult =
   | {
       ok: true;
@@ -87,6 +105,7 @@ export type ContentProjectCanvasSaveResult =
 
 export type ContentProjectRepository = {
   create(input: ContentProjectCreateForUserInput): Promise<ContentProject>;
+  deleteForOwner?(projectId: string, ownerUserId: string): Promise<boolean>;
   findByIdForOwner(projectId: string, ownerUserId: string): Promise<ContentProject | null>;
   listByOwnerUserId(ownerUserId: string): Promise<ContentProject[]>;
   updateCanvasForOwner(projectId: string, ownerUserId: string, canvasJson: ContentProject["canvasJson"]): Promise<ContentProject | null>;

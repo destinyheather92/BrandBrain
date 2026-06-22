@@ -67,6 +67,17 @@ export class PrismaContentProjectRepository implements ContentProjectRepository 
     return project ? parseProject(project) : null;
   }
 
+  async deleteForOwner(projectId: string, ownerUserId: string): Promise<boolean> {
+    const result = await this.client.contentProject.deleteMany({
+      where: {
+        id: projectId,
+        ownerUserId
+      }
+    });
+
+    return result.count > 0;
+  }
+
   async listByOwnerUserId(ownerUserId: string): Promise<ContentProject[]> {
     const projects = await this.client.contentProject.findMany({
       include: {

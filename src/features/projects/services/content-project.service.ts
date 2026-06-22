@@ -5,6 +5,7 @@ import { contentProjectCreateForUserInputSchema, contentProjectCreateInputSchema
 import type {
   ContentProjectCreateFormInput,
   ContentProjectCreateResult,
+  ContentProjectDeleteResult,
   ContentProjectListResult,
   ContentProjectRepository
 } from "../types/content-project";
@@ -19,6 +20,12 @@ type CreateContentProjectForUserParams = {
 
 type ListContentProjectsForUserParams = {
   ownerUserId: string;
+  projectRepository: ContentProjectRepository;
+};
+
+type DeleteContentProjectForUserParams = {
+  ownerUserId: string;
+  projectId: string;
   projectRepository: ContentProjectRepository;
 };
 
@@ -68,6 +75,30 @@ function mapListRepositoryError(error: unknown): ContentProjectListResult {
     error: {
       code: "project_repository_error",
       message: "Projects could not be loaded."
+    },
+    ok: false,
+    status: "failed"
+  };
+}
+
+function mapDeleteRepositoryError(error: unknown): ContentProjectDeleteResult {
+  if (isMissingPrismaDelegateError(error)) {
+    return {
+      error: {
+        code: "project_repository_unavailable",
+        message: "Project storage is not loaded. Restart the local server and try again."
+      },
+      ok: false,
+      status: "failed"
+    };
+  }
+
+  console.error("Content project deletion failed.", error);
+
+  return {
+    error: {
+      code: "project_repository_error",
+      message: "Project could not be deleted."
     },
     ok: false,
     status: "failed"
@@ -149,5 +180,57 @@ export async function listContentProjectsForUser({
     };
   } catch (error) {
     return mapListRepositoryError(error);
+  }
+}
+
+export async function deleteContentProjectForUser({
+  ownerUserId,
+  projectId,
+  projectRepository
+}: DeleteContentProjectForUserParams): Promise<ContentProjectDeleteResult> {
+  const normalizedProjectId = projectId.trim();
+
+  if (!normalizedProjectId) {
+    return {
+      error: {
+        code: "invalid_project_input",
+        message: "Choose a project to delete."
+      },
+      ok: false,
+      status: "failed"
+    };
+  }
+
+  if (!projectRepository.deleteForOwner) {
+    return {
+      error: {
+        code: "project_repository_unavailable",
+        message: "Project deletion is not loaded. Restart the local server and try again."
+      },
+      ok: false,
+      status: "failed"
+    };
+  }
+
+  try {
+    const deleted = await projectRepository.deleteForOwner(normalizedProjectId, ownerUserId);
+
+    if (!deleted) {
+      return {
+        error: {
+          code: "project_not_found",
+          message: "Project could not be found."
+        },
+        ok: false,
+        status: "failed"
+      };
+    }
+
+    return {
+      ok: true,
+      status: "deleted"
+    };
+  } catch (error) {
+    return mapDeleteRepositoryError(error);
   }
 }
