@@ -23,7 +23,9 @@ const nullableMemoryColorSchema = z
 
     return trimmed.length > 0 ? trimmed.toUpperCase() : null;
   })
-  .pipe(z.string().regex(/^#[0-9A-F]{6}$/, "Use a 6-digit hex color.").nullable());
+  .pipe(z.string().regex(/^#[0-9A-F]{6}$/, "Use a 6-digit hex color.").nullable())
+  .optional()
+  .transform((value) => value ?? null);
 
 export const brandMemoryUpdateInputSchema = z.object({
   accentColor: nullableMemoryColorSchema,
