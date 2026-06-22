@@ -23,7 +23,7 @@ export type OpenAiCanvasClient = {
         response_format: {
           type: "json_object";
         };
-        temperature: number;
+        temperature?: number;
       }): Promise<OpenAiChatCompletionResponse>;
     };
   };
@@ -55,7 +55,7 @@ export class OpenAiCanvasGenerationProvider implements AiCanvasGenerationProvide
       response_format: {
         type: "json_object"
       },
-      temperature: prompt.temperature
+      ...getTemperatureRequestOptions(this.params.model, prompt.temperature)
     });
     const content = completion.choices?.[0]?.message?.content?.trim();
 
@@ -71,6 +71,16 @@ export class OpenAiCanvasGenerationProvider implements AiCanvasGenerationProvide
       }
     };
   }
+}
+
+function getTemperatureRequestOptions(model: string, temperature: number): { temperature?: number } {
+  if (/^gpt-5(?:\.|-|$)/i.test(model)) {
+    return {};
+  }
+
+  return {
+    temperature
+  };
 }
 
 function stripJsonFence(value: string): string {

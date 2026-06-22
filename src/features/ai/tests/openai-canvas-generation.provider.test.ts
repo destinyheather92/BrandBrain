@@ -99,4 +99,40 @@ describe("OpenAiCanvasGenerationProvider", () => {
 
     await expect(provider.generateJson(prompt)).rejects.toThrow("OpenAI returned no canvas JSON.");
   });
+
+  it("omits custom temperature for GPT-5-family models that only support the default", async () => {
+    const create = vi.fn().mockResolvedValue({
+      choices: [
+        {
+          message: {
+            content: JSON.stringify({
+              documentId: "document_openai",
+              slides: []
+            })
+          }
+        }
+      ],
+      usage: {
+        total_tokens: 321
+      }
+    });
+    const provider = new OpenAiCanvasGenerationProvider({
+      client: {
+        chat: {
+          completions: {
+            create
+          }
+        }
+      },
+      model: "gpt-5.5"
+    });
+
+    await provider.generateJson(prompt);
+
+    expect(create).toHaveBeenCalledWith(
+      expect.not.objectContaining({
+        temperature: expect.any(Number)
+      })
+    );
+  });
 });
