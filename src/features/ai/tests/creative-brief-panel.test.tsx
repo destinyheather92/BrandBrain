@@ -5,24 +5,8 @@ import { CreativeBriefPanel } from "../components/creative-brief-panel";
 import { initialCreativeBriefActionState } from "../types/creative-brief-action-state";
 
 describe("CreativeBriefPanel", () => {
-  it("renders the creative brief builder controls", () => {
-    const { container } = render(
-      <CreativeBriefPanel
-        briefAction={vi.fn()}
-        initialState={initialCreativeBriefActionState}
-        onGenerated={vi.fn()}
-        projectId="project_1"
-      />
-    );
-
-    expect(screen.getByRole("heading", { name: "Creative Brief" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Idea")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Build Brief" })).toBeInTheDocument();
-    expect(container.querySelector('input[name="projectId"]')).toHaveValue("project_1");
-  });
-
-  it("shows the generated strategy fields", () => {
-    render(
+  function renderGeneratedBrief() {
+    return render(
       <CreativeBriefPanel
         briefAction={vi.fn()}
         initialState={{
@@ -40,6 +24,26 @@ describe("CreativeBriefPanel", () => {
         projectId="project_1"
       />
     );
+  }
+
+  it("renders the creative brief builder controls", () => {
+    const { container } = render(
+      <CreativeBriefPanel
+        briefAction={vi.fn()}
+        initialState={initialCreativeBriefActionState}
+        onGenerated={vi.fn()}
+        projectId="project_1"
+      />
+    );
+
+    expect(screen.getByRole("heading", { name: "Creative Brief" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Idea")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Build Brief" })).toBeInTheDocument();
+    expect(container.querySelector('input[name="projectId"]')).toHaveValue("project_1");
+  });
+
+  it("shows the generated strategy fields", () => {
+    renderGeneratedBrief();
 
     expect(screen.getByText("Goal")).toBeInTheDocument();
     expect(screen.getByText("Help adults understand anxiety spikes without shame.")).toBeInTheDocument();
@@ -49,6 +53,29 @@ describe("CreativeBriefPanel", () => {
     expect(screen.getByText("Hook")).toBeInTheDocument();
     expect(screen.getByText("CTA")).toBeInTheDocument();
     expect(screen.getByText("Schedule a consultation")).toBeInTheDocument();
+  });
+
+  it("copies each generated brief section to the clipboard", () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText
+      }
+    });
+
+    renderGeneratedBrief();
+
+    expect(screen.getByRole("button", { name: "Copy Goal to clipboard" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy Audience to clipboard" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy Angle to clipboard" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy Hook to clipboard" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Copy CTA to clipboard" })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "Copy Goal to clipboard" }));
+
+    expect(writeText).toHaveBeenCalledWith("Help adults understand anxiety spikes without shame.");
   });
 
   it("notifies the editor when a new brief is available", () => {

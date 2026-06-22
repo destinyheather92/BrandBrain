@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { CanvasDocument } from "@/features/canvas/types/canvas";
 
 import {
+  createCanvasTextElement,
   moveCanvasElementInSlide,
   resizeCanvasElementInSlide
 } from "../services/project-editor-canvas.service";
@@ -54,6 +55,13 @@ const document: CanvasDocument = {
 };
 
 describe("project editor canvas interactions", () => {
+  it("creates newly added text with black text for the default white canvas", () => {
+    expect(createCanvasTextElement("text_1")).toMatchObject({
+      color: "#0B0F19",
+      type: "text"
+    });
+  });
+
   it("moves an element by delta while keeping it inside the slide", () => {
     const moved = moveCanvasElementInSlide({
       deltaX: 1200,

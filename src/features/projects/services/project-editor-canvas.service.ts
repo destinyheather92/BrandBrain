@@ -22,7 +22,7 @@ type CanvasElementResizeInput = {
 
 export function createCanvasTextElement(id: string): CanvasElement {
   return canvasElementSchema.parse({
-    color: "#F8FAFC",
+    color: "#0B0F19",
     content: "Editable headline",
     fontFamily: "Geist",
     fontSize: 72,

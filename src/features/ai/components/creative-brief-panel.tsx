@@ -1,7 +1,7 @@
 "use client";
 
-import { ClipboardList, Sparkles } from "lucide-react";
-import { useActionState, useEffect, useRef } from "react";
+import { Check, ClipboardList, Copy, Sparkles } from "lucide-react";
+import { useActionState, useEffect, useRef, useState } from "react";
 
 import type { CreativeBrief } from "../types/creative-brief";
 import type { CreativeBriefAction, CreativeBriefActionState } from "../types/creative-brief-action-state";
@@ -46,6 +46,7 @@ export function CreativeBriefPanel({
   projectId
 }: CreativeBriefPanelProps) {
   const [state, formAction, pending] = useActionState(briefAction, initialState);
+  const [copiedField, setCopiedField] = useState<keyof CreativeBrief | null>(null);
   const brief = state.brief;
   const lastAppliedBriefRef = useRef<CreativeBrief | null>(null);
 
@@ -57,6 +58,15 @@ export function CreativeBriefPanel({
     lastAppliedBriefRef.current = brief;
     onGenerated(brief);
   }, [brief, onGenerated]);
+
+  async function copyBriefField(field: keyof CreativeBrief, value: string) {
+    if (!navigator.clipboard) {
+      return;
+    }
+
+    await navigator.clipboard.writeText(value);
+    setCopiedField(field);
+  }
 
   return (
     <section className="rounded-lg border border-[#263244] bg-[#0B0F19] p-4" aria-label="Creative Brief">
@@ -105,7 +115,22 @@ export function CreativeBriefPanel({
         <dl className="mt-4 grid gap-2">
           {briefFields.map((field) => (
             <div className="rounded-lg border border-[#263244] bg-[#141A26] p-3" key={field.key}>
-              <dt className="text-xs font-semibold uppercase text-[#94A3B8]">{field.label}</dt>
+              <dt className="flex items-center justify-between gap-3 text-xs font-semibold uppercase text-[#94A3B8]">
+                <span>{field.label}</span>
+                <button
+                  aria-label={`Copy ${field.label} to clipboard`}
+                  className="inline-flex min-h-8 items-center gap-1 rounded-md border border-[#263244] px-2 py-1 text-xs font-semibold text-[#CBD5E1] hover:border-[#00E5FF] hover:text-[#F8FAFC]"
+                  onClick={() => void copyBriefField(field.key, brief[field.key])}
+                  type="button"
+                >
+                  {copiedField === field.key ? (
+                    <Check aria-hidden="true" className="h-3.5 w-3.5 text-[#22C55E]" />
+                  ) : (
+                    <Copy aria-hidden="true" className="h-3.5 w-3.5 text-[#00E5FF]" />
+                  )}
+                  {copiedField === field.key ? "Copied" : "Copy"}
+                </button>
+              </dt>
               <dd className="mt-1 text-sm leading-6 text-[#F8FAFC]">{brief[field.key]}</dd>
             </div>
           ))}
