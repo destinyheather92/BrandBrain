@@ -63,6 +63,35 @@ describe("buildImageGenerationPrompt", () => {
     expect(prompt.system).toContain("Return image generation instructions");
   });
 
+  it("uses active slide context and blocks unrelated domain carryover", () => {
+    const prompt = buildImageGenerationPrompt({
+      brand: {
+        description: "Trauma-informed counseling and anxiety therapy.",
+        industry: "Mental health counseling",
+        memory: {
+          audience: "Adults navigating anxiety and nervous system overwhelm",
+          brandRules: "Use soft sage, cream, and calm supportive imagery.",
+          notes: "Warm, grounded, validating.",
+          preferredCtas: "Schedule a consultation",
+          productsServices: "Individual counseling, anxiety therapy, grounding skills",
+          voice: "Warm, calm, validating, and practical"
+        },
+        name: "Steady Path Counseling"
+      },
+      projectTitle: "Nervous System Regulation",
+      slideContext: "Slide 1 headline: Your nervous system is not broken. Body: Simple grounding support for anxiety.",
+      theme,
+      userRequest: "Generate a brand-consistent image for this slide."
+    });
+
+    expect(prompt.prompt).toContain("Steady Path Counseling");
+    expect(prompt.prompt).toContain("Active slide context: Slide 1 headline: Your nervous system is not broken");
+    expect(prompt.prompt).toContain("Mental health visual guidance");
+    expect(prompt.prompt).toContain("Never borrow unrelated industry imagery");
+    expect(prompt.prompt).not.toContain("Land Strong");
+    expect(prompt.prompt).not.toContain("land clearing");
+  });
+
   it("routes text-heavy social graphics and carousel covers to Ideogram", () => {
     expect(
       buildImageGenerationPrompt({

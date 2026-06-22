@@ -83,6 +83,7 @@ export async function generateProjectImageForUser({
         name: brand.name
       } satisfies AiGenerationBrandContext,
       projectTitle: project.title,
+      slideContext: summarizeSlideContext(targetSlide),
       theme: toThemeContext(theme),
       userRequest: userRequest.trim() || project.title
     });
@@ -254,6 +255,35 @@ function summarizeAltText(prompt: string): string {
     .replace(/^Create one image for BrandBrain project "[^"]+"\.\s*/i, "")
     .trim()
     .slice(0, 180);
+}
+
+function summarizeSlideContext(slide: CanvasSlide): string {
+  const visibleText = slide.elements
+    .map((element) => {
+      if (element.type === "text") {
+        return element.content;
+      }
+
+      if (element.type === "cta") {
+        return `CTA: ${element.label}`;
+      }
+
+      if (element.type === "image") {
+        return element.alt;
+      }
+
+      if (element.type === "logo") {
+        return element.brandName;
+      }
+
+      return "";
+    })
+    .filter(Boolean)
+    .join(" ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return visibleText.slice(0, 700);
 }
 
 function createImageElementId(): string {

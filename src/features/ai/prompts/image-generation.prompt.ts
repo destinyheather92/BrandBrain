@@ -10,6 +10,7 @@ export const IMAGE_GENERATION_PROMPT_VERSION = "1.0.0";
 type BuildImageGenerationPromptParams = {
   brand: AiGenerationBrandContext;
   projectTitle: string;
+  slideContext?: string;
   theme: AiGenerationThemeContext;
   userRequest: string;
 };
@@ -17,6 +18,7 @@ type BuildImageGenerationPromptParams = {
 export function buildImageGenerationPrompt({
   brand,
   projectTitle,
+  slideContext,
   theme,
   userRequest
 }: BuildImageGenerationPromptParams): AiImageGenerationPrompt {
@@ -24,6 +26,8 @@ export function buildImageGenerationPrompt({
   const provider = selectImageProvider(normalizedRequest, theme.imageStyle);
   const providerRole = imageProviderRole(provider);
   const brandRules = [brand.memory?.brandRules, brand.memory?.notes].filter(Boolean).join(" ");
+  const normalizedSlideContext = normalizeText(slideContext ?? "", "");
+  const domainGuidance = imageDomainGuidance(brand);
   const prompt = [
     `Create one image for BrandBrain project "${projectTitle}".`,
     `Internal image route: ${providerRole}.`,
@@ -35,11 +39,14 @@ export function buildImageGenerationPrompt({
     brand.memory?.voice ? `Voice: ${brand.memory.voice}.` : "",
     brandRules ? `Brand rules and memory notes: ${brandRules}.` : "",
     brand.memory?.preferredCtas ? `CTA context to inspire visual intent, not embedded text: ${brand.memory.preferredCtas}.` : "",
+    normalizedSlideContext ? `Active slide context: ${normalizedSlideContext}.` : "",
+    domainGuidance,
     `Approved image style: ${theme.imageStyle}.`,
     `Use brand palette cues: primary ${theme.palette.primary}, accent ${theme.palette.accent}, background ${theme.palette.background}.`,
     `User image request: ${normalizedRequest}.`,
     "Make the result specific, non-generic, polished, premium, professional, and usable inside an editable marketing canvas.",
     "Include a clear subject, real-world context, composition direction, lighting, camera or graphic treatment, and brand-specific visual cues.",
+    "Never borrow unrelated industry imagery, brand names, services, scenery, props, metaphors, or prior examples.",
     "Do not create placeholder abstraction, random gradients, generic AI art, text-heavy gibberish, or a finished slide layout."
   ]
     .filter(Boolean)
@@ -71,6 +78,7 @@ export function buildImageGenerationPrompt({
         brand,
         projectTitle,
         provider,
+        slideContext: normalizedSlideContext || null,
         theme,
         userRequest: normalizedRequest
       },
@@ -79,6 +87,32 @@ export function buildImageGenerationPrompt({
     ),
     workflow: "image-generation"
   };
+}
+
+function imageDomainGuidance(brand: AiGenerationBrandContext): string {
+  const context = [
+    brand.name,
+    brand.industry,
+    brand.description,
+    brand.memory?.audience,
+    brand.memory?.productsServices,
+    brand.memory?.voice,
+    brand.memory?.brandRules,
+    brand.memory?.notes
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+
+  if (/\b(counseling|counselling|therapy|therapist|mental health|anxiety|trauma|nervous system|grounding|somatic|wellness|psychotherapy)\b/.test(context)) {
+    return "Mental health visual guidance: create calm, supportive, non-clinical imagery such as a soft counseling space, grounding detail, warm natural light, gentle posture, and reassuring negative space.";
+  }
+
+  if (/\b(land clearing|land management|grading|drainage|acreage|brush|forestry|rural|storm cleanup)\b/.test(context)) {
+    return "Land management visual guidance: create realistic outdoor work imagery with land, terrain, equipment paths, soil texture, and natural light only when that matches the current brand.";
+  }
+
+  return "Brand visual guidance: choose a concrete scene, object, or environment that fits the current brand memory and audience.";
 }
 
 function selectImageProvider(userRequest: string, imageStyle: string): AiImageProviderId {

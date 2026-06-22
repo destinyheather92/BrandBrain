@@ -274,4 +274,75 @@ describe("generateProjectImageForUser", () => {
     });
     expect(repositories.provider.generateImage).not.toHaveBeenCalled();
   });
+
+  it("passes active slide copy into the image prompt for vague image requests", async () => {
+    const repositories = createRepositories();
+    const counselingCanvas = blankCanvas();
+
+    counselingCanvas.slides[0]?.elements.push({
+      color: "#243B2F",
+      content: "Your nervous system is not broken",
+      fontFamily: "Geist",
+      fontSize: 68,
+      fontWeight: "bold",
+      height: 150,
+      id: "text_counseling_headline",
+      letterSpacing: 0,
+      lineHeight: 1.1,
+      locked: false,
+      opacity: 1,
+      rotation: 0,
+      textAlign: "left",
+      type: "text",
+      width: 760,
+      x: 96,
+      y: 140,
+      zIndex: 1
+    });
+    repositories.projectRepository.findByIdForOwner.mockResolvedValue({
+      brandId: "brand_1",
+      brandName: "Steady Path Counseling",
+      canvasJson: counselingCanvas,
+      createdAt,
+      format: "instagram-carousel",
+      id: "project_1",
+      ownerUserId: "user_1",
+      status: "draft",
+      title: "Nervous System Regulation",
+      updatedAt: createdAt
+    });
+    repositories.brandRepository.findByIdForOwner.mockResolvedValue({
+      ...brand,
+      description: "Trauma-informed counseling and anxiety therapy.",
+      industry: "Mental health counseling",
+      name: "Steady Path Counseling"
+    });
+    repositories.brandMemoryRepository.getByBrandId.mockResolvedValue({
+      ...memory,
+      audience: "Adults navigating anxiety and nervous system overwhelm",
+      preferredCtas: "Schedule a consultation",
+      productsServices: "Individual counseling, anxiety therapy, grounding skills",
+      voice: "Warm, calm, validating, and practical"
+    });
+
+    await generateProjectImageForUser({
+      ...repositories,
+      idFactory: () => "image_generated_2",
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      slideId: "slide_1",
+      userRequest: "Generate a brand-consistent image for this slide."
+    });
+
+    expect(repositories.provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prompt: expect.stringContaining("Active slide context: Your nervous system is not broken")
+      })
+    );
+    expect(repositories.provider.generateImage).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prompt: expect.not.stringContaining("Land Strong")
+      })
+    );
+  });
 });

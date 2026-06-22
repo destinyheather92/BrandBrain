@@ -57,12 +57,12 @@ export function AiImageGenerationPanel({
         <input name="projectId" type="hidden" value={projectId} />
         <input name="slideId" type="hidden" value={activeSlideId} />
         <label className="text-sm text-[#CBD5E1]" htmlFor="ai-image-request">
-          Image prompt
+          Image direction
         </label>
         <textarea
           aria-disabled={!hasTheme || pending}
           className="min-h-20 resize-y rounded-lg border border-[#263244] bg-[#141A26] px-3 py-2 text-sm text-[#F8FAFC] outline-none focus:border-[#00E5FF]"
-          defaultValue="Generate a brand-consistent image for this slide."
+          defaultValue="Create a specific supporting image based on this slide's message, brand, audience, and tone."
           id="ai-image-request"
           maxLength={1000}
           name="userRequest"
