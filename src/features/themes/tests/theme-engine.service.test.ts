@@ -307,6 +307,99 @@ describe("ThemeEngineService", () => {
     );
   });
 
+  it("uses scraped website palette hints when regenerating a theme for an imported brand", async () => {
+    const repositories = createRepositories();
+    const websiteFetcher = vi.fn().mockResolvedValue({
+      finalUrl: "https://landstrong.example/",
+      html: `
+        <html>
+          <head>
+            <meta property="og:site_name" content="Land Strong" />
+            <meta name="description" content="Premium land clearing and grading." />
+            <style>
+              :root { --primary: #315B2C; --accent: #C49A3A; --cream: #F7F3E8; }
+            </style>
+          </head>
+        </html>
+      `,
+      ok: true
+    });
+
+    repositories.brandRepository.findByIdForOwner.mockResolvedValue({
+      ...brand,
+      description: "Premium land clearing and grading.",
+      industry: "Land management",
+      name: "Land Strong",
+      websiteUrl: "https://landstrong.example/"
+    });
+    repositories.brandMemoryRepository.getByBrandId.mockResolvedValue({
+      ...memory,
+      brandRules: "Use the website's actual palette.",
+      notes: "Do not use BrandBrain colors."
+    });
+
+    const result = await generateProjectThemeForUser({
+      ...repositories,
+      idFactory: () => "theme_land_strong_scraped",
+      ownerUserId: "user_1",
+      projectId: "project_1",
+      websiteFetcher
+    });
+
+    expect(websiteFetcher).toHaveBeenCalledWith("https://landstrong.example/");
+    expect(result).toMatchObject({
+      ok: true,
+      theme: {
+        palette: {
+          accent: "#C49A3A",
+          primary: "#315B2C",
+          secondary: "#F7F3E8"
+        }
+      }
+    });
+    expect(repositories.themeRepository.upsertForProject).toHaveBeenCalledWith(
+      expect.objectContaining({
+        palette: expect.not.objectContaining({
+          accent: "#00E5FF",
+          primary: "#0B0F19"
+        })
+      })
+    );
+  });
+
+  it("uses a land-management fallback instead of BrandBrain colors when scrape data is unavailable", async () => {
+    const repositories = createRepositories();
+
+    repositories.brandRepository.findByIdForOwner.mockResolvedValue({
+      ...brand,
+      description: "Land clearing, grading, drainage, and rural property preparation.",
+      industry: "Land management",
+      name: "Land Strong"
+    });
+    repositories.brandMemoryRepository.getByBrandId.mockResolvedValue({
+      ...memory,
+      brandRules: "Use the website palette when available.",
+      notes: "No explicit hex colors here."
+    });
+
+    const result = await generateProjectThemeForUser({
+      ...repositories,
+      idFactory: () => "theme_land_strong_fallback",
+      ownerUserId: "user_1",
+      projectId: "project_1"
+    });
+
+    expect(result).toMatchObject({
+      ok: true,
+      theme: {
+        palette: {
+          accent: "#D97706",
+          primary: "#14532D"
+        }
+      }
+    });
+  });
+
   it("applies a theme to canvas styling while preserving user edits", () => {
     const themedDocument = applyProjectThemeToCanvas(canvasJson, theme);
 

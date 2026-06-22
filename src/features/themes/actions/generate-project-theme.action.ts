@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 
 import { createPrismaBrandMemoryRepository } from "@/features/brands/repositories/prisma-brand-memory.repository";
 import { createPrismaBrandRepository } from "@/features/brands/repositories/prisma-brand.repository";
+import { fetchWebsiteHtml } from "@/features/brands/services/website-fetch.service";
 import { createPrismaContentProjectRepository } from "@/features/projects/repositories/prisma-content-project.repository";
 import { syncCurrentClerkUserToLocalUser } from "@/features/users/services/current-user-sync.service";
 
@@ -49,7 +50,8 @@ export async function generateProjectThemeAction(
     ownerUserId: syncResult.user.id,
     projectId,
     projectRepository: createPrismaContentProjectRepository(),
-    themeRepository: createPrismaProjectThemeRepository()
+    themeRepository: createPrismaProjectThemeRepository(),
+    websiteFetcher: fetchWebsiteHtml
   });
 
   if (!result.ok) {

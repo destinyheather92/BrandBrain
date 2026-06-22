@@ -1,5 +1,7 @@
 import type { Brand } from "@/features/brands/types/brand";
 import type { BrandMemory, BrandMemoryRepository } from "@/features/brands/types/brand-memory";
+import { extractWebsiteBrandProfile } from "@/features/brands/services/website-import.service";
+import type { WebsiteImportFetcher } from "@/features/brands/types/website-import";
 import { canvasDocumentSchema } from "@/features/canvas/schemas/canvas-object.schema";
 import type { CanvasDocument, CanvasElement } from "@/features/canvas/types/canvas";
 import type { ContentProject, ContentProjectRepository } from "@/features/projects/types/content-project";
@@ -22,6 +24,7 @@ type GenerateProjectThemeForUserParams = {
   projectId: string;
   projectRepository: ContentProjectRepository;
   themeRepository: ProjectThemeRepository;
+  websiteFetcher?: WebsiteImportFetcher;
 };
 
 type BuildProjectThemeParams = {
@@ -30,6 +33,7 @@ type BuildProjectThemeParams = {
   memory: BrandMemory | null;
   ownerUserId: string;
   project: ContentProject;
+  websiteDescription: string | null;
 };
 
 type GetProjectThemeForUserParams = {
@@ -195,7 +199,8 @@ export async function generateProjectThemeForUser({
   ownerUserId,
   projectId,
   projectRepository,
-  themeRepository
+  themeRepository,
+  websiteFetcher
 }: GenerateProjectThemeForUserParams): Promise<ProjectThemeGenerationResult> {
   try {
     const project = await projectRepository.findByIdForOwner(projectId, ownerUserId);
@@ -225,12 +230,14 @@ export async function generateProjectThemeForUser({
     }
 
     const memory = await brandMemoryRepository.getByBrandId(brand.id);
+    const websiteDescription = await getWebsiteDescriptionForTheme(brand, websiteFetcher);
     const themeInput = buildProjectTheme({
       brand,
       idFactory,
       memory,
       ownerUserId,
-      project
+      project,
+      websiteDescription
     });
     const theme = await themeRepository.upsertForProject(themeInput);
 
@@ -282,24 +289,29 @@ function buildProjectTheme({
   idFactory = createThemeId,
   memory,
   ownerUserId,
-  project
+  project,
+  websiteDescription
 }: BuildProjectThemeParams): ProjectThemeUpsertInput {
   const context = [
     brand.name,
     brand.industry,
-    brand.description,
     memory?.voice,
     memory?.audience,
     memory?.productsServices,
     memory?.brandRules,
     memory?.preferredCtas,
-    memory?.notes
+    memory?.notes,
+    websiteDescription,
+    brand.description
   ]
     .filter(Boolean)
     .join(" ");
   const normalizedContext = context.toLowerCase();
   const isRoofing = /roof|storm|inspection|exterior|claim/.test(normalizedContext);
   const isSolar = /solar|energy|panel|renewable/.test(normalizedContext);
+  const isLandManagement = /land|clearing|grading|drainage|rural|acreage|brush|forestry/.test(
+    normalizedContext
+  );
   const isTechnical = /technical|professional|premium|precise|practical/.test(normalizedContext);
   const fallbackPalette: ThemePalette = isSolar
     ? {
@@ -311,35 +323,47 @@ function buildProjectTheme({
         surface: "#F8FAFC",
         text: "#0B0F19"
       }
-    : isRoofing
+    : isLandManagement
       ? {
-          accent: "#00A6FB",
+          accent: "#D97706",
           background: "#FFFFFF",
           ctaText: "#FFFFFF",
-          primary: "#0F172A",
-          secondary: "#E2E8F0",
+          primary: "#14532D",
+          secondary: "#DCFCE7",
           surface: "#F8FAFC",
           text: "#0B0F19"
         }
+      : isRoofing
+        ? {
+            accent: "#00A6FB",
+            background: "#FFFFFF",
+            ctaText: "#FFFFFF",
+            primary: "#0F172A",
+            secondary: "#E2E8F0",
+            surface: "#F8FAFC",
+            text: "#0B0F19"
+          }
       : {
-          accent: "#00E5FF",
+          accent: "#475569",
           background: "#FFFFFF",
-          ctaText: "#0B0F19",
-          primary: "#0B0F19",
-          secondary: "#CBD5E1",
+          ctaText: "#FFFFFF",
+          primary: "#111827",
+          secondary: "#E5E7EB",
           surface: "#F8FAFC",
-          text: "#0B0F19"
+          text: "#111827"
         };
   const palette = applyExplicitBrandColors(fallbackPalette, extractBrandColors(context));
 
   return projectThemeUpsertInputSchema.parse({
     brandId: brand.id,
     id: idFactory(),
-    imageStyle: isRoofing
-      ? "Crisp exterior photography with storm-ready contrast and professional lighting."
-      : isSolar
-        ? "Clean daylight photography with confident contrast and bright installation details."
-        : "Premium product photography with realistic lighting, sharp details, and restrained contrast.",
+    imageStyle: isLandManagement
+      ? "Grounded outdoor photography with cleared land, equipment paths, soil texture, and natural light."
+      : isRoofing
+        ? "Crisp exterior photography with storm-ready contrast and professional lighting."
+        : isSolar
+          ? "Clean daylight photography with confident contrast and bright installation details."
+          : "Premium product photography with realistic lighting, sharp details, and restrained contrast.",
     layout: {
       density: isTechnical ? "editorial" : "spacious",
       heroTreatment: isTechnical ? "large-headline-left" : "centered-statement",
@@ -356,6 +380,27 @@ function buildProjectTheme({
       headingWeight: "bold"
     }
   });
+}
+
+async function getWebsiteDescriptionForTheme(
+  brand: Brand,
+  websiteFetcher: WebsiteImportFetcher | undefined
+): Promise<string | null> {
+  if (!websiteFetcher || !brand.websiteUrl) {
+    return null;
+  }
+
+  try {
+    const result = await websiteFetcher(brand.websiteUrl);
+
+    if (!result.ok) {
+      return null;
+    }
+
+    return extractWebsiteBrandProfile(result.html).description;
+  } catch {
+    return null;
+  }
 }
 
 function extractBrandColors(context: string): string[] {
